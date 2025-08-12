@@ -42,7 +42,7 @@
 
           <!-- Reading History Toggle -->
           <div class="flex items-center justify-between p-4 bg-gray-50 rounded-lg">
-            <div>
+  <div>
               <label class="text-sm font-medium text-gray-700">Use my reading history</label>
               <p class="text-sm text-gray-500">
                 <% if user_signed_in? %>
@@ -50,8 +50,8 @@
                 <% else %>
                   Sign in to use your reading history
                 <% end %>
-              </p>
-            </div>
+    </p>
+  </div>
             <% if user_signed_in? %>
               <%= check_box_tag :include_history, '1', true, class: 'h-4 w-4 text-indigo-600 focus:ring-indigo-500 border-gray-300 rounded' %>
             <% else %>
@@ -162,7 +162,7 @@
                       <div class="flex items-start space-x-4">
                         <div class="w-16 h-20 bg-gradient-to-br from-indigo-400 to-purple-500 rounded-lg flex items-center justify-center text-white font-bold text-lg flex-shrink-0">
                           <%= pick[:title].split(' ').map(&:first).join('').upcase[0..1] %>
-                        </div>
+    </div>
                         
                         <div class="flex-1 min-w-0">
                           <h5 class="text-lg font-semibold text-gray-900 mb-1"><%= pick[:title] %></h5>
@@ -174,7 +174,7 @@
                           
                           <% if pick[:why].present? %>
                             <p class="text-xs text-gray-600 mb-3"><strong>Why this pick:</strong> <%= pick[:why] %></p>
-                          <% end %>
+<% end %>
                           
                           <!-- Confidence Meter -->
                           <div class="flex items-center justify-between">
@@ -193,17 +193,29 @@
                             
                             <!-- Feedback Buttons -->
                             <div class="flex space-x-2">
-                              <button class="feedback-btn p-1.5 text-gray-400 hover:text-green-600 transition-colors duration-200" data-book-id="<%= pick[:number] %>" data-feedback="like">
+                              <button class="feedback-btn p-1.5 text-gray-400 hover:text-green-600 transition-colors duration-200" data-book-id="<%= pick[:number] %>" data-feedback="like" title="I like this">
                                 👍
                               </button>
-                              <button class="feedback-btn p-1.5 text-gray-400 hover:text-red-600 transition-colors duration-200" data-book-id="<%= pick[:number] %>" data-feedback="dislike">
+                              <button class="feedback-btn p-1.5 text-gray-400 hover:text-red-600 transition-colors duration-200" data-book-id="<%= pick[:number] %>" data-feedback="dislike" title="Not for me">
                                 👎
                               </button>
-                              <button class="feedback-btn p-1.5 text-gray-400 hover:text-blue-600 transition-colors duration-200" data-book-id="<%= pick[:number] %>" data-feedback="save">
+                              <button class="feedback-btn p-1.5 text-gray-400 hover:text-blue-600 transition-colors duration-200" data-book-id="<%= pick[:number] %>" data-feedback="save" title="Save to my list">
                                 💾
+                              </button>
+                              <button class="feedback-btn p-1.5 text-gray-400 hover:text-purple-600 transition-colors duration-200" data-book-id="<%= pick[:number] %>" data-feedback="more" title="Tell me more">
+                                📖
                               </button>
                             </div>
                           </div>
+
+                          <!-- Sign Up Gate for Feedback -->
+                          <% unless user_signed_in? %>
+                            <div class="mt-3 p-2 bg-amber-50 border border-amber-200 rounded text-center">
+                              <p class="text-xs text-amber-700">
+                                <strong>Sign up</strong> to save books and get better recommendations
+                              </p>
+                            </div>
+                          <% end %>
                         </div>
                       </div>
                     </div>
@@ -243,44 +255,140 @@
       </div>
     </div>
 
-    <!-- Bottom Panel: Refinement & Iteration -->
+    <!-- Bottom Panel: Refinement & User Engagement -->
     <% if @ai_response %>
       <div class="bg-white rounded-2xl shadow-lg p-8">
         <h2 class="text-xl font-semibold text-gray-900 mb-6">Refine & Discover More</h2>
         
         <div class="grid md:grid-cols-2 gap-8">
-          <!-- Quick Refinement Chips -->
+          <!-- Left Side: Data Enhancement -->
           <div>
-            <h4 class="text-sm font-medium text-gray-700 mb-3">Quick refinements</h4>
-            <div class="flex flex-wrap gap-2">
-              <% ['More like this', 'Less heavy', 'Different genre', 'Shorter books', 'Longer books', 'More challenging', 'Easier reads', 'Similar authors'].each do |refinement| %>
-                <button class="refinement-chip px-3 py-2 text-sm font-medium bg-gray-100 border border-gray-200 text-gray-700 rounded-lg hover:bg-gray-200 transition-colors duration-200" data-refinement="<%= refinement %>">
-                  <%= refinement %>
-                </button>
+            <h4 class="text-sm font-medium text-gray-700 mb-3 flex items-center">
+              <svg class="w-5 h-5 mr-2 text-indigo-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.747 0 3.332.477 4.5 1.253v13C19.832 18.477 18.246 18 16.5 18c-1.746 0-3.332.477-4.5 1.253"></path>
+              </svg>
+              Get Better Recommendations
+            </h4>
+            
+            <div class="space-y-4">
+              <!-- Import Goodreads -->
+              <div class="bg-gradient-to-r from-green-50 to-emerald-50 border border-green-200 rounded-lg p-4">
+                <div class="flex items-center mb-3">
+                  <div class="h-10 w-10 bg-green-100 rounded-lg flex items-center justify-center mr-3">
+                    <svg class="h-5 w-5 text-green-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 16a4 4 0 01-.88-7.903A5 5 0 1115.9 6L16 6a5 5 0 011 9.9M9 19l3 3m0 0l3-3m-3 3V10"></path>
+                    </svg>
+                  </div>
+                  <div>
+                    <h5 class="font-medium text-green-900">Import Goodreads</h5>
+                    <p class="text-sm text-green-700">Get personalized recommendations based on your reading history</p>
+                  </div>
+                </div>
+                
+                <% if user_signed_in? %>
+                  <%= link_to "Import Library", new_import_path, 
+                      class: "inline-flex items-center px-4 py-2 bg-green-600 text-white text-sm font-medium rounded-lg hover:bg-green-700 transition-colors duration-200" %>
+                <% else %>
+                  <div class="text-center">
+                    <p class="text-sm text-green-600 mb-3">Sign up required to import your Goodreads data</p>
+                    <%= link_to "Sign Up to Import", new_user_registration_path, 
+                        class: "inline-flex items-center px-4 py-2 bg-green-600 text-white text-sm font-medium rounded-lg hover:bg-green-700 transition-colors duration-200" %>
+                  </div>
+                <% end %>
+              </div>
+
+              <!-- Add Books Manually -->
+              <div class="bg-gradient-to-r from-blue-50 to-indigo-50 border border-blue-200 rounded-lg p-4">
+                <div class="flex items-center mb-3">
+                  <div class="h-10 w-10 bg-blue-100 rounded-lg flex items-center justify-center mr-3">
+                    <svg class="h-5 w-5 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6v6m0 0v6m0-6h6m-6 0H6"></path>
+                    </svg>
+                  </div>
+                  <div>
+                    <h5 class="font-medium text-blue-900">Add Books Manually</h5>
+                    <p class="text-sm text-blue-700">Build your library by adding books you've read or want to read</p>
+                  </div>
+                </div>
+                
+                <% if user_signed_in? %>
+                  <%= link_to "Add Book", new_book_path, 
+                      class: "inline-flex items-center px-4 py-2 bg-blue-600 text-white text-sm font-medium rounded-lg hover:bg-blue-700 transition-colors duration-200" %>
+                <% else %>
+                  <div class="text-center">
+                    <p class="text-sm text-blue-600 mb-3">Sign up required to build your personal library</p>
+                    <%= link_to "Sign Up to Add Books", new_user_registration_path, 
+                        class: "inline-flex items-center px-4 py-2 bg-blue-600 text-white text-sm font-medium rounded-lg hover:bg-blue-700 transition-colors duration-200" %>
+                  </div>
+                <% end %>
+              </div>
+
+              <!-- Sign Up CTA -->
+              <% unless user_signed_in? %>
+                <div class="bg-gradient-to-r from-purple-50 to-indigo-50 border border-purple-200 rounded-lg p-4 text-center">
+                  <h5 class="font-medium text-purple-900 mb-2">Unlock Personalized AI</h5>
+                  <p class="text-sm text-purple-700 mb-3">Sign up to get recommendations tailored to your reading taste</p>
+                  <%= link_to "Sign Up Now", new_user_registration_path, 
+                      class: "inline-flex items-center px-6 py-2 bg-gradient-to-r from-purple-600 to-indigo-600 text-white text-sm font-medium rounded-lg hover:from-purple-700 hover:to-indigo-700 transition-all duration-200" %>
+                </div>
               <% end %>
             </div>
           </div>
 
-          <!-- Custom Refinement Input -->
+          <!-- Right Side: Refinement Options -->
           <div>
-            <h4 class="text-sm font-medium text-gray-700 mb-3">Custom refinement</h4>
-            <div class="flex space-x-2">
-              <input type="text" id="custom-refinement" placeholder="e.g., 'More sci-fi, less fantasy'" 
-                     class="flex-1 border-gray-300 rounded-lg shadow-sm focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm">
-              <button id="refine-btn" class="px-4 py-2 bg-indigo-600 text-white rounded-lg font-medium hover:bg-indigo-700 transition-colors duration-200">
-                Refine
-              </button>
+            <h4 class="text-sm font-medium text-gray-700 mb-3 flex items-center">
+              <svg class="w-5 h-5 mr-2 text-indigo-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z"></path>
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"></path>
+              </svg>
+              Refine Your Results
+            </h4>
+            
+            <!-- Quick Refinement Chips -->
+            <div class="mb-4">
+              <p class="text-xs text-gray-500 mb-2">Quick refinements:</p>
+              <div class="flex flex-wrap gap-2">
+                <% ['More like this', 'Less heavy', 'Different genre', 'Shorter books', 'Longer books', 'More challenging', 'Easier reads', 'Similar authors'].each do |refinement| %>
+                  <button class="refinement-chip px-3 py-2 text-sm font-medium bg-gray-100 border border-gray-200 text-gray-700 rounded-lg hover:bg-gray-200 transition-colors duration-200" data-refinement="<%= refinement %>">
+                    <%= refinement %>
+                  </button>
+                <% end %>
+              </div>
             </div>
+
+            <!-- Custom Refinement Input -->
+            <div class="mb-4">
+              <p class="text-xs text-gray-500 mb-2">Custom refinement:</p>
+              <div class="flex space-x-2">
+                <input type="text" id="custom-refinement" placeholder="e.g., 'More sci-fi, less fantasy'" 
+                       class="flex-1 border-gray-300 rounded-lg shadow-sm focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm">
+                <button id="refine-btn" class="px-4 py-2 bg-indigo-600 text-white rounded-lg font-medium hover:bg-indigo-700 transition-colors duration-200">
+                  Refine
+                </button>
+              </div>
+            </div>
+
+            <!-- Sign Up for Refinements -->
+            <% unless user_signed_in? %>
+              <div class="bg-amber-50 border border-amber-200 rounded-lg p-3 text-center">
+                <p class="text-xs text-amber-700">
+                  <strong>Sign up</strong> to save your refinements and get better suggestions
+                </p>
+              </div>
+            <% end %>
           </div>
         </div>
 
-        <!-- Recent Refinements -->
-        <div class="mt-6 pt-6 border-t border-gray-200">
-          <h4 class="text-sm font-medium text-gray-700 mb-3">Recent refinements</h4>
-          <div class="text-sm text-gray-500 italic">
-            No refinements yet. Start refining to see your history here.
+        <!-- Recent Refinements (for signed-in users) -->
+        <% if user_signed_in? %>
+          <div class="mt-8 pt-6 border-t border-gray-200">
+            <h4 class="text-sm font-medium text-gray-700 mb-3">Recent refinements</h4>
+            <div class="text-sm text-gray-500 italic">
+              No refinements yet. Start refining to see your history here.
+            </div>
           </div>
-        </div>
+        <% end %>
       </div>
     <% end %>
   </div>
@@ -382,20 +490,34 @@ document.addEventListener('DOMContentLoaded', function() {
       
       console.log('Feedback submitted:', { bookId, feedback });
       
+      // Check if user is signed in
+      const isSignedIn = <%= user_signed_in? ? 'true' : 'false' %>;
+      
+      if (!isSignedIn) {
+        // Show sign-up prompt for anonymous users
+        showToast('Sign up to save your feedback and get better recommendations!', 'info');
+        return;
+      }
+      
       // Visual feedback
       this.classList.add('scale-110');
       setTimeout(() => {
         this.classList.remove('scale-110');
       }, 200);
       
-      // Show toast
+      // Show appropriate message based on feedback type
       const feedbackMessages = {
         'like': 'Thanks! We\'ll recommend more like this.',
         'dislike': 'Got it! We\'ll avoid similar books.',
-        'save': 'Book saved to your library!'
+        'save': 'Book saved to your reading list!',
+        'more': 'Book details expanded!'
       };
       
       showToast(feedbackMessages[feedback] || 'Feedback recorded!', 'success');
+      
+      // TODO: Send feedback to backend for storage
+      // For now, just log it
+      console.log('Feedback stored:', { bookId, feedback, timestamp: new Date().toISOString() });
     });
   });
 });
