@@ -1,4 +1,10 @@
 Rails.application.routes.draw do
+  get "home/index"
+  devise_for :users
+  
+  # Home page
+  root "home#index"
+  
   resources :books do
     collection do
       get :next_book   # Page de suggestion
@@ -13,12 +19,9 @@ Rails.application.routes.draw do
 
   resources :imports, only: [:new, :create]
   
-  # Module d’import (upload CSV + traitement)
+  # Module d'import (upload CSV + traitement)
   resources :imports, only: [:new, :create]
 
-  # Liste simple pour visualiser le résultat de l’import
+  # Liste simple pour visualiser le résultat de l'import
   resources :readings, only: [:index]
-
-  # Page d'accueil par défaut
-  root "books#index"
 end

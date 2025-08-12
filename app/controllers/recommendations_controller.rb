@@ -1,30 +1,48 @@
 class RecommendationsController < ApplicationController
+  before_action :authenticate_user!
+  
   def new
-    # Form simple
   end
 
   def create
-    user_context      = params[:context].to_s
-    include_readings  = params[:include_goodreads] == "1"
-
-    result = BookRecommender.new(
-      context: user_context,
-      include_readings: include_readings
-    ).call
-
-
-    @ai_raw          = result[:raw]
-    @recommendations = result[:items]
-    @ai_error        = result[:error]
-    @user_prompt     = result[:prompt_debug]  # 🔥 prompt final envoyé
-    @context         = user_context           # pour “sticky” sur le form si besoin
-    @include_readings= include_readings
-
-    render :create, status: :ok
+    # Build the prompt for AI
+    context = params[:context]
+    include_goodreads = params[:include_goodreads] == '1'
+    
+    # Create user prompt
+    @user_prompt = build_user_prompt(context, include_goodreads)
+    
+    # Get AI recommendation
+    begin
+      recommender = BookRecommender.new
+      @ai_raw = recommender.get_recommendation(@user_prompt)
+      @ai_error = nil
+    rescue => e
+      @ai_raw = nil
+      @ai_error = e.message
+    end
+    
+    render :create
   end
 
-  def feedback
-    flash[:notice] = params[:liked] == "true" ? "Bonne lecture !" : "On cherchera un autre livre."
-    redirect_to new_recommendation_path
+  private
+
+  def build_user_prompt(context, include_goodreads)
+    prompt = "I'm looking for book recommendations. "
+    prompt += "Context: #{context} "
+    
+    if include_goodreads
+      # Get user's reading history for context
+      readings = Reading.all.limit(10)
+      if readings.any?
+        prompt += "Based on my reading history: "
+        readings.each do |reading|
+          prompt += "#{reading.title} by #{reading.author} (#{reading.my_rating || 'unrated'}/5), "
+        end
+      end
+    end
+    
+    prompt += "Please suggest 3-5 books with brief explanations of why they would be good for me."
+    prompt
   end
 end

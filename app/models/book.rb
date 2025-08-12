@@ -1,4 +1,6 @@
 class Book < ApplicationRecord
+  belongs_to :user
+  
   # Déclare une énumération pour le champ 'status'
   # Les clés ('to_read', 'reading', 'read') seront disponibles comme méthodes
   enum :status, {
@@ -19,4 +21,7 @@ class Book < ApplicationRecord
   # Scope : filtre les livres par status si un paramètre est fourni
   # Exemple : Book.by_status("read") → retourne uniquement les livres lus
   scope :by_status, ->(status) { where(status: status) if status.present? }
+  
+  # Scope : filtre les livres par utilisateur
+  scope :for_user, ->(user) { where(user: user) if user.present? }
 end
