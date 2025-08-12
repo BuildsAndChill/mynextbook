@@ -11,19 +11,39 @@ class RecommendationsController < ApplicationController
     tone_chips = params[:tone_chips] || []
     include_history = params[:include_history] == '1'
     
+    Rails.logger.info "Recommendations#create called with: context=#{context.inspect}, tone_chips=#{tone_chips.inspect}, include_history=#{include_history.inspect}"
+    Rails.logger.info "Context present? #{context.present?}"
+    Rails.logger.info "Context length: #{context&.length || 0}"
+    
     # Create structured user prompt
     @user_prompt = build_structured_prompt(context, tone_chips, include_history)
+    Rails.logger.info "Generated prompt: #{@user_prompt}"
+    Rails.logger.info "Prompt length: #{@user_prompt.length}"
+    
+    # Check environment variables
+    Rails.logger.info "OPENAI_API_KEY present? #{ENV['OPENAI_API_KEY'].present?}"
+    Rails.logger.info "OPENAI_API_KEY length: #{ENV['OPENAI_API_KEY']&.length || 0}"
     
     # Get AI recommendation
     begin
+      Rails.logger.info "Initializing BookRecommender..."
       recommender = BookRecommender.new
+      Rails.logger.info "BookRecommender initialized successfully"
+      Rails.logger.info "Calling get_recommendation with prompt..."
       @ai_response = recommender.get_recommendation(@user_prompt)
+      Rails.logger.info "AI response received successfully"
+      Rails.logger.info "AI response length: #{@ai_response&.length || 0}"
+      Rails.logger.info "AI response preview: #{@ai_response&.first(200)}..."
       @ai_error = nil
       
       # Parse AI response into structured format (if possible)
       @parsed_response = parse_ai_response(@ai_response)
+      Rails.logger.info "Parsed response: #{@parsed_response}"
       
     rescue => e
+      Rails.logger.error "Error in recommendations#create: #{e.message}"
+      Rails.logger.error "Error class: #{e.class}"
+      Rails.logger.error e.backtrace.join("\n")
       @ai_response = nil
       @ai_error = e.message
       @parsed_response = nil
