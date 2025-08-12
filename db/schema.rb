@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[8.0].define(version: 2025_08_12_103404) do
+ActiveRecord::Schema[8.0].define(version: 2025_08_12_152117) do
   # These are extensions that must be enabled in order to support this database
   enable_extension "pg_catalog.plpgsql"
 
@@ -21,5 +21,23 @@ ActiveRecord::Schema[8.0].define(version: 2025_08_12_103404) do
     t.string "status"
     t.datetime "created_at", null: false
     t.datetime "updated_at", null: false
+  end
+
+  create_table "readings", force: :cascade do |t|
+    t.bigint "goodreads_book_id"
+    t.string "title"
+    t.string "author"
+    t.integer "my_rating"
+    t.decimal "average_rating", precision: 4, scale: 2
+    t.text "shelves"
+    t.date "date_added"
+    t.date "date_read"
+    t.string "isbn"
+    t.string "isbn13"
+    t.integer "pages"
+    t.datetime "created_at", null: false
+    t.datetime "updated_at", null: false
+    t.string "exclusive_shelf"
+    t.index ["goodreads_book_id"], name: "index_readings_on_goodreads_book_id", unique: true
   end
 end

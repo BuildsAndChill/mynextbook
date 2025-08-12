@@ -1,0 +1,20 @@
+<!-- app/views/imports/new.html.erb -->
+<!-- Page d’upload de l’export Goodreads -->
+<h1 class="text-2xl font-bold mb-4">Importer mon export Goodreads (CSV)</h1>
+
+<!-- Petit rappel UX sur où trouver l’export -->
+<div class="prose text-sm text-gray-600 mb-4">
+  <p>Dans Goodreads : <em>My Books → Import/Export → Export Library</em>, puis télécharge <code>goodreads_library_export.csv</code>.</p>
+</div>
+
+<!-- Formulaire d’upload -->
+<!-- local: true → submit standard (plus simple pour ce MVP) -->
+<!-- multipart: true → requis pour les uploads de fichiers -->
+<%= form_with url: imports_path, method: :post, local: true, html: { multipart: true }, class: "space-y-4" do %>
+  <div>
+    <%= label_tag :file, "Fichier CSV", class: "block font-medium" %>
+    <%= file_field_tag :file, accept: ".csv", class: "mt-1 block w-full border rounded px-3 py-2" %>
+  </div>
+
+  <%= submit_tag "Importer", class: "bg-indigo-600 text-white px-4 py-2 rounded hover:bg-indigo-700" %>
+<% end %>

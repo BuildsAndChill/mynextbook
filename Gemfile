@@ -3,6 +3,9 @@ source "https://rubygems.org"
 # Bundle Open AI
 gem "ruby-openai"
 
+# CSV Module importer
+gem "csv"
+
 # .env variables
 gem "dotenv-rails", groups: [:development, :test]
 

@@ -1,0 +1,41 @@
+<h1 class="text-2xl font-bold mb-4">Mes lectures importées</h1>
+
+<% if notice %>
+  <div class="mb-4 p-3 bg-green-50 text-green-800 rounded"><%= notice %></div>
+<% end %>
+<% if alert %>
+  <div class="mb-4 p-3 bg-yellow-50 text-yellow-800 whitespace-pre-wrap rounded"><%= alert %></div>
+<% end %>
+
+<div class="mb-4">
+  <%= link_to "Nouvel import CSV", new_import_path, class: "text-indigo-600 underline" %>
+</div>
+
+<p class="mb-4 text-gray-700">
+  Total lectures en base : <%= Reading.count %>
+</p>
+
+<table class="min-w-full text-sm">
+  <thead>
+    <tr class="text-left border-b">
+      <th class="py-2 pr-4">#</th> <!-- Nouvelle colonne pour le numéro -->
+      <th class="py-2 pr-4">Titre</th>
+      <th class="py-2 pr-4">Auteur</th>
+      <th class="py-2 pr-4">Note (moi)</th>
+      <th class="py-2 pr-4">Date lue</th>
+      <th class="py-2 pr-4">Shelves</th>
+    </tr>
+  </thead>
+  <tbody>
+    <% @readings.each_with_index do |r, index| %>
+      <tr class="border-b hover:bg-gray-50">
+        <td class="py-2 pr-4"><%= index + 1 %></td> <!-- Numéro de ligne -->
+        <td class="py-2 pr-4"><%= r.title %></td>
+        <td class="py-2 pr-4"><%= r.author %></td>
+        <td class="py-2 pr-4"><%= r.my_rating %></td>
+        <td class="py-2 pr-4"><%= r.date_read&.strftime("%Y-%m-%d") %></td>
+        <td class="py-2 pr-4 text-gray-600"><%= r.shelves %></td>
+      </tr>
+    <% end %>
+  </tbody>
+</table>
