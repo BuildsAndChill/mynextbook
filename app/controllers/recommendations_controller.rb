@@ -1,38 +1,22 @@
 class RecommendationsController < ApplicationController
-  # Page de saisie du contexte utilisateur
   def new
-    # Rien à préparer ici, on affiche juste le formulaire (views/recommendations/new.html.erb)
+    # Affiche simplement le formulaire de saisie du contexte
   end
 
-  # Réception du formulaire et construction du prompt dynamique
   def create
     user_context = params[:context].to_s
 
-    read_books = Book.read.pluck(:title, :author).map { |t, a| "#{t} – #{a}" }.join("\n")
-    to_read_books = Book.to_read.pluck(:title, :author).map { |t, a| "#{t} – #{a}" }.join("\n")
+    result = BookRecommender.new(context: user_context).call
 
-    @user_prompt = <<~PROMPT
-      Contexte utilisateur :
-      #{user_context.presence || "(non fourni)"}
-
-      Livres déjà lus :
-      #{read_books.presence || "(aucun)"}
-
-      Livres à lire :
-      #{to_read_books.presence || "(aucun)"}
-    PROMPT
-    
-    result = BookRecommender.new(user_prompt: @user_prompt).call
+    @ai_raw        = result[:raw]
     @recommendations = result[:items]
-    @ai_raw = result[:raw]
-    @ai_error = result[:error]
+    @ai_error      = result[:error]
+    @user_prompt   = result[:prompt_debug] # 🔥 Le vrai prompt envoyé à l’IA
 
     render :create, status: :ok
-  end
+    end
 
-  # Gestion du feedback utilisateur (Yes / No)
   def feedback
-    # Ici on pourra stocker le feedback et relancer une nouvelle proposition
     flash[:notice] = params[:liked] == "true" ? "Bonne lecture !" : "On cherchera un autre livre."
     redirect_to new_recommendation_path
   end
