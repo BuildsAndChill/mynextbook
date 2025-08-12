@@ -2,11 +2,11 @@
 # Service objet responsable de :
 # - Lire le CSV Goodreads (headers officiels)
 # - Mapper chaque ligne vers nos attributs Book
-# - Créer / mettre à jour en idempotent (find_or_initialize_by :goodreads_book_id)
+# - Créer / mettre à jour en idempotent (find_or_initialize_by :goodreads_book_id + user_id)
 # - Retourner un petit résumé (créés / MAJ / ignorés / erreurs)
 #
 # Usage (dans un contrôleur) :
-#   result = GoodreadsCsvImporter.new(file.tempfile).call
+#   result = GoodreadsCsvImporter.new(file.tempfile, user).call
 #   result.created, result.updated, result.skipped, result.errors
 #
 require "csv"
@@ -46,25 +46,41 @@ class GoodreadsCsvImporter
           next
         end
 
-        # 3) Idempotence sur goodreads_book_id
-        rec = Book.find_or_initialize_by(goodreads_book_id: attrs[:goodreads_book_id])
-
-        if rec.new_record?
-          # Nouveau : assigner tous les attributs puis save!
-          rec.assign_attributes(attrs)
-          rec.save!
-          Rails.logger.info "Created new book: #{rec.title} (ID: #{rec.id})"
+        # 3) Idempotence basée sur l'identifiant le plus fiable
+        # Séparer les attributs pour BookMetadata et UserReading
+        book_metadata_attrs = attrs.slice(:title, :author, :isbn, :isbn13, :goodreads_book_id, :average_rating, :pages)
+        book_metadata = BookMetadata.find_or_create_by_identifier(book_metadata_attrs)
+        
+        # 4) Vérifier si l'utilisateur a déjà ce livre
+        existing_reading = UserReading.find_by(user: @user, book_metadata: book_metadata)
+        
+        if existing_reading.nil?
+          # Nouvelle lecture pour cet utilisateur
+          reading = UserReading.new(
+            user: @user,
+            book_metadata: book_metadata,
+            rating: attrs[:rating],
+            status: attrs[:status],
+            shelves: attrs[:shelves],
+            date_added: attrs[:date_added],
+            date_read: attrs[:date_read],
+            exclusive_shelf: attrs[:exclusive_shelf]
+          )
+          reading.save!
+          Rails.logger.info "Created new reading for user: #{reading.book_metadata.title} (ID: #{reading.id})"
           created += 1
         else
-          # Existant : ne sauvegarder que s'il y a des changements
-          rec.assign_attributes(attrs)
-          if rec.changed?
-            rec.save!
-            Rails.logger.info "Updated existing book: #{rec.title} (ID: #{rec.id})"
+          # Lecture existante : mettre à jour si nécessaire
+          old_attrs = existing_reading.import_attributes
+          new_attrs = attrs.except(:title, :author, :isbn, :isbn13, :goodreads_book_id, :average_rating, :pages)
+          
+          if old_attrs.except(:title, :author, :isbn, :isbn13, :goodreads_book_id, :average_rating, :pages) != new_attrs
+            existing_reading.update!(new_attrs)
+            Rails.logger.info "Updated existing reading: #{existing_reading.book_metadata.title} (ID: #{existing_reading.id})"
             updated += 1
           else
-            # Aucune diff → on compte comme ignoré (ça permet de rassurer sur l'idempotence)
-            Rails.logger.info "No changes for existing book: #{rec.title}"
+            # Aucune diff → on compte comme ignoré
+            Rails.logger.info "No changes for existing reading: #{existing_reading.book_metadata.title}"
             skipped += 1
           end
         end
@@ -104,7 +120,7 @@ class GoodreadsCsvImporter
     extra_shelves = safe_s(row["Bookshelves"] || row["Shelves"])
     
     # Convert Goodreads shelf to internal status
-    status = Book.convert_goodreads_shelf(exclusive)
+    status = UserReading.convert_goodreads_shelf(exclusive)
     
     {
       goodreads_book_id: to_i_or_nil(row["Book Id"]),

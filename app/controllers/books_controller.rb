@@ -8,32 +8,44 @@ class BooksController < ApplicationController
     @status = params[:status]
 
     # Si un statut est présent → filtre, sinon affiche tout
-    @books = current_user.books
+    @books = current_user.user_readings.includes(:book_metadata)
     @books = @books.by_status(@status) if @status.present?
     
     # Get library summary
-    @library_summary = {
-      to_read: current_user.books.to_read.count,
-      reading: current_user.books.reading.count,
-      read: current_user.books.read.count,
-      imported: current_user.books.imported.count,
-      manual: current_user.books.manual.count,
-      total: current_user.books.count
-    }
+    @library_summary = UserReading.reading_list_summary(current_user)
   end
 
   def show
   end
 
   def new
-    @book = current_user.books.build
+    @book = current_user.user_readings.build
   end
 
   def edit
   end
 
   def create
-    @book = current_user.books.build(book_params)
+    # Créer ou trouver les métadonnées du livre
+    book_metadata = BookMetadata.find_or_create_by_identifier(
+      title: book_params[:title],
+      author: book_params[:author],
+      isbn: book_params[:isbn],
+      isbn13: book_params[:isbn13],
+      goodreads_book_id: book_params[:goodreads_book_id],
+      average_rating: book_params[:average_rating],
+      pages: book_params[:pages]
+    )
+    
+    @book = current_user.user_readings.build(
+      book_metadata: book_metadata,
+      rating: book_params[:rating],
+      status: book_params[:status],
+      shelves: book_params[:shelves],
+      date_added: book_params[:date_added],
+      date_read: book_params[:date_read],
+      exclusive_shelf: book_params[:exclusive_shelf]
+    )
 
     if @book.save
       redirect_to @book, notice: 'Book was successfully created.'
@@ -43,7 +55,23 @@ class BooksController < ApplicationController
   end
 
   def update
-    if @book.update(book_params)
+    # Mettre à jour les métadonnées du livre si nécessaire
+    if book_params[:title].present? || book_params[:author].present?
+      @book.book_metadata.update!(
+        title: book_params[:title] || @book.book_metadata.title,
+        author: book_params[:author] || @book.book_metadata.author,
+        isbn: book_params[:isbn] || @book.book_metadata.isbn,
+        isbn13: book_params[:isbn13] || @book.book_metadata.isbn13,
+        goodreads_book_id: book_params[:goodreads_book_id] || @book.book_metadata.goodreads_book_id,
+        average_rating: book_params[:average_rating] || @book.book_metadata.average_rating,
+        pages: book_params[:pages] || @book.book_metadata.pages
+      )
+    end
+    
+    # Mettre à jour les attributs de lecture
+    reading_params = book_params.except(:title, :author, :isbn, :isbn13, :goodreads_book_id, :average_rating, :pages)
+    
+    if @book.update(reading_params)
       redirect_to @book, notice: 'Book was successfully updated.'
     else
       render :edit, status: :unprocessable_entity
@@ -58,7 +86,7 @@ class BooksController < ApplicationController
   # Action : propose un livre "à lire" choisi au hasard
   def next_book
     # Sélectionne un livre à lire de manière aléatoire
-    @book = current_user.books.to_read.sample
+    @book = current_user.user_readings.to_read.includes(:book_metadata).sample
   end
 
   # Action : reçoit le feedback utilisateur (like / dislike)
@@ -71,7 +99,7 @@ class BooksController < ApplicationController
   private
 
   def set_book
-    @book = current_user.books.find(params[:id])
+    @book = current_user.user_readings.includes(:book_metadata).find(params[:id])
   end
 
   def book_params

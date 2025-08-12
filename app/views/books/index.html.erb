@@ -68,7 +68,7 @@
       <%= link_to "All Items", books_path, 
           class: "px-5 py-2.5 rounded-lg text-sm font-medium transition-all duration-200 #{@status ? 'text-gray-700 bg-gray-100 hover:bg-gray-200' : 'text-white bg-gradient-to-r from-indigo-600 to-purple-600 hover:from-indigo-700 hover:to-purple-700 shadow-sm'}" %>
       
-      <% Book.statuses.keys.each do |status| %>
+      <% UserReading.statuses.keys.each do |status| %>
         <%= link_to status.humanize, books_path(status: status),
             class: "px-5 py-2.5 rounded-lg text-sm font-medium transition-all duration-200 #{@status == status ? 'text-white bg-gradient-to-r from-indigo-600 to-purple-600 hover:from-indigo-700 hover:to-purple-700 shadow-sm' : 'text-gray-700 bg-gray-100 hover:bg-gray-200'}" %>
       <% end %>

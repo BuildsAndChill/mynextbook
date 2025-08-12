@@ -1,0 +1,4 @@
+Book Id,Title,Author,My Rating,Average Rating,Number of Pages,Date Added,Date Read,ISBN,ISBN13,Exclusive Shelf,Bookshelves
+12345,The Great Gatsby,F. Scott Fitzgerald,4,3.92,180,2023-01-15,2023-02-20,978-0743273565,9780743273565,read,read classics
+12346,1984,George Orwell,5,4.19,328,2023-03-10,,978-0451524935,9780451524935,to-read,dystopian fiction
+12347,Pride and Prejudice,Jane Austen,4,4.28,432,2023-04-05,2023-05-15,978-0141439518,9780141439518,read,classics romance

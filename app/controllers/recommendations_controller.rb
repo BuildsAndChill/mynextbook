@@ -84,7 +84,7 @@ class RecommendationsController < ApplicationController
       case feedback_type
       when 'save'
         # Save book to user's reading list
-        Book.save_from_recommendation(current_user, book_title, book_author)
+        UserReading.save_from_recommendation(current_user, book_title, book_author)
         flash[:notice] = "Book saved to your reading list!"
       when 'like'
         flash[:notice] = "Thanks! We'll recommend more like this."
@@ -126,18 +126,18 @@ class RecommendationsController < ApplicationController
       prompt += "TONE PREFERENCES: #{tone_chips.join(', ')}\n\n"
     end
     
-    # Add reading history if requested and user is signed in
-    if include_history && user_signed_in?
-      books = current_user.books.limit(15)
-      if books.any?
-        prompt += "READING HISTORY (last 15 books):\n"
-        books.each do |book|
-          rating = book.rating || 'unrated'
-          prompt += "- #{book.title} by #{book.author} (#{rating}/5 stars) - #{book.status}\n"
+          # Add reading history if requested and user is signed in
+      if include_history && user_signed_in?
+        books = current_user.user_readings.includes(:book_metadata).limit(15)
+        if books.any?
+          prompt += "READING HISTORY (last 15 books):\n"
+          books.each do |book|
+            rating = book.rating || 'unrated'
+            prompt += "- #{book.book_metadata.title} by #{book.book_metadata.author} (#{rating}/5 stars) - #{book.status}\n"
+          end
+          prompt += "\n"
         end
-        prompt += "\n"
       end
-    end
     
     # Add user feedback history for better personalization (only if signed in)
     if user_signed_in? && current_user.user_book_feedbacks.any?

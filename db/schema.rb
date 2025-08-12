@@ -10,29 +10,24 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[8.0].define(version: 2025_08_12_224446) do
+ActiveRecord::Schema[8.0].define(version: 2025_08_13_000000) do
   # These are extensions that must be enabled in order to support this database
   enable_extension "pg_catalog.plpgsql"
 
-  create_table "books", force: :cascade do |t|
-    t.string "title"
-    t.string "author"
-    t.integer "rating"
-    t.string "status"
-    t.datetime "created_at", null: false
-    t.datetime "updated_at", null: false
-    t.bigint "user_id", null: false
-    t.bigint "goodreads_book_id"
-    t.decimal "average_rating", precision: 4, scale: 2
-    t.text "shelves"
-    t.date "date_added"
-    t.date "date_read"
+  create_table "book_metadata", force: :cascade do |t|
+    t.string "title", null: false
+    t.string "author", null: false
     t.string "isbn"
     t.string "isbn13"
+    t.bigint "goodreads_book_id"
+    t.decimal "average_rating", precision: 4, scale: 2
     t.integer "pages"
-    t.string "exclusive_shelf"
-    t.index ["goodreads_book_id"], name: "index_books_on_goodreads_book_id", unique: true
-    t.index ["user_id"], name: "index_books_on_user_id"
+    t.datetime "created_at", null: false
+    t.datetime "updated_at", null: false
+    t.index ["goodreads_book_id"], name: "index_book_metadata_on_goodreads_book_id", unique: true, where: "(goodreads_book_id IS NOT NULL)"
+    t.index ["isbn"], name: "index_book_metadata_on_isbn", unique: true, where: "(isbn IS NOT NULL)"
+    t.index ["isbn13"], name: "index_book_metadata_on_isbn13", unique: true, where: "(isbn13 IS NOT NULL)"
+    t.index ["title", "author"], name: "index_book_metadata_on_title_and_author", unique: true, where: "((isbn IS NULL) AND (isbn13 IS NULL) AND (goodreads_book_id IS NULL))"
   end
 
   create_table "user_book_feedbacks", force: :cascade do |t|
@@ -44,6 +39,23 @@ ActiveRecord::Schema[8.0].define(version: 2025_08_12_224446) do
     t.datetime "created_at", null: false
     t.datetime "updated_at", null: false
     t.index ["user_id"], name: "index_user_book_feedbacks_on_user_id"
+  end
+
+  create_table "user_readings", force: :cascade do |t|
+    t.bigint "user_id", null: false
+    t.bigint "book_metadata_id", null: false
+    t.integer "rating"
+    t.string "status", default: "to_read", null: false
+    t.text "shelves"
+    t.date "date_added"
+    t.date "date_read"
+    t.string "exclusive_shelf"
+    t.datetime "created_at", null: false
+    t.datetime "updated_at", null: false
+    t.index ["book_metadata_id"], name: "index_user_readings_on_book_metadata_id"
+    t.index ["status"], name: "index_user_readings_on_status"
+    t.index ["user_id", "book_metadata_id"], name: "index_user_readings_on_user_id_and_book_metadata_id", unique: true
+    t.index ["user_id"], name: "index_user_readings_on_user_id"
   end
 
   create_table "user_refinements", force: :cascade do |t|
@@ -67,7 +79,8 @@ ActiveRecord::Schema[8.0].define(version: 2025_08_12_224446) do
     t.index ["reset_password_token"], name: "index_users_on_reset_password_token", unique: true
   end
 
-  add_foreign_key "books", "users"
   add_foreign_key "user_book_feedbacks", "users"
+  add_foreign_key "user_readings", "book_metadata", column: "book_metadata_id"
+  add_foreign_key "user_readings", "users"
   add_foreign_key "user_refinements", "users"
 end
