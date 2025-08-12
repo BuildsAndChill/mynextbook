@@ -1,101 +1,171 @@
-<div class="space-y-12">
+<div class="min-h-screen bg-gradient-to-br from-indigo-50 via-white to-purple-50">
   <!-- Hero Section -->
-  <div class="text-center">
-    <h1 class="text-4xl font-bold text-gray-900 sm:text-5xl md:text-6xl">
-      Welcome to <span class="text-indigo-600">My Next Book</span>
-    </h1>
-    <p class="mt-6 text-xl text-gray-600 max-w-3xl mx-auto">
-      Discover your next great read with AI-powered recommendations, track your reading journey, and build your personal library.
-    </p>
-    
-    <% unless user_signed_in? %>
-      <div class="mt-8 flex flex-col sm:flex-row gap-4 justify-center">
-        <%= link_to "Get Started", new_user_registration_path, class: "inline-flex items-center px-8 py-4 border border-transparent text-lg font-medium rounded-lg shadow-sm text-white bg-indigo-600 hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 transition-colors duration-200" %>
-        <%= link_to "Sign In", new_user_session_path, class: "inline-flex items-center px-8 py-4 border border-gray-300 text-lg font-medium rounded-lg shadow-sm text-gray-700 bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 transition-colors duration-200" %>
+  <div class="relative overflow-hidden">
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-24">
+      <div class="text-center">
+        <!-- Hero Icon -->
+        <div class="mx-auto h-24 w-24 mb-8 flex items-center justify-center rounded-full bg-gradient-to-r from-indigo-500 to-purple-600">
+          <svg class="h-12 w-12 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.747 0 3.332.477 4.5 1.253v13C19.832 18.477 18.246 18 16.5 18c-1.746 0-3.332.477-4.5 1.253"></path>
+          </svg>
+        </div>
+
+        <!-- Hero Headline -->
+        <h1 class="text-4xl md:text-6xl font-bold text-gray-900 mb-6">
+          What should you read next?
+        </h1>
+        
+        <!-- Hero Subtitle -->
+        <p class="text-xl md:text-2xl text-gray-600 mb-12 max-w-3xl mx-auto">
+          Tell us your mood, we'll find your next book in 30 seconds. 
+          <span class="font-semibold text-indigo-600">No account required.</span>
+        </p>
+
+        <!-- Primary CTA -->
+        <div class="flex flex-col sm:flex-row gap-4 justify-center items-center">
+          <%= link_to "Get My Next Book", new_recommendation_path, 
+              class: "inline-flex items-center px-8 py-4 text-lg font-semibold text-white bg-gradient-to-r from-indigo-600 to-purple-600 rounded-xl shadow-lg hover:from-indigo-700 hover:to-purple-700 transform hover:scale-105 transition-all duration-200" do %>
+            <svg class="w-6 h-6 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 7l5 5m0 0l-5 5m5-5H6"></path>
+            </svg>
+            Get My Next Book
+          <% end %>
+          
+          <% if user_signed_in? %>
+            <%= link_to "View My Library", books_path, 
+                class: "inline-flex items-center px-6 py-3 text-base font-medium text-indigo-600 bg-white border-2 border-indigo-200 rounded-lg hover:bg-indigo-50 transition-colors duration-200" %>
+          <% end %>
+        </div>
+
+        <!-- Trust Indicators -->
+        <div class="mt-12 flex flex-wrap justify-center items-center gap-8 text-sm text-gray-500">
+          <div class="flex items-center">
+            <svg class="w-5 h-5 mr-2 text-green-500" fill="currentColor" viewBox="0 0 20 20">
+              <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clip-rule="evenodd"></path>
+            </svg>
+            AI-powered recommendations
+          </div>
+          <div class="flex items-center">
+            <svg class="w-5 h-5 mr-2 text-green-500" fill="currentColor" viewBox="0 0 20 20">
+              <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clip-rule="evenodd"></path>
+            </svg>
+            No account required
+          </div>
+          <div class="flex items-center">
+            <svg class="w-5 h-5 mr-2 text-green-500" fill="currentColor" viewBox="0 0 20 20">
+              <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clip-rule="evenodd"></path>
+            </svg>
+            Personalized to your taste
+          </div>
+        </div>
       </div>
-    <% end %>
+    </div>
   </div>
 
-  <!-- Features Grid -->
-  <div class="grid gap-8 md:grid-cols-2 lg:grid-cols-3">
-    <!-- Library Management -->
-    <div class="bg-white border border-gray-200 rounded-xl p-6 shadow-sm hover:shadow-md transition-shadow duration-200">
-      <div class="w-10 h-10 bg-indigo-100 rounded-lg flex items-center justify-center mb-4">
-        <svg class="w-5 h-5 text-indigo-600" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.747 0 3.332.477 4.5 1.253v13C19.832 18.477 18.246 18 16.5 18c-1.746 0-3.332.477-4.5 1.253" />
-        </svg>
+  <!-- How It Works Section -->
+  <div class="py-24 bg-white">
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+      <div class="text-center mb-16">
+        <h2 class="text-3xl font-bold text-gray-900 mb-4">How it works</h2>
+        <p class="text-xl text-gray-600">Get personalized book recommendations in 3 simple steps</p>
       </div>
-      <h3 class="text-lg font-semibold text-gray-900 mb-2">Personal Library</h3>
-      <p class="text-gray-600 mb-4">Organize your books, track reading progress, and manage your collection with ease.</p>
-      <%= link_to "Manage Library", books_path, class: "text-indigo-600 hover:text-indigo-700 text-sm font-medium" %>
-    </div>
 
-    <!-- AI Recommendations -->
-    <div class="bg-white border border-gray-200 rounded-xl p-6 shadow-sm hover:shadow-md transition-shadow duration-200">
-      <div class="w-10 h-10 bg-green-100 rounded-lg flex items-center justify-center mb-4">
-        <svg class="w-5 h-5 text-green-600" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9.663 17h4.673M12 3v1m6.364 1.636l-.707.707M21 12h-1M4 12H3m3.343-5.657l-.707-.707m2.828 9.9a5 5 0 117.072 0l-.548.547A3.374 3.374 0 0014 18.469V19a2 2 0 11-4 0v-.531c0-.895-.356-1.754-.988-2.386l-.548-.547z" />
-        </svg>
-      </div>
-      <h3 class="text-lg font-semibold text-gray-900 mb-2">AI Recommendations</h3>
-      <p class="text-gray-600 mb-4">Get personalized book suggestions based on your preferences and reading history.</p>
-      <%= link_to "Get Recommendations", new_recommendation_path, class: "text-green-600 hover:text-green-700 text-sm font-medium" %>
-    </div>
+      <div class="grid md:grid-cols-3 gap-8">
+        <!-- Step 1 -->
+        <div class="text-center">
+          <div class="mx-auto h-16 w-16 mb-6 flex items-center justify-center rounded-full bg-indigo-100 text-indigo-600 font-bold text-2xl">1</div>
+          <h3 class="text-xl font-semibold text-gray-900 mb-3">Describe your mood</h3>
+          <p class="text-gray-600">Tell us what you're in the mood for, your preferred tone, or what you want to explore next.</p>
+        </div>
 
-    <!-- Reading History -->
-    <div class="bg-white border border-gray-200 rounded-xl p-6 shadow-sm hover:shadow-md transition-shadow duration-200">
-      <div class="w-10 h-10 bg-purple-100 rounded-lg flex items-center justify-center mb-4">
-        <svg class="w-5 h-5 text-purple-600" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z" />
-        </svg>
+        <!-- Step 2 -->
+        <div class="text-center">
+          <div class="mx-auto h-16 w-16 mb-6 flex items-center justify-center rounded-full bg-indigo-100 text-indigo-600 font-bold text-2xl">2</div>
+          <h3 class="text-xl font-semibold text-gray-900 mb-3">Get instant insights</h3>
+          <p class="text-gray-600">Our AI analyzes your preferences and gives you a personalized reading brief with 3 perfect book picks.</p>
+        </div>
+
+        <!-- Step 3 -->
+        <div class="text-center">
+          <div class="mx-auto h-16 w-16 mb-6 flex items-center justify-center rounded-full bg-indigo-100 text-indigo-600 font-bold text-2xl">3</div>
+          <h3 class="text-xl font-semibold text-gray-900 mb-3">Refine & discover</h3>
+          <p class="text-gray-600">Give feedback, ask for refinements, and discover even better matches to your taste.</p>
+        </div>
       </div>
-      <h3 class="text-lg font-semibold text-gray-900 mb-2">Reading History</h3>
-      <p class="text-gray-600 mb-4">Import your Goodreads history and track all the books you've read over time.</p>
-      <%= link_to "View History", readings_path, class: "text-purple-600 hover:text-purple-700 text-sm font-medium" %>
     </div>
   </div>
 
-  <!-- Quick Actions -->
+  <!-- Enhanced Recommendations Section -->
+  <div class="py-24 bg-gradient-to-r from-indigo-50 to-purple-50">
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+      <div class="text-center mb-16">
+        <h2 class="text-3xl font-bold text-gray-900 mb-4">Enhanced recommendations</h2>
+        <p class="text-xl text-gray-600">Share your reading data for even better, personalized suggestions</p>
+      </div>
+
+      <div class="grid md:grid-cols-2 gap-8">
+        <!-- Import Goodreads -->
+        <div class="bg-white rounded-2xl p-8 shadow-lg">
+          <div class="flex items-center mb-4">
+            <div class="h-12 w-12 bg-green-100 rounded-lg flex items-center justify-center mr-4">
+              <svg class="h-6 w-6 text-green-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 16a4 4 0 01-.88-7.903A5 5 0 1115.9 6L16 6a5 5 0 011 9.9M9 19l3 3m0 0l3-3m-3 3V10"></path>
+              </svg>
+            </div>
+            <div>
+              <h3 class="text-xl font-semibold text-gray-900">Import Goodreads</h3>
+              <p class="text-gray-600">Upload your reading history for personalized recommendations</p>
+            </div>
+          </div>
+          <%= link_to "Import Library", new_import_path, 
+              class: "inline-flex items-center px-4 py-2 text-sm font-medium text-green-600 bg-green-50 border border-green-200 rounded-lg hover:bg-green-100 transition-colors duration-200" %>
+        </div>
+
+        <!-- Manual Entry -->
+        <div class="bg-white rounded-2xl p-8 shadow-lg">
+          <div class="flex items-center mb-4">
+            <div class="h-12 w-12 bg-blue-100 rounded-lg flex items-center justify-center mr-4">
+              <svg class="h-6 w-6 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6v6m0 0v6m0-6h6m-6 0H6"></path>
+              </svg>
+            </div>
+            <div>
+              <h3 class="text-xl font-semibold text-gray-900">Add Books Manually</h3>
+              <p class="text-gray-600">Build your library by adding books you've read or want to read</p>
+            </div>
+          </div>
+          <%= link_to "Add Book", new_book_path, 
+              class: "inline-flex items-center px-4 py-2 text-sm font-medium text-blue-600 bg-blue-50 border border-blue-200 rounded-lg hover:bg-blue-100 transition-colors duration-200" %>
+        </div>
+      </div>
+
+      <!-- Future Features -->
+      <div class="mt-12 text-center">
+        <p class="text-gray-600 mb-4">Coming soon: Photo uploads of your reading list for instant library building</p>
+        <div class="inline-flex items-center px-4 py-2 bg-gray-100 rounded-full text-sm text-gray-600">
+          <svg class="w-4 h-4 mr-2" fill="currentColor" viewBox="0 0 20 20">
+            <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm1-12a1 1 0 10-2 0v4a1 1 0 00.293.707l2.828 2.829a1 1 0 101.415-1.415L11 9.586V6z" clip-rule="evenodd"></path>
+          </svg>
+          Photo uploads coming soon
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Quick Actions for Logged Users -->
   <% if user_signed_in? %>
-    <div class="bg-white border border-gray-200 rounded-xl p-8 shadow-sm">
-      <h2 class="text-2xl font-bold text-gray-900 mb-6 text-center">Quick Actions</h2>
-      <div class="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
-        <%= link_to "Add New Book", new_book_path, class: "flex items-center justify-center px-6 py-3 border border-transparent rounded-lg shadow-sm text-sm font-medium text-white bg-indigo-600 hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 transition-colors duration-200" %>
-        <%= link_to "Import from Goodreads", new_import_path, class: "flex items-center justify-center px-6 py-3 border border-gray-300 rounded-lg shadow-sm text-sm font-medium text-gray-700 bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 transition-colors duration-200" %>
-        <%= link_to "Get Next Book", next_book_books_path, class: "flex items-center justify-center px-6 py-3 border border-transparent rounded-lg shadow-sm text-sm font-medium text-white bg-green-600 hover:bg-green-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-green-500 transition-colors duration-200" %>
-        <%= link_to "AI Recommendations", new_recommendation_path, class: "flex items-center justify-center px-6 py-3 border border-transparent rounded-lg shadow-sm text-sm font-medium text-white bg-purple-600 hover:bg-purple-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-purple-500 transition-colors duration-200" %>
+    <div class="py-16 bg-white">
+      <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+        <h2 class="text-2xl font-bold text-gray-900 mb-8 text-center">Quick Actions</h2>
+        <div class="flex flex-wrap justify-center gap-4">
+          <%= link_to "View My Library", books_path, 
+              class: "inline-flex items-center px-6 py-3 text-base font-medium text-gray-700 bg-gray-100 rounded-lg hover:bg-gray-200 transition-colors duration-200" %>
+          <%= link_to "Reading History", readings_path, 
+              class: "inline-flex items-center px-6 py-3 text-base font-medium text-gray-700 bg-gray-100 rounded-lg hover:bg-gray-200 transition-colors duration-200" %>
+          <%= link_to "Account Settings", edit_user_registration_path, 
+              class: "inline-flex items-center px-6 py-3 text-base font-medium text-gray-700 bg-gray-100 rounded-lg hover:bg-gray-200 transition-colors duration-200" %>
+        </div>
       </div>
     </div>
   <% end %>
-
-  <!-- Stats Section -->
-  <div class="bg-gradient-to-r from-indigo-500 to-purple-600 rounded-xl p-8 text-white">
-    <h2 class="text-2xl font-bold mb-6 text-center">
-      <% if user_signed_in? %>
-        Your Reading Journey
-      <% else %>
-        Community Reading Stats
-      <% end %>
-    </h2>
-    <div class="grid gap-6 md:grid-cols-3 text-center">
-      <div>
-        <div class="text-3xl font-bold">
-          <% if user_signed_in? %>
-            <%= current_user.books.count %>
-          <% else %>
-            <%= Book.count %>
-          <% end %>
-        </div>
-        <div class="text-indigo-100">Books in Library</div>
-      </div>
-      <div>
-        <div class="text-3xl font-bold"><%= Reading.count %></div>
-        <div class="text-indigo-100">Books Read</div>
-      </div>
-      <div>
-        <div class="text-3xl font-bold"><%= User.count %></div>
-        <div class="text-indigo-100">Active Readers</div>
-      </div>
-    </div>
-  </div>
 </div>

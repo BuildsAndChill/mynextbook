@@ -93,34 +93,4 @@ class BookRecommender
     Rails.logger.info "Generated mock response for testing"
     mock_response
   end
-
-  # Legacy method for backward compatibility
-  def initialize(context:, include_readings: true, user: nil)
-    @context = context
-    @user = user
-    @include_readings = include_readings
-  end
-
-  def call
-    # 1️⃣ Récupération des lectures depuis la base (full import)
-    readings = @include_readings ? Reading.all : []
-
-    # 2️⃣ Construction du méga prompt
-    prompt = <<~PROMPT
-      Contexte utilisateur :
-      #{@context.presence || "(non fourni)"}
-
-      #{if @include_readings && readings.any?
-          "Livres déjà lus :\n" +
-          readings.map { |r| "#{r.title} - #{r.author}" }.join("\n")
-        else
-          "(Aucun historique de lecture inclus)"
-        end}
-
-      # 🎯 Tâche
-      En tenant compte du contexte#{' et des livres déjà lus' if @include_readings}, propose-moi de nouvelles lectures pertinentes.
-    PROMPT
-
-    call_with_prompt(prompt)
-  end
 end
