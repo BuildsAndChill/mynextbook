@@ -3,7 +3,11 @@ class BooksController < ApplicationController
 
   # GET /books or /books.json
   def index
-    @books = Book.all
+    # Récupère la valeur du paramètre 'status' dans l'URL (ex: ?status=read)
+    @status = params[:status]
+
+    # Si un status est fourni → on filtre, sinon on récupère tous les livres
+    @books = Book.by_status(@status) || Book.all
   end
 
   # GET /books/1 or /books/1.json
