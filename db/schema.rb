@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[8.0].define(version: 2025_08_12_190218) do
+ActiveRecord::Schema[8.0].define(version: 2025_08_12_212938) do
   # These are extensions that must be enabled in order to support this database
   enable_extension "pg_catalog.plpgsql"
 
@@ -40,7 +40,9 @@ ActiveRecord::Schema[8.0].define(version: 2025_08_12_190218) do
     t.datetime "created_at", null: false
     t.datetime "updated_at", null: false
     t.string "exclusive_shelf"
+    t.bigint "user_id", null: false
     t.index ["goodreads_book_id"], name: "index_readings_on_goodreads_book_id", unique: true
+    t.index ["user_id"], name: "index_readings_on_user_id"
   end
 
   create_table "users", force: :cascade do |t|
@@ -56,4 +58,5 @@ ActiveRecord::Schema[8.0].define(version: 2025_08_12_190218) do
   end
 
   add_foreign_key "books", "users"
+  add_foreign_key "readings", "users"
 end

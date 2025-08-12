@@ -1,39 +1,497 @@
-<div class="max-w-2xl mx-auto">
-  <div class="mb-8">
-    <h1 class="text-3xl font-bold text-gray-900">Find Your Next Book</h1>
-    <p class="mt-2 text-sm text-gray-600">Get personalized book recommendations based on your context and reading history</p>
+<div class="min-h-screen bg-gray-50">
+  <!-- Header -->
+  <div class="bg-white border-b border-gray-200">
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+      <div class="py-6">
+        <h1 class="text-3xl font-bold text-gray-900">Find Your Next Must-Read</h1>
+        <p class="mt-2 text-lg text-gray-600">Tell us your vibe. We'll find your next must-read.</p>
+      </div>
+    </div>
   </div>
 
-  <div class="bg-white shadow rounded-lg border border-gray-200 p-6">
-    <%= form_with url: recommendations_path, method: :post, local: true, class: "space-y-6", data: {turbo: false} do %>
-      <!-- Context text area -->
-      <div>
-        <%= label_tag :context, "Describe your current context", class: "block text-sm font-medium text-gray-700 mb-2" %>
-        <%= text_area_tag :context, nil, rows: 6, class: "mt-1 block w-full border-gray-300 rounded-md shadow-sm focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm", placeholder: "Example: I just finished Sapiens and want to explore the relationship between technology and society..." %>
-        <p class="mt-2 text-sm text-gray-500">
-          Tell us what you're looking for, what you've been reading, or what mood you're in.
-        </p>
+  <!-- Main Content -->
+  <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+    <div class="grid grid-cols-1 lg:grid-cols-3 gap-8">
+      
+      <!-- Left Column: Context Panel -->
+      <div class="lg:col-span-1">
+        <div class="bg-white rounded-xl shadow-sm border border-gray-200 p-6 sticky top-8">
+          <h2 class="text-lg font-semibold text-gray-900 mb-4">What are you in the mood for?</h2>
+          
+          <%= form_with url: recommendations_path, method: :post, local: true, class: "space-y-6" do %>
+            <!-- Context Textarea -->
+            <div>
+              <%= text_area_tag :context, params[:context], 
+                  rows: 4, 
+                  class: "block w-full border-gray-300 rounded-lg shadow-sm focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm resize-none",
+                  placeholder: "e.g. 'After Sapiens, I want tech & society, optimistic tone, 250–350 pages'" %>
+            </div>
+
+            <!-- Tone Chips -->
+            <div>
+              <label class="block text-sm font-medium text-gray-700 mb-3">Tone & Style</label>
+              <div class="flex flex-wrap gap-2">
+                <% ['Deep dive', 'Fast-paced', 'Optimistic', 'Technical', 'Narrative', 'Light', 'Academic', 'Creative'].each do |tone| %>
+                  <label class="inline-flex items-center">
+                    <%= check_box_tag 'tone_chips[]', tone, params[:tone_chips]&.include?(tone), 
+                        class: "sr-only" %>
+                    <span class="px-3 py-1.5 text-sm font-medium rounded-full border-2 cursor-pointer transition-all duration-200
+                               <%= params[:tone_chips]&.include?(tone) ? 'bg-indigo-100 border-indigo-300 text-indigo-700' : 'bg-gray-50 border-gray-200 text-gray-600 hover:border-gray-300' %>">
+                      <%= tone %>
+                    </span>
+                  </label>
+                <% end %>
+              </div>
+            </div>
+
+            <!-- Include History Toggle -->
+            <div class="flex items-center justify-between">
+              <div class="flex items-center">
+                <%= check_box_tag :include_history, '1', params[:include_history] != '0', 
+                    class: "h-4 w-4 text-indigo-600 focus:ring-indigo-500 border-gray-300 rounded" %>
+                <label for="include_history" class="ml-2 block text-sm text-gray-900">Use my reading history</label>
+              </div>
+              <div class="text-xs text-gray-500">
+                <%= current_user.readings.count %> books
+              </div>
+            </div>
+
+            <!-- Submit Button -->
+            <button type="submit" class="w-full bg-indigo-600 text-white py-3 px-4 rounded-lg font-medium hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 transition-colors duration-200">
+              Get Instant Brief
+            </button>
+          <% end %>
+
+          <!-- Quick Tips -->
+          <div class="mt-6 pt-6 border-t border-gray-200">
+            <h3 class="text-sm font-medium text-gray-900 mb-2">💡 Quick Tips</h3>
+            <ul class="text-xs text-gray-600 space-y-1">
+              <li>• Be specific about mood, length, or themes</li>
+              <li>• Mention recent books you loved or hated</li>
+              <li>• Include any deal-breakers (e.g., "no dystopia")</li>
+            </ul>
+          </div>
+        </div>
       </div>
 
-      <!-- Include Goodreads checkbox -->
-      <div class="flex items-center">
-        <%= check_box_tag :include_goodreads, '1', true,
-                id: "include_goodreads",
-                class: "h-4 w-4 text-indigo-600 focus:ring-indigo-500 border-gray-300 rounded" %>
-        <%= label_tag :include_goodreads, "Include my Goodreads reading history", class: "ml-2 block text-sm text-gray-900" %>
-      </div>
-      <p class="text-sm text-gray-500">
-        This will help provide more personalized recommendations based on your reading preferences.
-      </p>
+      <!-- Middle Column: Instant Brief -->
+      <div class="lg:col-span-1">
+        <div class="bg-white rounded-xl shadow-sm border border-gray-200 p-6">
+          <h2 class="text-lg font-semibold text-gray-900 mb-4">Instant Brief</h2>
+          
+          <% if @ai_response.present? && @parsed_response.present? %>
+            <!-- Structured Brief -->
+            <div class="space-y-6">
+              <!-- What you tend to like -->
+              <% if @parsed_response[:brief][:likes]&.any? %>
+                <div>
+                  <h3 class="text-sm font-medium text-gray-900 mb-2 flex items-center">
+                    <span class="w-2 h-2 bg-green-500 rounded-full mr-2"></span>
+                    What you tend to like
+                  </h3>
+                  <ul class="space-y-1">
+                    <% @parsed_response[:brief][:likes].each do |point| %>
+                      <li class="text-sm text-gray-700 flex items-start">
+                        <span class="text-green-500 mr-2">•</span>
+                        <%= point %>
+                      </li>
+                    <% end %>
+                  </ul>
+                </div>
+              <% end %>
 
-      <!-- Submit button -->
-      <div class="flex justify-end pt-4 border-t border-gray-200">
-        <%= submit_tag "Get Recommendations", class: "inline-flex items-center px-6 py-3 border border-transparent text-base font-medium rounded-md shadow-sm text-white bg-indigo-600 hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 transition-colors duration-200" %>
+              <!-- What to explore next -->
+              <% if @parsed_response[:brief][:explore]&.any? %>
+                <div>
+                  <h3 class="text-sm font-medium text-gray-900 mb-2 flex items-center">
+                    <span class="w-2 h-2 bg-blue-500 rounded-full mr-2"></span>
+                    What to explore next
+                  </h3>
+                  <ul class="space-y-1">
+                    <% @parsed_response[:brief][:explore].each do |point| %>
+                      <li class="text-sm text-gray-700 flex items-start">
+                        <span class="text-blue-500 mr-2">•</span>
+                        <%= point %>
+                      </li>
+                    <% end %>
+                  </ul>
+                </div>
+              <% end %>
+
+              <!-- Pitfalls to avoid -->
+              <% if @parsed_response[:brief][:avoid]&.any? %>
+                <div>
+                  <h3 class="text-sm font-medium text-gray-900 mb-2 flex items-center">
+                    <span class="w-2 h-2 bg-red-500 rounded-full mr-2"></span>
+                    Pitfalls to avoid
+                  </h3>
+                  <ul class="space-y-1">
+                    <% @parsed_response[:brief][:avoid].each do |point| %>
+                      <li class="text-sm text-gray-700 flex items-start">
+                        <span class="text-red-500 mr-2">•</span>
+                        <%= point %>
+                      </li>
+                    <% end %>
+                  </ul>
+                </div>
+              <% end %>
+            </div>
+          <% elsif @ai_response.present? %>
+            <!-- Raw AI Response -->
+            <div class="prose prose-sm max-w-none">
+              <div class="whitespace-pre-wrap text-gray-700 leading-relaxed"><%= @ai_response %></div>
+            </div>
+          <% elsif @ai_error.present? %>
+            <!-- Error State -->
+            <div class="rounded-lg bg-red-50 p-4 border border-red-200">
+              <div class="flex">
+                <svg class="h-5 w-5 text-red-400" viewBox="0 0 20 20" fill="currentColor">
+                  <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zM8.707 7.293a1 1 0 00-1.414 1.414L8.586 10l-1.293 1.293a1 1 0 101.414 1.414L10 11.414l1.293 1.293a1 1 0 001.414-1.414L11.414 10l1.293-1.293a1 1 0 00-1.414-1.414L10 8.586 8.707 7.293z" clip-rule="evenodd" />
+                </svg>
+                <div class="ml-3">
+                  <h3 class="text-sm font-medium text-red-800">AI Service Error</h3>
+                  <p class="mt-1 text-sm text-red-700"><%= @ai_error %></p>
+                </div>
+              </div>
+            </div>
+          <% elsif params[:commit] == "Get Instant Brief" %>
+            <!-- Loading State -->
+            <div class="space-y-6">
+              <!-- Loading skeleton for brief -->
+              <div class="animate-pulse">
+                <div class="h-4 bg-gray-200 rounded w-32 mb-3"></div>
+                <div class="space-y-2">
+                  <div class="h-3 bg-gray-200 rounded w-full"></div>
+                  <div class="h-3 bg-gray-200 rounded w-5/6"></div>
+                  <div class="h-3 bg-gray-200 rounded w-4/6"></div>
+                </div>
+              </div>
+              
+              <div class="animate-pulse">
+                <div class="h-4 bg-gray-200 rounded w-28 mb-3"></div>
+                <div class="space-y-2">
+                  <div class="h-3 bg-gray-200 rounded w-full"></div>
+                  <div class="h-3 bg-gray-200 rounded w-4/5"></div>
+                  <div class="h-3 bg-gray-200 rounded w-3/5"></div>
+                </div>
+              </div>
+              
+              <div class="animate-pulse">
+                <div class="h-4 bg-gray-200 rounded w-24 mb-3"></div>
+                <div class="space-y-2">
+                  <div class="h-3 bg-gray-200 rounded w-full"></div>
+                  <div class="h-3 bg-gray-200 rounded w-3/4"></div>
+                </div>
+              </div>
+            </div>
+          <% else %>
+            <!-- Empty State -->
+            <div class="text-center py-12">
+              <svg class="mx-auto h-12 w-12 text-gray-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9.663 17h4.673M12 3v1m6.364 1.636l-.707.707M21 12h-1M4 12H3m3.343-5.657l-.707-.707m2.828 9.9a5 5 0 117.072 0l-.548.547A3.374 3.374 0 0014 18.469V19a2 2 0 11-4 0v-.531c0-.895-.356-1.754-.988-2.386l-.548-.547z" />
+              </svg>
+              <h3 class="mt-2 text-sm font-medium text-gray-900">Ready for insights</h3>
+              <p class="mt-1 text-sm text-gray-500">Fill out the context and get your personalized reading brief.</p>
+            </div>
+          <% end %>
+        </div>
+      </div>
+
+      <!-- Right Column: Top Picks -->
+      <div class="lg:col-span-1">
+        <div class="bg-white rounded-xl shadow-sm border border-gray-200 p-6">
+          <h2 class="text-lg font-semibold text-gray-900 mb-4">Top Picks</h2>
+          
+          <% if @parsed_response&.dig(:picks)&.any? %>
+            <!-- Structured Picks -->
+            <div class="space-y-4">
+              <% @parsed_response[:picks].each do |pick| %>
+                <div class="border border-gray-200 rounded-lg p-4 hover:border-gray-300 transition-all duration-200 hover:shadow-md book-pick">
+                  <div class="flex gap-4">
+                    <!-- Book Cover Placeholder -->
+                    <div class="flex-shrink-0">
+                      <div class="w-16 h-20 bg-gradient-to-br from-indigo-100 to-purple-100 rounded-lg border border-gray-200 flex items-center justify-center">
+                        <div class="text-center">
+                          <div class="text-xs font-bold text-indigo-600"><%= pick[:title].split(' ').first(2).join(' ') %></div>
+                          <div class="text-xs text-indigo-500"><%= pick[:author].split(' ').first %></div>
+                        </div>
+                      </div>
+                    </div>
+                    
+                    <!-- Book Details -->
+                    <div class="flex-1 min-w-0">
+                      <div class="flex items-start justify-between mb-2">
+                        <h3 class="font-medium text-gray-900 truncate"><%= pick[:title] %></h3>
+                        <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ml-2
+                                     <%= pick[:confidence] == 'High' ? 'bg-green-100 text-green-800' : 
+                                         pick[:confidence] == 'Medium' ? 'bg-yellow-100 text-yellow-800' : 
+                                         'bg-gray-100 text-gray-800' %>">
+                          <%= pick[:confidence] %>
+                        </span>
+                      </div>
+                      
+                      <p class="text-sm text-gray-600 mb-2"><%= pick[:author] %></p>
+                      <p class="text-sm text-gray-700 mb-3 leading-relaxed"><%= pick[:pitch] %></p>
+                      
+                      <!-- Why this pick -->
+                      <div class="bg-gray-50 rounded p-3 mb-3 border-l-4 border-indigo-200">
+                        <p class="text-xs text-gray-600">
+                          <span class="font-medium text-indigo-700">Why this pick:</span> 
+                          <%= pick[:why] %>
+                        </p>
+                      </div>
+                      
+                      <!-- Action Buttons -->
+                      <div class="flex items-center gap-2">
+                        <button class="inline-flex items-center px-3 py-1.5 text-xs font-medium text-gray-600 hover:text-green-600 hover:bg-green-50 rounded-md transition-all duration-200" data-feedback="like">
+                          <span class="mr-1">👍</span> Like
+                        </button>
+                        <button class="inline-flex items-center px-3 py-1.5 text-xs font-medium text-gray-600 hover:text-red-600 hover:bg-red-50 rounded-md transition-all duration-200" data-feedback="dislike">
+                          <span class="mr-1">👎</span> Dislike
+                        </button>
+                        <button class="inline-flex items-center px-3 py-1.5 text-xs font-medium text-indigo-600 hover:text-indigo-700 hover:bg-indigo-50 rounded-md transition-all duration-200" data-feedback="save">
+                          <svg class="w-3 h-3 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 5a2 2 0 012-2h10a2 2 0 012 2v16l-7-3.5L5 21V5z"></path>
+                          </svg>
+                          Save
+                        </button>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              <% end %>
+            </div>
+          <% elsif @ai_response.present? %>
+            <!-- Raw AI Response for Picks -->
+            <div class="prose prose-sm max-w-none">
+              <div class="whitespace-pre-wrap text-gray-700 leading-relaxed"><%= @ai_response %></div>
+            </div>
+          <% elsif params[:commit] == "Get Instant Brief" %>
+            <!-- Loading State for Picks -->
+            <div class="space-y-4">
+              <% 3.times do %>
+                <div class="border border-gray-200 rounded-lg p-4 animate-pulse">
+                  <div class="flex items-start justify-between mb-2">
+                    <div class="h-4 bg-gray-200 rounded w-32"></div>
+                    <div class="h-5 bg-gray-200 rounded-full w-16"></div>
+                  </div>
+                  
+                  <div class="h-3 bg-gray-200 rounded w-24 mb-2"></div>
+                  <div class="h-3 bg-gray-200 rounded w-full mb-3"></div>
+                  
+                  <!-- Why this pick skeleton -->
+                  <div class="bg-gray-50 rounded p-2 mb-3">
+                    <div class="h-3 bg-gray-200 rounded w-full"></div>
+                  </div>
+                  
+                  <!-- Action Buttons skeleton -->
+                  <div class="flex items-center gap-2">
+                    <div class="h-6 w-8 bg-gray-200 rounded"></div>
+                    <div class="h-6 w-8 bg-gray-200 rounded"></div>
+                    <div class="h-6 w-12 bg-gray-200 rounded"></div>
+                  </div>
+                </div>
+              <% end %>
+            </div>
+          <% else %>
+            <!-- Empty State -->
+            <div class="text-center py-12">
+              <svg class="mx-auto h-12 w-12 text-gray-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.747 0 3.332.477 4.5 1.253v13C19.832 18.477 18.246 18 16.5 18c-1.746 0-3.332.477-4.5 1.253" />
+              </svg>
+              <h3 class="mt-2 text-sm font-medium text-gray-900">Your picks are coming</h3>
+              <p class="mt-1 text-sm text-gray-500">Get your instant brief first, then see your personalized book recommendations.</p>
+            </div>
+          <% end %>
+        </div>
+      </div>
+    </div>
+
+    <!-- Bottom Section: Refinement Panel (Hidden by default) -->
+    <% if @ai_response.present? %>
+      <div class="mt-8 bg-white rounded-xl shadow-sm border border-gray-200 p-6">
+        <h3 class="text-lg font-semibold text-gray-900 mb-4 flex items-center">
+          <svg class="w-5 h-5 text-indigo-600 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6V4m0 2a2 2 0 100 4m0-4a2 2 0 110 4m-6 8a2 2 0 100-4m0 4a2 2 0 100 4m0-4v2m0-6V4m6 6v10m6-2a2 2 0 100-4m0 4a2 2 0 100 4m0-4v2m0-6V4"></path>
+          </svg>
+          Refine Your Results
+        </h3>
+        
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+          <!-- Quick Refinement Chips -->
+          <div>
+            <label class="block text-sm font-medium text-gray-700 mb-3">Quick Refinements</label>
+            <div class="flex flex-wrap gap-2">
+              <% [
+                { text: 'More like this', icon: '🔄' },
+                { text: 'Less heavy', icon: '🪶' },
+                { text: 'Newer than 2020', icon: '📅' },
+                { text: 'Shorter reads', icon: '📖' },
+                { text: 'Female authors', icon: '👩‍💼' },
+                { text: 'Different genre', icon: '🎭' },
+                { text: 'More optimistic', icon: '😊' },
+                { text: 'Under 300 pages', icon: '📏' }
+              ].each do |refinement| %>
+                <button class="px-3 py-2 text-sm font-medium rounded-lg bg-gray-100 text-gray-700 hover:bg-indigo-100 hover:text-indigo-700 hover:border-indigo-200 border border-transparent transition-all duration-200 flex items-center gap-2 refinement-chip">
+                  <span><%= refinement[:icon] %></span>
+                  <%= refinement[:text] %>
+                </button>
+              <% end %>
+            </div>
+            <p class="mt-2 text-xs text-gray-500">Click any chip to refine your recommendations</p>
+          </div>
+          
+          <!-- Custom Refinement -->
+          <div>
+            <label class="block text-sm font-medium text-gray-700 mb-3">Custom Refinement</label>
+            <div class="space-y-3">
+              <input type="text" 
+                     placeholder="e.g., 'more optimistic, under 300 pages, female authors'" 
+                     class="w-full border-gray-300 rounded-lg shadow-sm focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm px-3 py-2"
+                     id="custom-refinement">
+              <div class="flex gap-2">
+                <button class="px-4 py-2 bg-indigo-600 text-white rounded-lg text-sm font-medium hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 transition-colors duration-200 flex-1" id="refine-button">
+                  <svg class="w-4 h-4 inline mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"></path>
+                  </svg>
+                  Refine
+                </button>
+                <button class="px-4 py-2 bg-gray-100 text-gray-700 rounded-lg text-sm font-medium hover:bg-gray-200 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-gray-500 transition-colors duration-200">
+                  <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"></path>
+                  </svg>
+                </button>
+              </div>
+            </div>
+            <p class="mt-2 text-xs text-gray-500">Be specific about what you want to change</p>
+          </div>
+        </div>
+        
+        <!-- Recent Refinements -->
+        <div class="mt-6 pt-6 border-t border-gray-200">
+          <h4 class="text-sm font-medium text-gray-700 mb-3">Recent Refinements</h4>
+          <div class="flex flex-wrap gap-2">
+            <span class="inline-flex items-center px-2.5 py-1 rounded-full text-xs font-medium bg-green-100 text-green-800">
+              <svg class="w-3 h-3 mr-1" fill="currentColor" viewBox="0 0 20 20">
+                <path fill-rule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clip-rule="evenodd"></path>
+              </svg>
+              More optimistic tone
+            </span>
+            <span class="inline-flex items-center px-2.5 py-1 rounded-full text-xs font-medium bg-blue-100 text-blue-800">
+              <svg class="w-3 h-3 mr-1" fill="currentColor" viewBox="0 0 20 20">
+                <path fill-rule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clip-rule="evenodd"></path>
+              </svg>
+              Under 300 pages
+            </span>
+          </div>
+        </div>
       </div>
     <% end %>
   </div>
-
-  <div class="mt-6 text-center">
-    <%= link_to "← Back to Library", books_path, class: "text-indigo-600 hover:text-indigo-900 text-sm font-medium" %>
-  </div>
 </div>
+
+<script>
+// Handle tone chip selection
+document.addEventListener('DOMContentLoaded', function() {
+  const toneChips = document.querySelectorAll('input[name="tone_chips[]"]');
+  
+  toneChips.forEach(chip => {
+    chip.addEventListener('change', function() {
+      const span = this.nextElementSibling;
+      if (this.checked) {
+        span.classList.remove('bg-gray-50', 'border-gray-200', 'text-gray-600');
+        span.classList.add('bg-indigo-100', 'border-indigo-300', 'text-indigo-700');
+      } else {
+        span.classList.remove('bg-indigo-100', 'border-indigo-300', 'text-indigo-700');
+        span.classList.add('bg-gray-50', 'border-gray-200', 'text-gray-600');
+      }
+    });
+  });
+
+  // Handle refinement chip clicks
+  const refinementChips = document.querySelectorAll('.refinement-chip');
+  refinementChips.forEach(chip => {
+    chip.addEventListener('click', function() {
+      const refinementText = this.textContent.trim();
+      const customInput = document.getElementById('custom-refinement');
+      
+      // Add to custom input
+      if (customInput.value) {
+        customInput.value += ', ' + refinementText;
+      } else {
+        customInput.value = refinementText;
+      }
+      
+      // Visual feedback
+      this.classList.add('ring-2', 'ring-indigo-500');
+      setTimeout(() => {
+        this.classList.remove('ring-2', 'ring-indigo-500');
+      }, 1000);
+    });
+  });
+
+  // Handle feedback button clicks
+  const feedbackButtons = document.querySelectorAll('[data-feedback]');
+  feedbackButtons.forEach(button => {
+    button.addEventListener('click', function() {
+      const feedbackType = this.dataset.feedback;
+      const bookTitle = this.closest('.book-pick').querySelector('h3').textContent;
+      
+      // Visual feedback
+      this.classList.add('scale-110');
+      setTimeout(() => {
+        this.classList.remove('scale-110');
+      }, 200);
+      
+      // TODO: Send feedback to server
+      console.log(`Feedback: ${feedbackType} for "${bookTitle}"`);
+    });
+  });
+
+  // Handle custom refinement submission
+  const refineButton = document.querySelector('#refine-button');
+  if (refineButton) {
+    refineButton.addEventListener('click', function() {
+      const customInput = document.getElementById('custom-refinement');
+      const refinement = customInput.value.trim();
+      
+      if (refinement) {
+        // TODO: Send refinement to server
+        console.log('Custom refinement:', refinement);
+        
+        // Show success message
+        showToast('Refinement submitted! Getting new recommendations...', 'success');
+        
+        // Clear input
+        customInput.value = '';
+      }
+    });
+  }
+});
+
+// Toast notification system
+function showToast(message, type = 'info') {
+  const toast = document.createElement('div');
+  toast.className = `fixed top-4 right-4 z-50 px-6 py-3 rounded-lg shadow-lg text-white transform transition-all duration-300 translate-x-full ${
+    type === 'success' ? 'bg-green-500' : 
+    type === 'error' ? 'bg-red-500' : 
+    'bg-indigo-500'
+  }`;
+  toast.textContent = message;
+  
+  document.body.appendChild(toast);
+  
+  // Animate in
+  setTimeout(() => {
+    toast.classList.remove('translate-x-full');
+  }, 100);
+  
+  // Animate out and remove
+  setTimeout(() => {
+    toast.classList.add('translate-x-full');
+    setTimeout(() => {
+      document.body.removeChild(toast);
+    }, 300);
+  }, 3000);
+}
+</script>
