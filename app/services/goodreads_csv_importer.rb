@@ -27,6 +27,8 @@ class GoodreadsCsvImporter
     skipped = 0
     errors  = []
 
+    Rails.logger.info "Starting CSV import for user: #{@user&.id}"
+
     # Goodreads exporte un CSV avec headers. En général UTF-8 (parfois avec BOM).
     csv = CSV.new(@io, headers: true, return_headers: false)
 
@@ -34,9 +36,12 @@ class GoodreadsCsvImporter
       begin
         # 1) Transformer la ligne CSV en hash d'attributs pour Book
         attrs = map_row(row)
+        
+        Rails.logger.info "Processing row #{i + 2}: #{attrs[:title]} by #{attrs[:author]}"
 
         # 2) Filtrage minimal : si pas d'ID ou pas de titre → on ignore
         if attrs[:goodreads_book_id].nil? || attrs[:title].blank?
+          Rails.logger.info "Skipping row #{i + 2}: missing goodreads_book_id or title"
           skipped += 1
           next
         end
@@ -47,17 +52,19 @@ class GoodreadsCsvImporter
         if rec.new_record?
           # Nouveau : assigner tous les attributs puis save!
           rec.assign_attributes(attrs)
-          rec.user = @user if @user
           rec.save!
+          Rails.logger.info "Created new book: #{rec.title} (ID: #{rec.id})"
           created += 1
         else
           # Existant : ne sauvegarder que s'il y a des changements
           rec.assign_attributes(attrs)
           if rec.changed?
             rec.save!
+            Rails.logger.info "Updated existing book: #{rec.title} (ID: #{rec.id})"
             updated += 1
           else
             # Aucune diff → on compte comme ignoré (ça permet de rassurer sur l'idempotence)
+            Rails.logger.info "No changes for existing book: #{rec.title}"
             skipped += 1
           end
         end
@@ -65,10 +72,13 @@ class GoodreadsCsvImporter
       rescue => e
         # On stocke max d'info utile pour debug (numéro de ligne visible par l'utilisateur)
         # i + 2 = on ajoute 2 car i commence à 0 et la ligne 1 = headers
-        errors << "Ligne #{i + 2}: #{e.message}"
+        error_msg = "Ligne #{i + 2}: #{e.message}"
+        Rails.logger.error error_msg
+        errors << error_msg
       end
     end
 
+    Rails.logger.info "CSV import completed: #{created} created, #{updated} updated, #{skipped} skipped, #{errors.length} errors"
     Result.new(created:, updated:, skipped:, errors:)
   end
 
@@ -109,7 +119,8 @@ class GoodreadsCsvImporter
       isbn:              safe_s(row["ISBN"]),
       isbn13:            safe_s(row["ISBN13"]),
       exclusive_shelf:   exclusive,
-      shelves:           [exclusive, extra_shelves.presence].compact.join(", ")
+      shelves:           [exclusive, extra_shelves.presence].compact.join(", "),
+      user_id:           @user&.id
     }
   end
 
