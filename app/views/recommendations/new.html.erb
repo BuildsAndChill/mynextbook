@@ -9,7 +9,12 @@
       Exemple : "Je viens de finir Sapiens, je veux creuser les liens entre technologie et société..."
     </p>
   </div>
-
+    <div class="flex items-center gap-2">
+    <%= check_box_tag :include_goodreads, '1', true,
+            id: "include_goodreads",
+            class: "h-4 w-4 text-green-600 border-gray-300 rounded" %>
+    <%= label_tag :include_goodreads, "Inclure mon historique Goodreads", class: "text-sm" %>
+    </div>
   <!-- Bouton de soumission -->
   <%= submit_tag "Construire le prompt", class: "bg-green-500 text-white px-4 py-2 rounded" %>
 <% end %>
