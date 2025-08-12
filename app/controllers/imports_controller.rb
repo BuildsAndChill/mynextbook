@@ -9,7 +9,7 @@ class ImportsController < ApplicationController
   def create
     if params[:file].present?
       begin
-        importer = GoodreadsCsvImporter.new(params[:file].path)
+        importer = GoodreadsCsvImporter.new(params[:file].path, current_user)
         result = importer.import
         
         if result[:success]

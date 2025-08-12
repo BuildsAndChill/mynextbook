@@ -15,9 +15,10 @@ class GoodreadsCsvImporter
   # Struct légère pour un retour propre
   Result = Struct.new(:created, :updated, :skipped, :errors, keyword_init: true)
 
-  def initialize(io)
+  def initialize(io, user = nil)
     # io = un IO-like (ex: file.tempfile) ; on ne lit pas tout en mémoire
     @io = io
+    @user = user
   end
 
   def call
@@ -46,6 +47,7 @@ class GoodreadsCsvImporter
         if rec.new_record?
           # Nouveau : assigner tous les attributs puis save!
           rec.assign_attributes(attrs)
+          rec.user = @user if @user
           rec.save!
           created += 1
         else

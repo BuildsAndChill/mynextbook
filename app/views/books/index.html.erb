@@ -1,59 +1,93 @@
-<div class="space-y-6">
+<div class="space-y-8">
+  <!-- Header Section -->
   <div class="sm:flex sm:items-center sm:justify-between">
     <div>
-      <h1 class="text-3xl font-bold text-gray-900">My Library</h1>
-      <p class="mt-2 text-sm text-gray-700">Your complete reading collection - books, imported history, and reading status</p>
+      <h1 class="text-4xl font-bold text-gray-900">My Library</h1>
+      <p class="mt-3 text-lg text-gray-600">Your complete reading collection - books, imported history, and reading status</p>
     </div>
-    <div class="mt-4 sm:mt-0 space-x-3">
-      <%= link_to "Add New Book", new_book_path, class: "inline-flex items-center px-4 py-2 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-indigo-600 hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500" %>
-      <%= link_to "Import Goodreads", new_import_path, class: "inline-flex items-center px-4 py-2 border border-gray-300 rounded-md shadow-sm text-sm font-medium text-gray-700 bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500" %>
-    </div>
-  </div>
-
-  <!-- Library Summary -->
-  <div class="grid grid-cols-2 md:grid-cols-5 gap-4">
-    <div class="bg-white p-4 rounded-lg border border-gray-200 text-center">
-      <div class="text-2xl font-bold text-indigo-600"><%= @library_summary[:total] %></div>
-      <div class="text-sm text-gray-600">Total Items</div>
-    </div>
-    <div class="bg-white p-4 rounded-lg border border-gray-200 text-center">
-      <div class="text-2xl font-bold text-blue-600"><%= @library_summary[:to_read] %></div>
-      <div class="text-sm text-gray-600">To Read</div>
-    </div>
-    <div class="bg-white p-4 rounded-lg border border-gray-200 text-center">
-      <div class="text-2xl font-bold text-yellow-600"><%= @library_summary[:reading] %></div>
-      <div class="text-sm text-gray-600">Reading</div>
-    </div>
-    <div class="bg-white p-4 rounded-lg border border-gray-200 text-center">
-      <div class="text-2xl font-bold text-green-600"><%= @library_summary[:read] %></div>
-      <div class="text-sm text-gray-600">Read</div>
-    </div>
-    <div class="bg-white p-4 rounded-lg border border-gray-200 text-center">
-      <div class="text-2xl font-bold text-purple-600"><%= @library_summary[:imported] %></div>
-      <div class="text-sm text-gray-600">Imported</div>
+    <div class="mt-6 sm:mt-0 flex flex-col sm:flex-row gap-3">
+      <%= link_to "Add New Book", new_book_path, 
+          class: "inline-flex items-center px-6 py-3 border border-transparent rounded-lg shadow-sm text-sm font-medium text-white bg-gradient-to-r from-indigo-600 to-purple-600 hover:from-indigo-700 hover:to-purple-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 transition-all duration-200" %>
+      <%= link_to "Import Goodreads", new_import_path, 
+          class: "inline-flex items-center px-6 py-3 border border-gray-300 rounded-lg shadow-sm text-sm font-medium text-gray-700 bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 transition-all duration-200" %>
     </div>
   </div>
 
-  <!-- Filter menu -->
-  <div class="bg-white p-4 rounded-lg border border-gray-200">
-    <div class="flex flex-wrap gap-2">
-      <%= link_to "All Items", books_path, class: "px-4 py-2 rounded-md text-sm font-medium #{@status ? 'text-gray-700 bg-gray-100 hover:bg-gray-200' : 'text-white bg-indigo-600 hover:bg-indigo-700'}" %>
+  <!-- Enhanced Library Summary - Sleek Design -->
+  <div class="bg-gradient-to-r from-gray-50 to-white rounded-2xl p-8 border border-gray-100">
+    <h2 class="text-xl font-semibold text-gray-900 mb-6">Library Overview</h2>
+    <div class="grid grid-cols-2 lg:grid-cols-6 gap-6">
+      <!-- Total Items -->
+      <div class="text-center">
+        <div class="text-3xl font-bold text-gray-900 mb-2"><%= @library_summary[:total] %></div>
+        <div class="text-sm font-medium text-gray-600">Total Items</div>
+        <div class="mt-1 w-8 h-1 bg-gradient-to-r from-indigo-500 to-purple-500 rounded-full mx-auto"></div>
+      </div>
+      
+      <!-- To Read -->
+      <div class="text-center">
+        <div class="text-3xl font-bold text-blue-600 mb-2"><%= @library_summary[:to_read] %></div>
+        <div class="text-sm font-medium text-gray-600">To Read</div>
+        <div class="mt-1 w-8 h-1 bg-blue-500 rounded-full mx-auto"></div>
+      </div>
+      
+      <!-- Currently Reading -->
+      <div class="text-center">
+        <div class="text-3xl font-bold text-yellow-600 mb-2"><%= @library_summary[:reading] %></div>
+        <div class="text-sm font-medium text-gray-600">Reading</div>
+        <div class="mt-1 w-8 h-1 bg-yellow-500 rounded-full mx-auto"></div>
+      </div>
+      
+      <!-- Completed -->
+      <div class="text-center">
+        <div class="text-3xl font-bold text-green-600 mb-2"><%= @library_summary[:read] %></div>
+        <div class="text-sm font-medium text-gray-600">Completed</div>
+        <div class="mt-1 w-8 h-1 bg-green-500 rounded-full mx-auto"></div>
+      </div>
+      
+      <!-- Imported -->
+      <div class="text-center">
+        <div class="text-3xl font-bold text-purple-600 mb-2"><%= @library_summary[:imported] %></div>
+        <div class="text-sm font-medium text-gray-600">Imported</div>
+        <div class="mt-1 w-8 h-1 bg-purple-500 rounded-full mx-auto"></div>
+      </div>
+      
+      <!-- Manual -->
+      <div class="text-center">
+        <div class="text-3xl font-bold text-orange-600 mb-2"><%= @library_summary[:manual] %></div>
+        <div class="text-sm font-medium text-gray-600">Manual</div>
+        <div class="mt-1 w-8 h-1 bg-orange-500 rounded-full mx-auto"></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Enhanced Filter Menu - Sleek Design -->
+  <div class="bg-white rounded-2xl p-6 border border-gray-200 shadow-sm">
+    <h3 class="text-lg font-semibold text-gray-900 mb-4">Filter & Sort</h3>
+    <div class="flex flex-wrap gap-3">
+      <%= link_to "All Items", books_path, 
+          class: "px-5 py-2.5 rounded-lg text-sm font-medium transition-all duration-200 #{@status ? 'text-gray-700 bg-gray-100 hover:bg-gray-200' : 'text-white bg-gradient-to-r from-indigo-600 to-purple-600 hover:from-indigo-700 hover:to-purple-700 shadow-sm'}" %>
       
       <% Book.statuses.keys.each do |status| %>
         <%= link_to status.humanize, books_path(status: status),
-            class: "px-4 py-2 rounded-md text-sm font-medium #{@status == status ? 'text-white bg-indigo-600 hover:bg-indigo-700' : 'text-gray-700 bg-gray-100 hover:bg-gray-200'}" %>
+            class: "px-5 py-2.5 rounded-lg text-sm font-medium transition-all duration-200 #{@status == status ? 'text-white bg-gradient-to-r from-indigo-600 to-purple-600 hover:from-indigo-700 hover:to-purple-700 shadow-sm' : 'text-gray-700 bg-gray-100 hover:bg-gray-200'}" %>
       <% end %>
       
       <%= link_to "Imported History", books_path(status: 'imported'), 
-          class: "px-4 py-2 rounded-md text-sm font-medium #{@status == 'imported' ? 'text-white bg-indigo-600 hover:bg-indigo-700' : 'text-gray-700 bg-gray-100 hover:bg-gray-200'}" %>
+          class: "px-5 py-2.5 rounded-lg text-sm font-medium transition-all duration-200 #{@status == 'imported' ? 'text-white bg-gradient-to-r from-indigo-600 to-purple-600 hover:from-indigo-700 hover:to-purple-700 shadow-sm' : 'text-gray-700 bg-gray-100 hover:bg-gray-200'}" %>
+          
+      <%= link_to "Manual Entry", books_path(status: 'manual'), 
+          class: "px-5 py-2.5 rounded-lg text-sm font-medium transition-all duration-200 #{@status == 'manual' ? 'text-white bg-gradient-to-r from-indigo-600 to-purple-600 hover:from-indigo-700 hover:to-purple-700 shadow-sm' : 'text-gray-700 bg-gray-100 hover:bg-gray-200'}" %>
     </div>
   </div>
 
-  <!-- Next Book button -->
-  <div class="bg-gradient-to-r from-green-500 to-emerald-600 p-6 rounded-lg shadow-sm">
+  <!-- Enhanced Next Book CTA - Sleek Design -->
+  <div class="bg-gradient-to-r from-emerald-500 to-teal-600 rounded-2xl p-8 shadow-lg">
     <div class="text-center">
-      <h2 class="text-xl font-semibold text-white mb-2">Ready for your next adventure?</h2>
-      <%= link_to "📖 What's my next book?", next_book_books_path, class: "inline-flex items-center px-6 py-3 border border-transparent text-base font-medium rounded-md text-green-700 bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-white shadow-sm" %>
+      <h2 class="text-2xl font-bold text-white mb-3">Ready for your next adventure?</h2>
+      <p class="text-emerald-100 mb-6">Get AI-powered recommendations based on your reading taste</p>
+      <%= link_to "📖 What's my next book?", next_book_books_path, 
+          class: "inline-flex items-center px-8 py-4 border border-transparent text-lg font-semibold rounded-xl text-emerald-700 bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-white shadow-lg transition-all duration-200 transform hover:scale-105" %>
     </div>
   </div>
 
@@ -62,50 +96,59 @@
     <!-- Show imported books -->
     <div class="grid gap-6 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
       <% @books.imported.each do |book| %>
-        <div class="bg-white overflow-hidden shadow rounded-lg border border-gray-200 hover:shadow-md transition-shadow duration-200">
+        <div class="bg-white overflow-hidden shadow-sm rounded-2xl border border-gray-100 hover:shadow-lg transition-all duration-300 transform hover:-translate-y-1">
           <div class="p-6">
-            <div class="flex items-center justify-between mb-2">
-              <h3 class="text-lg font-semibold text-gray-900 truncate"><%= book.title %></h3>
-              <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-purple-100 text-purple-800">
+            <div class="flex items-center justify-between mb-3">
+              <h3 class="text-lg font-semibold text-gray-900 truncate flex-1 mr-3"><%= book.title %></h3>
+              <span class="inline-flex items-center px-3 py-1 rounded-full text-xs font-medium bg-purple-100 text-purple-800 flex-shrink-0">
                 Imported
               </span>
             </div>
             
-            <p class="text-gray-600 text-sm mb-3">By <%= book.author %></p>
+            <p class="text-gray-600 text-sm mb-4">By <%= book.author %></p>
             
-            <div class="flex items-center justify-between">
-              <div class="flex items-center">
-                <% if book.rating %>
-                  <div class="flex items-center">
-                    <% book.rating.times do %>
-                      <svg class="w-3 h-3 text-yellow-400" fill="currentColor" viewBox="0 0 20 20">
-                        <path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z"/>
-                      </svg>
-                    <% end %>
-                    <span class="ml-1 text-sm text-gray-600"><%= book.rating %></span>
-                  </div>
-                <% else %>
-                  <span class="text-sm text-gray-400">No rating</span>
-                <% end %>
+            <div class="space-y-3">
+              <!-- Rating -->
+              <div class="flex items-center justify-between">
+                <div class="flex items-center">
+                  <% if book.rating %>
+                    <div class="flex items-center">
+                      <% book.rating.times do %>
+                        <svg class="w-4 h-4 text-yellow-400" fill="currentColor" viewBox="0 0 20 20">
+                          <path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z"/>
+                        </svg>
+                      <% end %>
+                      <span class="ml-2 text-sm font-medium text-gray-700"><%= book.rating %>/5</span>
+                    </div>
+                  <% else %>
+                    <span class="text-sm text-gray-400">No rating</span>
+                  <% end %>
+                </div>
+                
+                <div class="text-sm text-gray-500">
+                  <%= book.created_at.strftime("%b %Y") %>
+                </div>
               </div>
               
-              <div class="text-sm text-gray-500">
-                <%= book.created_at.strftime("%b %Y") %>
-              </div>
+              <!-- Additional imported book info -->
+              <% if book.exclusive_shelf.present? %>
+                <div class="flex items-center text-xs text-gray-500">
+                  <svg class="w-4 h-4 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 11H5m14 0a2 2 0 012 2v6a2 2 0 01-2 2H5a2 2 0 01-2-2v-6a2 2 0 012-2m14 0V9a2 2 0 00-2-2M5 11V9a2 2 0 012-2m0 0V5a2 2 0 012-2h6a2 2 0 012 2v2M7 7h10"></path>
+                  </svg>
+                  <%= book.exclusive_shelf.humanize %>
+                </div>
+              <% end %>
+              
+              <% if book.pages.present? %>
+                <div class="flex items-center text-xs text-gray-500">
+                  <svg class="w-4 h-4 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.747 0 3.332.477 4.5 1.253v13C19.832 18.477 18.246 18 16.5 18c-1.746 0-3.332.477-4.5 1.253"></path>
+                  </svg>
+                  <%= book.pages %> pages
+                </div>
+              <% end %>
             </div>
-            
-            <!-- Additional imported book info -->
-            <% if book.exclusive_shelf.present? %>
-              <div class="mt-2 text-xs text-gray-500">
-                Shelf: <%= book.exclusive_shelf.humanize %>
-              </div>
-            <% end %>
-            
-            <% if book.pages.present? %>
-              <div class="mt-1 text-xs text-gray-500">
-                <%= book.pages %> pages
-              </div>
-            <% end %>
           </div>
         </div>
       <% end %>
@@ -114,36 +157,39 @@
     <!-- Show manually added books -->
     <div class="grid gap-6 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
       <% @books.manual.each do |book| %>
-        <div class="bg-white overflow-hidden shadow rounded-lg border border-gray-200 hover:shadow-md transition-shadow duration-200">
+        <div class="bg-white overflow-hidden shadow-sm rounded-2xl border border-gray-100 hover:shadow-lg transition-all duration-300 transform hover:-translate-y-1">
           <div class="p-6">
-            <div class="flex items-center justify-between mb-2">
-              <h3 class="text-lg font-semibold text-gray-900 truncate"><%= book.title %></h3>
-              <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-blue-100 text-blue-800">
+            <div class="flex items-center justify-between mb-3">
+              <h3 class="text-lg font-semibold text-gray-900 truncate flex-1 mr-3"><%= book.title %></h3>
+              <span class="inline-flex items-center px-3 py-1 rounded-full text-xs font-medium bg-blue-100 text-blue-800 flex-shrink-0">
                 <%= book.status.humanize %>
               </span>
             </div>
             
-            <p class="text-gray-600 text-sm mb-3">By <%= book.author %></p>
+            <p class="text-gray-600 text-sm mb-4">By <%= book.author %></p>
             
-            <div class="flex items-center justify-between">
-              <div class="flex items-center">
-                <% if book.rating %>
-                  <div class="flex items-center">
-                    <% book.rating.times do %>
-                      <svg class="w-3 h-3 text-yellow-400" fill="currentColor" viewBox="0 0 20 20">
-                        <path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z"/>
-                      </svg>
-                    <% end %>
-                    <span class="ml-1 text-sm text-gray-600"><%= book.rating %></span>
-                  </div>
-                <% else %>
-                  <span class="text-sm text-gray-400">No rating</span>
-                <% end %>
-              </div>
-              
-              <div class="flex space-x-2">
-                <%= link_to "View", book_path(book), class: "text-indigo-600 hover:text-indigo-900 text-sm font-medium" %>
-                <%= link_to "Edit", edit_book_path(book), class: "text-gray-600 hover:text-gray-900 text-sm font-medium" %>
+            <div class="space-y-3">
+              <!-- Rating -->
+              <div class="flex items-center justify-between">
+                <div class="flex items-center">
+                  <% if book.rating %>
+                    <div class="flex items-center">
+                      <% book.rating.times do %>
+                        <svg class="w-4 h-4 text-yellow-400" fill="currentColor" viewBox="0 0 20 20">
+                          <path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z"/>
+                        </svg>
+                      <% end %>
+                      <span class="ml-2 text-sm font-medium text-gray-700"><%= book.rating %>/5</span>
+                    </div>
+                  <% else %>
+                    <span class="text-sm text-gray-400">No rating</span>
+                  <% end %>
+                </div>
+                
+                <div class="flex space-x-2">
+                  <%= link_to "View", book_path(book), class: "text-indigo-600 hover:text-indigo-900 text-sm font-medium transition-colors duration-200" %>
+                  <%= link_to "Edit", edit_book_path(book), class: "text-gray-600 hover:text-gray-900 text-sm font-medium transition-colors duration-200" %>
+                </div>
               </div>
             </div>
           </div>
@@ -154,57 +200,57 @@
     <!-- Show all books -->
     <div class="grid gap-6 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
       <% @books.each do |book| %>
-        <div class="bg-white overflow-hidden shadow rounded-lg border border-gray-200 hover:shadow-md transition-shadow duration-200">
+        <div class="bg-white overflow-hidden shadow-sm rounded-2xl border border-gray-100 hover:shadow-lg transition-all duration-300 transform hover:-translate-y-1">
           <div class="p-6">
-            <div class="flex items-center justify-between mb-2">
-              <h3 class="text-lg font-semibold text-gray-900 truncate"><%= book.title %></h3>
-              <div class="flex items-center space-x-2">
-                <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-blue-100 text-blue-800">
+            <div class="flex items-center justify-between mb-3">
+              <h3 class="text-lg font-semibold text-gray-900 truncate flex-1 mr-3"><%= book.title %></h3>
+              <div class="flex items-center space-x-2 flex-shrink-0">
+                <span class="inline-flex items-center px-3 py-1 rounded-full text-xs font-medium bg-blue-100 text-blue-800">
                   <%= book.status.humanize %>
                 </span>
-                <span class="inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium 
+                <span class="inline-flex items-center px-3 py-1 rounded-full text-xs font-medium 
                   <%= book.imported? ? 'bg-purple-100 text-purple-800' : 'bg-green-100 text-green-800' %>">
                   <%= book.source_type %>
                 </span>
               </div>
             </div>
             
-            <p class="text-gray-600 text-sm mb-3">By <%= book.author %></p>
+            <p class="text-gray-600 text-sm mb-4">By <%= book.author %></p>
             
-            <div class="flex items-center justify-between">
-              <div class="flex items-center">
-                <% if book.rating %>
-                  <div class="flex items-center">
-                    <% book.rating.times do %>
-                      <svg class="w-3 h-3 text-yellow-400" fill="currentColor" viewBox="0 0 20 20">
-                        <path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z"/>
-                      </svg>
-                    <% end %>
-                    <span class="ml-1 text-sm text-gray-600"><%= book.rating %></span>
-                  </div>
-                <% else %>
-                  <span class="text-sm text-gray-400">No rating</span>
-                <% end %>
+            <div class="space-y-3">
+              <!-- Rating -->
+              <div class="flex items-center justify-between">
+                <div class="flex items-center">
+                  <% if book.rating %>
+                    <div class="flex items-center">
+                      <% book.rating.times do %>
+                        <svg class="w-4 h-4 text-yellow-400" fill="currentColor" viewBox="0 0 20 20">
+                          <path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z"/>
+                        </svg>
+                      <% end %>
+                      <span class="ml-2 text-sm font-medium text-gray-700"><%= book.rating %>/5</span>
+                    </div>
+                  <% else %>
+                    <span class="text-sm text-gray-400">No rating</span>
+                  <% end %>
+                </div>
+                
+                <div class="flex space-x-2">
+                  <%= link_to "View", book_path(book), class: "text-indigo-600 hover:text-indigo-900 text-sm font-medium transition-colors duration-200" %>
+                  <%= link_to "Edit", edit_book_path(book), class: "text-gray-600 hover:text-gray-900 text-sm font-medium transition-colors duration-200" %>
+                </div>
               </div>
               
-              <div class="flex space-x-2">
-                <%= link_to "View", book_path(book), class: "text-indigo-600 hover:text-indigo-900 text-sm font-medium" %>
-                <%= link_to "Edit", edit_book_path(book), class: "text-gray-600 hover:text-gray-900 text-sm font-medium" %>
-              </div>
+              <!-- Additional info for imported books -->
+              <% if book.imported? && book.exclusive_shelf.present? %>
+                <div class="flex items-center text-xs text-gray-500">
+                  <svg class="w-4 h-4 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 11H5m14 0a2 2 0 012 2v6a2 2 0 01-2 2H5a2 2 0 01-2-2v-6a2 2 0 012-2m14 0V9a2 2 0 00-2-2M5 11V9a2 2 0 012-2m0 0V5a2 2 0 012-2h6a2 2 0 012 2v2M7 7h10"></path>
+                  </svg>
+                  Original shelf: <%= book.exclusive_shelf.humanize %>
+                </div>
+              <% end %>
             </div>
-            
-            <!-- Additional info for imported books -->
-            <% if book.imported? && book.exclusive_shelf.present? %>
-              <div class="mt-2 text-xs text-gray-500">
-                Original shelf: <%= book.exclusive_shelf.humanize %>
-              </div>
-            <% end %>
-            
-            <% if book.pages.present? %>
-              <div class="mt-1 text-xs text-gray-500">
-                <%= book.pages %> pages
-              </div>
-            <% end %>
           </div>
         </div>
       <% end %>
@@ -212,35 +258,42 @@
   <% end %>
 
   <% if (@status == 'imported' && @books.imported.empty?) || (@status == 'manual' && @books.manual.empty?) || (@status != 'imported' && @books.manual.empty?) %>
-    <div class="text-center py-12">
-      <svg class="mx-auto h-8 w-8 text-gray-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.747 0 3.332.477 4.5 1.253v13C19.832 18.477 18.246 18 16.5 18c-1.746 0-3.332.477-4.5 1.253" />
-      </svg>
-      <h3 class="mt-2 text-sm font-medium text-gray-900">
+    <div class="text-center py-16">
+      <div class="mx-auto h-16 w-16 mb-6 flex items-center justify-center rounded-full bg-gray-100">
+        <svg class="h-8 w-8 text-gray-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.747 0 3.332.477 4.5 1.253v13C19.832 18.477 18.246 18 16.5 18c-1.746 0-3.332.477-4.5 1.253" />
+        </svg>
+      </div>
+      <h3 class="text-lg font-semibold text-gray-900 mb-2">
         <% if @status == 'imported' %>
-          No imported books found
+          No imported books yet
         <% elsif @status == 'manual' %>
-          No manually added books found
+          No manually added books yet
         <% else %>
-          No books found
+          Your library is empty
         <% end %>
       </h3>
-      <p class="mt-1 text-sm text-gray-500">
+      <p class="text-gray-600 mb-8 max-w-md mx-auto">
         <% if @status == 'imported' %>
-          Import your Goodreads library to see your reading history here.
+          Import your Goodreads library to see your complete reading history and get personalized recommendations.
         <% elsif @status == 'manual' %>
-          Get started by adding your first book to your library.
+          Start building your personal library by adding books you've read or want to read.
         <% else %>
-          Get started by adding your first book to your library.
+          Start building your personal library by adding books manually or importing from Goodreads.
         <% end %>
       </p>
-      <div class="mt-6 space-x-3">
+      <div class="flex flex-col sm:flex-row gap-3 justify-center">
         <% if @status == 'imported' %>
-          <%= link_to "Import Goodreads", new_import_path, class: "inline-flex items-center px-4 py-2 border border-transparent shadow-sm text-sm font-medium rounded-md text-white bg-indigo-600 hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500" %>
+          <%= link_to "Import Goodreads", new_import_path, 
+              class: "inline-flex items-center px-6 py-3 border border-transparent shadow-sm text-sm font-medium rounded-lg text-white bg-gradient-to-r from-indigo-600 to-purple-600 hover:from-indigo-700 hover:to-purple-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 transition-all duration-200" %>
         <% elsif @status == 'manual' %>
-          <%= link_to "Add Book", new_book_path, class: "inline-flex items-center px-4 py-2 border border-transparent shadow-sm text-sm font-medium rounded-md text-white bg-indigo-600 hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500" %>
+          <%= link_to "Add Book", new_book_path, 
+              class: "inline-flex items-center px-6 py-3 border border-transparent shadow-sm text-sm font-medium rounded-lg text-white bg-gradient-to-r from-indigo-600 to-purple-600 hover:from-indigo-700 hover:to-purple-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 transition-all duration-200" %>
         <% else %>
-          <%= link_to "Add Book", new_book_path, class: "inline-flex items-center px-4 py-2 border border-transparent shadow-sm text-sm font-medium rounded-md text-white bg-indigo-600 hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500" %>
+          <%= link_to "Add Book", new_book_path, 
+              class: "inline-flex items-center px-6 py-3 border border-transparent shadow-sm text-sm font-medium rounded-lg text-white bg-gradient-to-r from-indigo-600 to-purple-600 hover:from-indigo-700 hover:to-purple-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 transition-all duration-200" %>
+          <%= link_to "Import Goodreads", new_import_path, 
+              class: "inline-flex items-center px-6 py-3 border border-gray-300 shadow-sm text-sm font-medium rounded-lg text-gray-700 bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 transition-all duration-200" %>
         <% end %>
       </div>
     </div>
