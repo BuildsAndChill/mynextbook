@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html>
+<html class="h-full bg-gray-50">
   <head>
     <title><%= content_for(:title) || "My Next Book" %></title>
     <meta name="viewport" content="width=device-width,initial-scale=1">
@@ -22,7 +22,32 @@
     <%= javascript_importmap_tags %>
   </head>
 
-  <body>
-    <%= yield %>
+  <body class="h-full">
+    <div class="min-h-full">
+      <!-- Navigation header -->
+      <nav class="bg-white shadow-sm border-b border-gray-200">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+          <div class="flex justify-between h-16">
+            <div class="flex items-center">
+              <h1 class="text-xl font-semibold text-gray-900">
+                <%= link_to "My Next Book", root_path, class: "text-indigo-600 hover:text-indigo-500" %>
+              </h1>
+            </div>
+            <div class="flex items-center space-x-4">
+              <%= link_to "Library", books_path, class: "text-gray-700 hover:text-gray-900 px-3 py-2 rounded-md text-sm font-medium" %>
+              <%= link_to "Readings", readings_path, class: "text-gray-700 hover:text-gray-900 px-3 py-2 rounded-md text-sm font-medium" %>
+              <%= link_to "Recommendations", new_recommendation_path, class: "text-gray-700 hover:text-gray-900 px-3 py-2 rounded-md text-sm font-medium" %>
+            </div>
+          </div>
+        </div>
+      </nav>
+
+      <!-- Main content -->
+      <main class="max-w-7xl mx-auto py-6 sm:px-6 lg:px-8">
+        <div class="px-4 py-6 sm:px-0">
+          <%= yield %>
+        </div>
+      </main>
+    </div>
   </body>
 </html>

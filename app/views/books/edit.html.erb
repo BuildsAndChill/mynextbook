@@ -1,12 +1,17 @@
 <% content_for :title, "Editing book" %>
 
-<h1>Editing book</h1>
+<div class="max-w-2xl mx-auto">
+  <div class="mb-8">
+    <h1 class="text-3xl font-bold text-gray-900">Edit Book</h1>
+    <p class="mt-2 text-sm text-gray-600">Update your book information</p>
+  </div>
 
-<%= render "form", book: @book %>
+  <div class="bg-white shadow rounded-lg border border-gray-200 p-6">
+    <%= render "form", book: @book %>
+  </div>
 
-<br>
-
-<div>
-  <%= link_to "Show this book", @book %> |
-  <%= link_to "Back to books", books_path %>
+  <div class="mt-6 flex space-x-4">
+    <%= link_to "← Back to Library", books_path, class: "text-indigo-600 hover:text-indigo-900 text-sm font-medium" %>
+    <%= link_to "View Book", @book, class: "text-gray-600 hover:text-gray-900 text-sm font-medium" %>
+  </div>
 </div>

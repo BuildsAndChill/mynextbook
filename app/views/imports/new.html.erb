@@ -1,20 +1,55 @@
-<!-- app/views/imports/new.html.erb -->
-<!-- Page d’upload de l’export Goodreads -->
-<h1 class="text-2xl font-bold mb-4">Importer mon export Goodreads (CSV)</h1>
-
-<!-- Petit rappel UX sur où trouver l’export -->
-<div class="prose text-sm text-gray-600 mb-4">
-  <p>Dans Goodreads : <em>My Books → Import/Export → Export Library</em>, puis télécharge <code>goodreads_library_export.csv</code>.</p>
-</div>
-
-<!-- Formulaire d’upload -->
-<!-- local: true → submit standard (plus simple pour ce MVP) -->
-<!-- multipart: true → requis pour les uploads de fichiers -->
-<%= form_with url: imports_path, method: :post, local: true, html: { multipart: true }, class: "space-y-4" do %>
-  <div>
-    <%= label_tag :file, "Fichier CSV", class: "block font-medium" %>
-    <%= file_field_tag :file, accept: ".csv", class: "mt-1 block w-full border rounded px-3 py-2" %>
+<div class="max-w-2xl mx-auto">
+  <div class="mb-8">
+    <h1 class="text-3xl font-bold text-gray-900">Import from Goodreads</h1>
+    <p class="mt-2 text-sm text-gray-600">Import your reading history from Goodreads CSV export</p>
   </div>
 
-  <%= submit_tag "Importer", class: "bg-indigo-600 text-white px-4 py-2 rounded hover:bg-indigo-700" %>
-<% end %>
+  <div class="bg-white shadow rounded-lg border border-gray-200 p-6">
+    <!-- Instructions -->
+    <div class="mb-6 p-4 bg-blue-50 rounded-lg border border-blue-200">
+      <div class="flex">
+        <div class="flex-shrink-0">
+          <svg class="h-5 w-5 text-blue-400" viewBox="0 0 20 20" fill="currentColor">
+            <path fill-rule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7-4a1 1 0 11-2 0 1 1 0 012 0zM9 9a1 1 0 000 2v3a1 1 0 001 1h1a1 1 0 100-2v-3a1 1 0 00-1-1H9z" clip-rule="evenodd" />
+          </svg>
+        </div>
+        <div class="ml-3">
+          <h3 class="text-sm font-medium text-blue-800">How to export from Goodreads</h3>
+          <div class="mt-2 text-sm text-blue-700">
+            <p>In Goodreads: <em>My Books → Import/Export → Export Library</em>, then download <code class="bg-blue-100 px-1 py-0.5 rounded">goodreads_library_export.csv</code></p>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Upload form -->
+    <%= form_with url: imports_path, method: :post, local: true, html: { multipart: true }, class: "space-y-6" do %>
+      <div>
+        <%= label_tag :file, "CSV File", class: "block text-sm font-medium text-gray-700 mb-2" %>
+        <div class="mt-1 flex justify-center px-6 pt-5 pb-6 border-2 border-gray-300 border-dashed rounded-md hover:border-gray-400 transition-colors duration-200">
+          <div class="space-y-1 text-center">
+            <svg class="mx-auto h-12 w-12 text-gray-400" stroke="currentColor" fill="none" viewBox="0 0 48 48">
+              <path d="M28 8H12a4 4 0 00-4 4v20m32-12v8m0 0v8a4 4 0 01-4 4H12a4 4 0 01-4-4v-4m32-4l-3.172-3.172a4 4 0 00-5.656 0L28 28M8 32l9.172-9.172a4 4 0 015.656 0L28 28m0 0l4 4m4-24h8m-4-4v8m-12 4h.02" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" />
+            </svg>
+            <div class="flex text-sm text-gray-600">
+              <label for="file" class="relative cursor-pointer bg-white rounded-md font-medium text-indigo-600 hover:text-indigo-500 focus-within:outline-none focus-within:ring-2 focus-within:ring-offset-2 focus-within:ring-indigo-500">
+                <span>Upload a file</span>
+                <%= file_field_tag :file, accept: ".csv", class: "sr-only" %>
+              </label>
+              <p class="pl-1">or drag and drop</p>
+            </div>
+            <p class="text-xs text-gray-500">CSV files only</p>
+          </div>
+        </div>
+      </div>
+
+      <div class="flex justify-end">
+        <%= submit_tag "Import Books", class: "inline-flex items-center px-6 py-3 border border-transparent text-base font-medium rounded-md shadow-sm text-white bg-indigo-600 hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 transition-colors duration-200" %>
+      </div>
+    <% end %>
+  </div>
+
+  <div class="mt-6 text-center">
+    <%= link_to "← Back to Readings", readings_path, class: "text-indigo-600 hover:text-indigo-900 text-sm font-medium" %>
+  </div>
+</div>
