@@ -18,10 +18,4 @@ Rails.application.routes.draw do
   end
 
   resources :imports, only: [:new, :create]
-  
-  # Module d'import (upload CSV + traitement)
-  resources :imports, only: [:new, :create]
-
-  # Liste simple pour visualiser le résultat de l'import
-  resources :readings, only: [:index]
 end

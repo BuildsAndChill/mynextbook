@@ -46,9 +46,9 @@
               <label class="text-sm font-medium text-gray-700">Use my reading history</label>
               <p class="text-sm text-gray-500">
                 <% if user_signed_in? %>
-                  <%= current_user.readings.count %> books in your history
+                  <%= current_user.books.count %> books in your library
                 <% else %>
-                  Sign in to use your reading history
+                  Sign in to use your reading history for personalized recommendations
                 <% end %>
     </p>
   </div>
@@ -193,37 +193,41 @@
                             
                             <!-- Feedback Buttons -->
                             <div class="flex space-x-2">
-                              <button class="feedback-btn p-1.5 text-gray-400 hover:text-green-600 transition-colors duration-200" data-book-id="<%= pick[:number] %>" data-feedback="like" title="I like this">
+                              <button class="feedback-btn p-1.5 text-gray-400 hover:text-green-600 transition-colors duration-200" 
+                                      data-book-title="<%= pick[:title] %>" 
+                                      data-book-author="<%= pick[:author] %>" 
+                                      data-feedback="like" 
+                                      title="I like this">
                                 👍
                               </button>
-                              <button class="feedback-btn p-1.5 text-gray-400 hover:text-red-600 transition-colors duration-200" data-book-id="<%= pick[:number] %>" data-feedback="dislike" title="Not for me">
+                              <button class="feedback-btn p-1.5 text-gray-400 hover:text-red-600 transition-colors duration-200" 
+                                      data-book-title="<%= pick[:title] %>" 
+                                      data-feedback="dislike" 
+                                      title="Not for me">
                                 👎
                               </button>
-                              <button class="feedback-btn p-1.5 text-gray-400 hover:text-blue-600 transition-colors duration-200" data-book-id="<%= pick[:number] %>" data-feedback="save" title="Save to my list">
+                              <button class="feedback-btn p-1.5 text-gray-400 hover:text-blue-600 transition-colors duration-200" 
+                                      data-book-title="<%= pick[:title] %>" 
+                                      data-book-author="<%= pick[:author] %>" 
+                                      data-feedback="save" 
+                                      title="Save to my list">
                                 💾
                               </button>
-                              <button class="feedback-btn p-1.5 text-gray-400 hover:text-purple-600 transition-colors duration-200" data-book-id="<%= pick[:number] %>" data-feedback="more" title="Tell me more">
+                              <button class="feedback-btn p-1.5 text-gray-400 hover:text-purple-600 transition-colors duration-200" 
+                                      data-book-title="<%= pick[:title] %>" 
+                                      data-book-author="<%= pick[:author] %>" 
+                                      data-feedback="more_info" 
+                                      title="Tell me more">
                                 📖
                               </button>
                             </div>
                           </div>
-
-                          <!-- Sign Up Gate for Feedback -->
-                          <% unless user_signed_in? %>
-                            <div class="mt-3 p-2 bg-amber-50 border border-amber-200 rounded text-center">
-                              <p class="text-xs text-amber-700">
-                                <strong>Sign up</strong> to save books and get better recommendations
-                              </p>
-                            </div>
-                          <% end %>
                         </div>
                       </div>
-                    </div>
-                  <% end %>
-                </div>
+                    <% end %>
+                  </div>
+                <% end %>
               </div>
-            <% end %>
-          </div>
 
         <% elsif @ai_error %>
           <!-- Error State -->
@@ -289,11 +293,10 @@
                   <%= link_to "Import Library", new_import_path, 
                       class: "inline-flex items-center px-4 py-2 bg-green-600 text-white text-sm font-medium rounded-lg hover:bg-green-700 transition-colors duration-200" %>
                 <% else %>
-                  <div class="text-center">
-                    <p class="text-sm text-green-600 mb-3">Sign up required to import your Goodreads data</p>
-                    <%= link_to "Sign Up to Import", new_user_registration_path, 
-                        class: "inline-flex items-center px-4 py-2 bg-green-600 text-white text-sm font-medium rounded-lg hover:bg-green-700 transition-colors duration-200" %>
-                  </div>
+                  <button onclick="showSignupPopup('Sign up to import your Goodreads library and get personalized recommendations!')" 
+                          class="inline-flex items-center px-4 py-2 bg-green-600 text-white text-sm font-medium rounded-lg hover:bg-green-700 transition-colors duration-200">
+                    Import Library
+                  </button>
                 <% end %>
               </div>
 
@@ -315,19 +318,18 @@
                   <%= link_to "Add Book", new_book_path, 
                       class: "inline-flex items-center px-4 py-2 bg-blue-600 text-white text-sm font-medium rounded-lg hover:bg-blue-700 transition-colors duration-200" %>
                 <% else %>
-                  <div class="text-center">
-                    <p class="text-sm text-blue-600 mb-3">Sign up required to build your personal library</p>
-                    <%= link_to "Sign Up to Add Books", new_user_registration_path, 
-                        class: "inline-flex items-center px-4 py-2 bg-blue-600 text-white text-sm font-medium rounded-lg hover:bg-blue-700 transition-colors duration-200" %>
-                  </div>
+                  <button onclick="showSignupPopup('Sign up to build your personal library and get better recommendations!')" 
+                          class="inline-flex items-center px-4 py-2 bg-blue-600 text-white text-sm font-medium rounded-lg hover:bg-blue-700 transition-colors duration-200">
+                    Add Book
+                  </button>
                 <% end %>
               </div>
 
-              <!-- Sign Up CTA -->
+              <!-- Sign Up CTA - Only show for unlogged users -->
               <% unless user_signed_in? %>
                 <div class="bg-gradient-to-r from-purple-50 to-indigo-50 border border-purple-200 rounded-lg p-4 text-center">
-                  <h5 class="font-medium text-purple-900 mb-2">Unlock Personalized AI</h5>
-                  <p class="text-sm text-purple-700 mb-3">Sign up to get recommendations tailored to your reading taste</p>
+                  <h5 class="text-lg font-medium text-purple-900 mb-2">Want Personalized Recommendations?</h5>
+                  <p class="text-sm text-purple-700 mb-3">Sign up to import your Goodreads library and save your feedback for better suggestions.</p>
                   <%= link_to "Sign Up Now", new_user_registration_path, 
                       class: "inline-flex items-center px-6 py-2 bg-gradient-to-r from-purple-600 to-indigo-600 text-white text-sm font-medium rounded-lg hover:from-purple-700 hover:to-indigo-700 transition-all duration-200" %>
                 </div>
@@ -368,15 +370,6 @@
                 </button>
               </div>
             </div>
-
-            <!-- Sign Up for Refinements -->
-            <% unless user_signed_in? %>
-              <div class="bg-amber-50 border border-amber-200 rounded-lg p-3 text-center">
-                <p class="text-xs text-amber-700">
-                  <strong>Sign up</strong> to save your refinements and get better suggestions
-                </p>
-              </div>
-            <% end %>
           </div>
         </div>
 
@@ -384,9 +377,20 @@
         <% if user_signed_in? %>
           <div class="mt-8 pt-6 border-t border-gray-200">
             <h4 class="text-sm font-medium text-gray-700 mb-3">Recent refinements</h4>
-            <div class="text-sm text-gray-500 italic">
-              No refinements yet. Start refining to see your history here.
-            </div>
+            <% if current_user.user_refinements.any? %>
+              <div class="space-y-2">
+                <% current_user.user_refinements.recent.limit(5).each do |refinement| %>
+                  <div class="flex items-center justify-between p-2 bg-gray-50 rounded-lg">
+                    <span class="text-sm text-gray-700"><%= refinement.refinement_text %></span>
+                    <span class="text-xs text-gray-500"><%= time_ago_in_words(refinement.created_at) %> ago</span>
+                  </div>
+                <% end %>
+              </div>
+            <% else %>
+              <div class="text-sm text-gray-500 italic">
+                No refinements yet. Start refining to see your history here.
+              </div>
+            <% end %>
           </div>
         <% end %>
       </div>
@@ -469,6 +473,15 @@ document.addEventListener('DOMContentLoaded', function() {
       if (refinement) {
         console.log('Refinement submitted:', refinement);
         
+        // Check if user is signed in
+        const isSignedIn = <%= user_signed_in? ? 'true' : 'false' %>;
+        
+        if (!isSignedIn) {
+          // Show signup popup for anonymous users
+          showSignupPopup('Sign up to save your refinements and get better suggestions!');
+          return;
+        }
+        
         // Show toast notification
         showToast('Refinement submitted! Getting new recommendations...', 'success');
         
@@ -485,17 +498,18 @@ document.addEventListener('DOMContentLoaded', function() {
   const feedbackBtns = document.querySelectorAll('.feedback-btn');
   feedbackBtns.forEach(btn => {
     btn.addEventListener('click', function() {
-      const bookId = this.dataset.bookId;
+      const bookTitle = this.dataset.bookTitle;
+      const bookAuthor = this.dataset.bookAuthor;
       const feedback = this.dataset.feedback;
       
-      console.log('Feedback submitted:', { bookId, feedback });
+      console.log('Feedback submitted:', { bookTitle, bookAuthor, feedback });
       
       // Check if user is signed in
       const isSignedIn = <%= user_signed_in? ? 'true' : 'false' %>;
       
       if (!isSignedIn) {
-        // Show sign-up prompt for anonymous users
-        showToast('Sign up to save your feedback and get better recommendations!', 'info');
+        // Show signup popup for anonymous users
+        showSignupPopup('Sign up to save your feedback and get better recommendations!');
         return;
       }
       
@@ -505,19 +519,45 @@ document.addEventListener('DOMContentLoaded', function() {
         this.classList.remove('scale-110');
       }, 200);
       
-      // Show appropriate message based on feedback type
-      const feedbackMessages = {
-        'like': 'Thanks! We\'ll recommend more like this.',
-        'dislike': 'Got it! We\'ll avoid similar books.',
-        'save': 'Book saved to your reading list!',
-        'more': 'Book details expanded!'
-      };
+      // Submit feedback to server
+      const formData = new FormData();
+      formData.append('book_title', bookTitle);
+      formData.append('book_author', bookAuthor);
+      formData.append('feedback_type', feedback);
+      formData.append('context', document.querySelector('textarea[name="context"]')?.value || '');
       
-      showToast(feedbackMessages[feedback] || 'Feedback recorded!', 'success');
-      
-      // TODO: Send feedback to backend for storage
-      // For now, just log it
-      console.log('Feedback stored:', { bookId, feedback, timestamp: new Date().toISOString() });
+      fetch('/recommendations/feedback', {
+        method: 'POST',
+        body: formData,
+        headers: {
+          'X-CSRF-Token': document.querySelector('meta[name="csrf-token"]').getAttribute('content')
+        }
+      })
+      .then(response => {
+        if (response.ok) {
+          // Show appropriate message based on feedback type
+          const feedbackMessages = {
+            'like': 'Thanks! We\'ll recommend more like this.',
+            'dislike': 'Got it! We\'ll avoid similar books.',
+            'save': 'Book saved to your reading list!',
+            'more_info': 'Book details expanded!'
+          };
+          
+          showToast(feedbackMessages[feedback] || 'Feedback recorded!', 'success');
+          
+          // If it's a save action, update the button to show it's saved
+          if (feedback === 'save') {
+            this.classList.add('text-blue-600');
+            this.title = 'Saved to reading list';
+          }
+        } else {
+          showToast('Error saving feedback. Please try again.', 'error');
+        }
+      })
+      .catch(error => {
+        console.error('Error:', error);
+        showToast('Error saving feedback. Please try again.', 'error');
+      });
     });
   });
 });
@@ -547,5 +587,42 @@ function showToast(message, type = 'info') {
       document.body.removeChild(toast);
     }, 300);
   }, 3000);
+}
+
+// Function to show a signup popup
+function showSignupPopup(message) {
+  const popup = document.createElement('div');
+  popup.className = 'fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50';
+  
+  const popupContent = document.createElement('div');
+  popupContent.className = 'bg-white p-6 rounded-lg shadow-xl max-w-md w-full';
+  
+  const title = document.createElement('h3');
+  title.className = 'text-lg font-medium text-gray-900 mb-2';
+  title.textContent = 'Sign Up Required';
+  
+  const content = document.createElement('p');
+  content.className = 'text-sm text-gray-700 mb-4';
+  content.textContent = message;
+  
+  const signupLink = document.createElement('a');
+  signupLink.href = '<%= new_user_registration_path %>'; // Adjust path as needed
+  signupLink.className = 'inline-flex items-center px-6 py-2 bg-gradient-to-r from-purple-600 to-indigo-600 text-white text-sm font-medium rounded-lg hover:from-purple-700 hover:to-indigo-700 transition-all duration-200';
+  signupLink.textContent = 'Sign Up Now';
+  
+  const closeBtn = document.createElement('button');
+  closeBtn.className = 'mt-4 px-4 py-2 bg-gray-200 text-gray-800 rounded-lg font-medium hover:bg-gray-300 transition-colors duration-200';
+  closeBtn.textContent = 'Close';
+  closeBtn.onclick = () => {
+    document.body.removeChild(popup);
+  };
+  
+  popupContent.appendChild(title);
+  popupContent.appendChild(content);
+  popupContent.appendChild(signupLink);
+  popupContent.appendChild(closeBtn);
+  popup.appendChild(popupContent);
+  
+  document.body.appendChild(popup);
 }
 </script>

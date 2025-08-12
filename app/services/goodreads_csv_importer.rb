@@ -1,7 +1,7 @@
 # app/services/goodreads_csv_importer.rb
 # Service objet responsable de :
 # - Lire le CSV Goodreads (headers officiels)
-# - Mapper chaque ligne vers nos attributs Reading
+# - Mapper chaque ligne vers nos attributs Book
 # - Créer / mettre à jour en idempotent (find_or_initialize_by :goodreads_book_id)
 # - Retourner un petit résumé (créés / MAJ / ignorés / erreurs)
 #
@@ -31,17 +31,17 @@ class GoodreadsCsvImporter
 
     csv.each_with_index do |row, i|
       begin
-        # 1) Transformer la ligne CSV en hash d’attributs pour Reading
+        # 1) Transformer la ligne CSV en hash d'attributs pour Book
         attrs = map_row(row)
 
-        # 2) Filtrage minimal : si pas d’ID ou pas de titre → on ignore
+        # 2) Filtrage minimal : si pas d'ID ou pas de titre → on ignore
         if attrs[:goodreads_book_id].nil? || attrs[:title].blank?
           skipped += 1
           next
         end
 
         # 3) Idempotence sur goodreads_book_id
-        rec = Reading.find_or_initialize_by(goodreads_book_id: attrs[:goodreads_book_id])
+        rec = Book.find_or_initialize_by(goodreads_book_id: attrs[:goodreads_book_id])
 
         if rec.new_record?
           # Nouveau : assigner tous les attributs puis save!
@@ -49,19 +49,19 @@ class GoodreadsCsvImporter
           rec.save!
           created += 1
         else
-          # Existant : ne sauvegarder que s’il y a des changements
+          # Existant : ne sauvegarder que s'il y a des changements
           rec.assign_attributes(attrs)
           if rec.changed?
             rec.save!
             updated += 1
           else
-            # Aucune diff → on compte comme ignoré (ça permet de rassurer sur l’idempotence)
+            # Aucune diff → on compte comme ignoré (ça permet de rassurer sur l'idempotence)
             skipped += 1
           end
         end
 
       rescue => e
-        # On stocke max d’info utile pour debug (numéro de ligne visible par l’utilisateur)
+        # On stocke max d'info utile pour debug (numéro de ligne visible par l'utilisateur)
         # i + 2 = on ajoute 2 car i commence à 0 et la ligne 1 = headers
         errors << "Ligne #{i + 2}: #{e.message}"
       end
@@ -70,22 +70,36 @@ class GoodreadsCsvImporter
     Result.new(created:, updated:, skipped:, errors:)
   end
 
+  def import
+    result = call
+    if result.errors.any?
+      { success: false, error: result.errors.join(", ") }
+    else
+      { success: true, count: result.created + result.updated }
+    end
+  end
+
   private
 
   # --- Helpers de mapping & parsing ---
 
-  # Mappe les entêtes Goodreads → nos colonnes Reading
+  # Mappe les entêtes Goodreads → nos colonnes Book
   # Entêtes possibles (selon exports) :
   # "Book Id","Title","Author","My Rating","Average Rating","Number of Pages",
   # "Date Added","Date Read","ISBN","ISBN13","Bookshelves" (ou "Shelves")
   def map_row(row)
     exclusive = safe_s(row["Exclusive Shelf"])
     extra_shelves = safe_s(row["Bookshelves"] || row["Shelves"])
+    
+    # Convert Goodreads shelf to internal status
+    status = Book.convert_goodreads_shelf(exclusive)
+    
     {
       goodreads_book_id: to_i_or_nil(row["Book Id"]),
       title:             safe_s(row["Title"]),
       author:            safe_s(row["Author"]),
-      my_rating:         to_i_or_nil(row["My Rating"]),
+      rating:            to_i_or_nil(row["My Rating"]),
+      status:            status,
       average_rating:    to_d_or_nil(row["Average Rating"]),
       pages:             to_i_or_nil(row["Number of Pages"]),
       date_added:        to_date_or_nil(row["Date Added"]),

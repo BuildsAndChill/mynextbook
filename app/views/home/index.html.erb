@@ -1,60 +1,94 @@
 <div class="min-h-screen bg-gradient-to-br from-indigo-50 via-white to-purple-50">
   <!-- Hero Section -->
   <div class="relative overflow-hidden">
-    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-24">
+    <div class="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-24">
       <div class="text-center">
         <!-- Hero Icon -->
-        <div class="mx-auto h-24 w-24 mb-8 flex items-center justify-center rounded-full bg-gradient-to-r from-indigo-500 to-purple-600">
-          <svg class="h-12 w-12 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+        <div class="mx-auto h-20 w-20 mb-8 flex items-center justify-center rounded-full bg-gradient-to-r from-indigo-500 to-purple-600">
+          <svg class="h-10 w-10 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.747 0 3.332.477 4.5 1.253v13C19.832 18.477 18.246 18 16.5 18c-1.746 0-3.332.477-4.5 1.253"></path>
           </svg>
         </div>
 
         <!-- Hero Headline -->
-        <h1 class="text-4xl md:text-6xl font-bold text-gray-900 mb-6">
+        <h1 class="text-4xl md:text-5xl font-bold text-gray-900 mb-6">
           What should you read next?
         </h1>
         
         <!-- Hero Subtitle -->
-        <p class="text-xl md:text-2xl text-gray-600 mb-12 max-w-3xl mx-auto">
+        <p class="text-lg md:text-xl text-gray-600 mb-12 max-w-2xl mx-auto">
           Tell us your mood, we'll find your next book in 30 seconds. 
           <span class="font-semibold text-indigo-600">No account required.</span>
         </p>
 
-        <!-- Primary CTA -->
-        <div class="flex flex-col sm:flex-row gap-4 justify-center items-center">
-          <%= link_to new_recommendation_path, class: "inline-flex items-center px-8 py-4 text-lg font-semibold text-white bg-gradient-to-r from-indigo-600 to-purple-600 rounded-xl shadow-lg hover:from-indigo-700 hover:to-purple-700 transform hover:scale-105 transition-all duration-200" do %>
-            <svg class="w-6 h-6 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 7l5 5m0 0l-5 5m5-5H6"></path>
-            </svg>
-            Get My Next Book
-          <% end %>
-          
-          <% if user_signed_in? %>
-            <%= link_to "View My Library", books_path, 
-                class: "inline-flex items-center px-6 py-3 text-base font-medium text-indigo-600 bg-white border-2 border-indigo-200 rounded-lg hover:bg-indigo-50 transition-colors duration-200" %>
+        <!-- Mood Input Form - Sleek Design -->
+        <div class="max-w-xl mx-auto mb-12">
+          <%= form_with url: recommendations_path, method: :post, local: true, class: "space-y-6", data: { turbo: false } do %>
+            <!-- Context Textarea -->
+            <div>
+              <label class="block text-sm font-medium text-gray-700 mb-2 text-left">Describe your reading mood</label>
+              <%= text_area_tag :context, nil, 
+                  rows: 3, 
+                  class: "block w-full border-gray-300 rounded-lg shadow-sm focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm resize-none",
+                  placeholder: "e.g. 'After Sapiens, I want tech & society, optimistic tone, 250–350 pages'",
+                  required: true %>
+              <p class="mt-2 text-sm text-gray-500 text-left">Be specific about genre, tone, length, or what you want to explore next</p>
+            </div>
+
+            <!-- Tone Chips -->
+            <div>
+              <label class="block text-sm font-medium text-gray-700 mb-3 text-left">Tone & Style</label>
+              <div class="flex flex-wrap gap-2 justify-center">
+                <% ['Deep dive', 'Fast-paced', 'Optimistic', 'Thoughtful', 'Adventure', 'Cozy', 'Challenging', 'Light'].each do |tone| %>
+                  <label class="relative">
+                    <%= check_box_tag 'tone_chips[]', tone, false, class: 'sr-only' %>
+                    <span class="inline-flex items-center px-3 py-2 rounded-full text-sm font-medium bg-gray-50 border border-gray-200 text-gray-600 cursor-pointer hover:bg-gray-100 transition-colors duration-200">
+                      <%= tone %>
+                    </span>
+                  </label>
+                <% end %>
+              </div>
+            </div>
+
+            <!-- Submit Button - Sleek Design -->
+            <button type="submit" class="w-full bg-gradient-to-r from-indigo-600 to-purple-600 text-white py-3 px-6 rounded-lg font-medium text-base hover:from-indigo-700 hover:to-purple-700 transition-all duration-200 flex items-center justify-center shadow-sm">
+              <svg class="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9.663 17h4.673M12 3v1m6.364 1.636l-.707.707M21 12h-1M4 12H3m3.343-5.657l-.707-.707m2.828 9.9a5 5 0 117.072 0l-.548.547A3.374 3.374 0 0014 18.469V19a2 2 0 11-4 0v-.531c0-.895-.356-1.754-.988-2.386l-.548-.547z"></path>
+              </svg>
+              Get My Next Book
+            </button>
           <% end %>
         </div>
 
+        <!-- Quick Tips - Sleek Design -->
+        <div class="max-w-xl mx-auto p-4 bg-blue-50 rounded-lg">
+          <h4 class="text-sm font-medium text-blue-800 mb-2">💡 Quick Tips</h4>
+          <ul class="text-sm text-blue-700 space-y-1 text-left">
+            <li>• Mention specific authors or books you love</li>
+            <li>• Include your preferred reading time (quick reads vs. deep dives)</li>
+            <li>• Specify if you want to explore new genres or stick to favorites</li>
+          </ul>
+        </div>
+
         <!-- Trust Indicators -->
-        <div class="mt-12 flex flex-wrap justify-center items-center gap-8 text-sm text-gray-500">
+        <div class="mt-8 flex flex-wrap justify-center items-center gap-6 text-sm text-gray-500">
           <div class="flex items-center">
-            <svg class="w-5 h-5 mr-2 text-green-500" fill="currentColor" viewBox="0 0 20 20">
+            <svg class="w-4 h-4 mr-2 text-green-500" fill="currentColor" viewBox="0 0 20 20">
               <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clip-rule="evenodd"></path>
             </svg>
             AI-powered recommendations
           </div>
           <div class="flex items-center">
-            <svg class="w-5 h-5 mr-2 text-green-500" fill="currentColor" viewBox="0 0 20 20">
+            <svg class="w-4 h-4 mr-2 text-green-500" fill="currentColor" viewBox="0 0 20 20">
               <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clip-rule="evenodd"></path>
             </svg>
-            No account required
+            Basic recommendations free
           </div>
           <div class="flex items-center">
-            <svg class="w-5 h-5 mr-2 text-green-500" fill="currentColor" viewBox="0 0 20 20">
+            <svg class="w-4 h-4 mr-2 text-green-500" fill="currentColor" viewBox="0 0 20 20">
               <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clip-rule="evenodd"></path>
             </svg>
-            Personalized to your taste
+            Sign up for personalization
           </div>
         </div>
       </div>
@@ -80,15 +114,15 @@
         <!-- Step 2 -->
         <div class="text-center">
           <div class="mx-auto h-16 w-16 mb-6 flex items-center justify-center rounded-full bg-indigo-100 text-indigo-600 font-bold text-2xl">2</div>
-          <h3 class="text-xl font-semibold text-gray-900 mb-3">Get instant insights</h3>
+          <h3 class="text-xl font-semibold text-gray-900 mb-3">Get instant results</h3>
           <p class="text-gray-600">Our AI analyzes your preferences and gives you a personalized reading brief with 3 perfect book picks.</p>
         </div>
 
         <!-- Step 3 -->
         <div class="text-center">
           <div class="mx-auto h-16 w-16 mb-6 flex items-center justify-center rounded-full bg-indigo-100 text-indigo-600 font-bold text-2xl">3</div>
-          <h3 class="text-xl font-semibold text-gray-900 mb-3">Refine & discover</h3>
-          <p class="text-gray-600">Give feedback, ask for refinements, and discover even better matches to your taste.</p>
+          <h3 class="text-xl font-semibold text-gray-900 mb-3">Enhance & personalize</h3>
+          <p class="text-gray-600">Sign up to import your reading history, save books, and get even better recommendations.</p>
         </div>
       </div>
     </div>
@@ -99,7 +133,7 @@
     <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
       <div class="text-center mb-16">
         <h2 class="text-3xl font-bold text-gray-900 mb-4">Enhanced recommendations</h2>
-        <p class="text-xl text-gray-600">Share your reading data for even better, personalized suggestions</p>
+        <p class="text-xl text-gray-600">Share your reading data for personalized suggestions</p>
       </div>
 
       <div class="grid md:grid-cols-2 gap-8">
@@ -121,11 +155,10 @@
             <%= link_to "Import Library", new_import_path, 
                 class: "inline-flex items-center px-4 py-2 text-sm font-medium text-green-600 bg-green-50 border border-green-200 rounded-lg hover:bg-green-100 transition-colors duration-200" %>
           <% else %>
-            <div class="text-center">
-              <p class="text-sm text-gray-500 mb-3">Sign up required to import your Goodreads data</p>
-              <%= link_to "Sign Up to Import", new_user_registration_path, 
-                  class: "inline-flex items-center px-4 py-2 text-sm font-medium text-green-600 bg-green-50 border border-green-200 rounded-lg hover:bg-green-100 transition-colors duration-200" %>
-            </div>
+            <button onclick="showSignupPopup('Sign up to import your Goodreads library and get personalized recommendations!')" 
+                    class="inline-flex items-center px-4 py-2 text-sm font-medium text-green-600 bg-green-50 border border-green-200 rounded-lg hover:bg-green-100 transition-colors duration-200">
+              Import Library
+            </button>
           <% end %>
         </div>
 
@@ -147,25 +180,24 @@
             <%= link_to "Add Book", new_book_path, 
                 class: "inline-flex items-center px-4 py-2 text-sm font-medium text-blue-600 bg-blue-50 border border-blue-200 rounded-lg hover:bg-blue-100 transition-colors duration-200" %>
           <% else %>
-            <div class="text-center">
-              <p class="text-sm text-gray-500 mb-3">Sign up required to build your personal library</p>
-              <%= link_to "Sign Up to Add Books", new_user_registration_path, 
-                  class: "inline-flex items-center px-4 py-2 text-sm font-medium text-blue-600 bg-blue-50 border border-blue-200 rounded-lg hover:bg-blue-100 transition-colors duration-200" %>
-            </div>
+            <button onclick="showSignupPopup('Sign up to build your personal library and get better recommendations!')" 
+                    class="inline-flex items-center px-4 py-2 text-sm font-medium text-blue-600 bg-blue-50 border border-blue-200 rounded-lg hover:bg-blue-100 transition-colors duration-200">
+              Add Book
+            </button>
           <% end %>
         </div>
       </div>
 
-      <!-- Strategic Sign-Up CTA -->
-      <% unless user_signed_in? %>
+      <!-- Subtle Sign-Up CTA - Only show for users who haven't shared data yet -->
+      <% if user_signed_in? && current_user.books.empty? %>
         <div class="mt-12 text-center">
           <div class="bg-white rounded-2xl p-8 shadow-lg max-w-2xl mx-auto">
-            <h3 class="text-xl font-semibold text-gray-900 mb-3">Unlock Your Full Reading Potential</h3>
-            <p class="text-gray-600 mb-6">Sign up to import your Goodreads library, build your personal reading list, and get AI recommendations tailored specifically to your taste.</p>
+            <h3 class="text-xl font-semibold text-gray-900 mb-3">Ready to Personalize?</h3>
+            <p class="text-gray-600 mb-6">Share your reading data to get AI recommendations tailored specifically to your taste.</p>
             <div class="flex flex-col sm:flex-row gap-4 justify-center">
-              <%= link_to "Sign Up Now", new_user_registration_path, 
+              <%= link_to "Import Goodreads", new_import_path, 
                   class: "inline-flex items-center px-6 py-3 bg-gradient-to-r from-indigo-600 to-purple-600 text-white font-medium rounded-lg hover:from-indigo-700 hover:to-purple-700 transition-all duration-200" %>
-              <%= link_to "Learn More", "#", 
+              <%= link_to "Add Books Manually", new_book_path, 
                   class: "inline-flex items-center px-6 py-3 border border-gray-300 text-gray-700 font-medium rounded-lg hover:bg-gray-50 transition-colors duration-200" %>
             </div>
           </div>
@@ -193,8 +225,6 @@
         <div class="flex flex-wrap justify-center gap-4">
           <%= link_to "View My Library", books_path, 
               class: "inline-flex items-center px-6 py-3 text-base font-medium text-gray-700 bg-gray-100 rounded-lg hover:bg-gray-200 transition-colors duration-200" %>
-          <%= link_to "Reading History", readings_path, 
-              class: "inline-flex items-center px-6 py-3 text-base font-medium text-gray-700 bg-gray-100 rounded-lg hover:bg-gray-200 transition-colors duration-200" %>
           <%= link_to "Account Settings", edit_user_registration_path, 
               class: "inline-flex items-center px-6 py-3 text-base font-medium text-gray-700 bg-gray-100 rounded-lg hover:bg-gray-200 transition-colors duration-200" %>
         </div>
@@ -202,3 +232,86 @@
     </div>
   <% end %>
 </div>
+
+<script>
+// Handle tone chip selection on home page
+document.addEventListener('DOMContentLoaded', function() {
+  const toneChips = document.querySelectorAll('input[name="tone_chips[]"]');
+  
+  toneChips.forEach(chip => {
+    chip.addEventListener('change', function() {
+      const span = this.nextElementSibling;
+      if (this.checked) {
+        span.classList.remove('bg-gray-50', 'border-gray-200', 'text-gray-600');
+        span.classList.add('bg-indigo-100', 'border-indigo-300', 'text-indigo-700');
+      } else {
+        span.classList.remove('bg-indigo-100', 'border-indigo-300', 'text-indigo-700');
+        span.classList.add('bg-gray-50', 'border-gray-200', 'text-gray-600');
+      }
+    });
+  });
+
+  // Handle form submission
+  const form = document.querySelector('form');
+  if (form) {
+    form.addEventListener('submit', function(e) {
+      // Validate context is not empty
+      const context = document.querySelector('textarea[name="context"]').value.trim();
+      if (!context) {
+        e.preventDefault();
+        alert('Please describe what you\'re in the mood for reading.');
+        return;
+      }
+      
+      // Show loading state
+      const submitBtn = form.querySelector('button[type="submit"]');
+      const originalText = submitBtn.innerHTML;
+      submitBtn.innerHTML = '<svg class="animate-spin -ml-1 mr-3 h-5 w-5 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24"><circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle><path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path></svg>Getting recommendations...';
+      submitBtn.disabled = true;
+      
+      // Re-enable button after a delay (in case of errors)
+      setTimeout(() => {
+        submitBtn.innerHTML = originalText;
+        submitBtn.disabled = false;
+      }, 10000);
+    });
+  }
+});
+
+// Function to show a signup popup
+function showSignupPopup(message) {
+  const popup = document.createElement('div');
+  popup.className = 'fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50';
+  
+  const popupContent = document.createElement('div');
+  popupContent.className = 'bg-white p-6 rounded-lg shadow-xl max-w-md w-full mx-4';
+  
+  const title = document.createElement('h3');
+  title.className = 'text-lg font-medium text-gray-900 mb-2';
+  title.textContent = 'Sign Up Required';
+  
+  const content = document.createElement('p');
+  content.className = 'text-sm text-gray-700 mb-4';
+  content.textContent = message;
+  
+  const signupLink = document.createElement('a');
+  signupLink.href = '<%= new_user_registration_path %>';
+  signupLink.className = 'inline-flex items-center px-6 py-2 bg-gradient-to-r from-indigo-600 to-purple-600 text-white text-sm font-medium rounded-lg hover:from-indigo-700 hover:to-purple-700 transition-all duration-200';
+  signupLink.textContent = 'Sign Up Now';
+  
+  const closeBtn = document.createElement('button');
+  closeBtn.className = 'mt-4 px-4 py-2 bg-gray-200 text-gray-800 rounded-lg font-medium hover:bg-gray-300 transition-colors duration-200';
+  closeBtn.textContent = 'Close';
+  closeBtn.onclick = () => {
+    document.body.removeChild(popup);
+  };
+  
+  popupContent.appendChild(title);
+  popupContent.appendChild(content);
+  popupContent.appendChild(signupLink);
+  popupContent.appendChild(closeBtn);
+  popup.appendChild(popupContent);
+  
+  document.body.appendChild(popup);
+}
+</script>

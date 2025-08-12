@@ -13,7 +13,7 @@ class ImportsController < ApplicationController
         result = importer.import
         
         if result[:success]
-          redirect_to readings_path, notice: "Successfully imported #{result[:count]} books from Goodreads!"
+          redirect_to books_path, notice: "Successfully imported #{result[:count]} books from Goodreads!"
         else
           redirect_to new_import_path, alert: "Import failed: #{result[:error]}"
         end

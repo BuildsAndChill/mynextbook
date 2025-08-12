@@ -1,5 +1,5 @@
 class RecommendationsController < ApplicationController
-  before_action :authenticate_user!
+  # Remove authentication requirement - allow unlogged users to get basic recommendations
   
   def new
     # Show the unified recommendation screen
@@ -10,10 +10,21 @@ class RecommendationsController < ApplicationController
     context = params[:context]
     tone_chips = params[:tone_chips] || []
     include_history = params[:include_history] == '1'
+    refinement = params[:refinement]
     
-    Rails.logger.info "Recommendations#create called with: context=#{context.inspect}, tone_chips=#{tone_chips.inspect}, include_history=#{include_history.inspect}"
+    Rails.logger.info "Recommendations#create called with: context=#{context.inspect}, tone_chips=#{tone_chips.inspect}, include_history=#{include_history.inspect}, refinement=#{refinement.inspect}"
     Rails.logger.info "Context present? #{context.present?}"
     Rails.logger.info "Context length: #{context&.length || 0}"
+    
+    # Store refinement if provided and user is signed in
+    if refinement.present? && user_signed_in?
+      UserRefinement.create_from_input(
+        current_user, 
+        refinement, 
+        context || "General recommendation"
+      )
+      Rails.logger.info "Refinement stored: #{refinement}"
+    end
     
     # Create structured user prompt
     @user_prompt = build_structured_prompt(context, tone_chips, include_history)
@@ -55,19 +66,48 @@ class RecommendationsController < ApplicationController
 
   def feedback
     # Handle user feedback on recommendations
-    book_id = params[:book_id]
-    feedback_type = params[:feedback_type] # like, dislike, save
+    book_title = params[:book_title]
+    book_author = params[:book_author]
+    feedback_type = params[:feedback_type] # like, dislike, save, more_info
     refinement = params[:refinement]
     
-    # Store feedback for future improvements
-    # TODO: Implement feedback storage
+    if user_signed_in? && book_title.present? && book_author.present?
+      # Store feedback for future improvements
+      feedback = current_user.user_book_feedbacks.create!(
+        book_title: book_title,
+        book_author: book_author,
+        feedback_type: feedback_type,
+        recommendation_context: params[:context] || "General recommendation"
+      )
+      
+      # Handle specific feedback types
+      case feedback_type
+      when 'save'
+        # Save book to user's reading list
+        Book.save_from_recommendation(current_user, book_title, book_author)
+        flash[:notice] = "Book saved to your reading list!"
+      when 'like'
+        flash[:notice] = "Thanks! We'll recommend more like this."
+      when 'dislike'
+        flash[:notice] = "Got it! We'll avoid similar books."
+      when 'more_info'
+        flash[:notice] = "Book details expanded!"
+      end
+      
+      Rails.logger.info "Feedback stored: #{feedback.inspect}"
+    else
+      # For unlogged users, just show a message encouraging signup
+      if !user_signed_in?
+        flash[:notice] = "Sign up to save your feedback and get better recommendations!"
+      end
+    end
     
     # If refinement provided, get new recommendations
     if refinement.present?
       # Trigger refinement flow
       redirect_to new_recommendation_path(refinement: refinement)
     else
-      redirect_to new_recommendation_path, notice: "Feedback recorded! We'll use this to improve future recommendations."
+      redirect_to new_recommendation_path, notice: flash[:notice] || "Feedback recorded! We'll use this to improve future recommendations."
     end
   end
 
@@ -86,16 +126,58 @@ class RecommendationsController < ApplicationController
       prompt += "TONE PREFERENCES: #{tone_chips.join(', ')}\n\n"
     end
     
-    # Add reading history if requested
-    if include_history
-      readings = current_user.readings.limit(15)
-      if readings.any?
+    # Add reading history if requested and user is signed in
+    if include_history && user_signed_in?
+      books = current_user.books.limit(15)
+      if books.any?
         prompt += "READING HISTORY (last 15 books):\n"
-        readings.each do |reading|
-          rating = reading.my_rating || 'unrated'
-          prompt += "- #{reading.title} by #{reading.author} (#{rating}/5 stars)\n"
+        books.each do |book|
+          rating = book.rating || 'unrated'
+          prompt += "- #{book.title} by #{book.author} (#{rating}/5 stars) - #{book.status}\n"
         end
         prompt += "\n"
+      end
+    end
+    
+    # Add user feedback history for better personalization (only if signed in)
+    if user_signed_in? && current_user.user_book_feedbacks.any?
+      feedback_summary = current_user.feedback_summary
+      
+      if feedback_summary[:likes].any? || feedback_summary[:dislikes].any?
+        prompt += "USER FEEDBACK HISTORY:\n"
+        
+        if feedback_summary[:likes].any?
+          prompt += "Books they liked:\n"
+          feedback_summary[:likes].each { |book| prompt += "- #{book}\n" }
+          prompt += "\n"
+        end
+        
+        if feedback_summary[:dislikes].any?
+          prompt += "Books they disliked:\n"
+          feedback_summary[:dislikes].each { |book| prompt += "- #{book}\n" }
+          prompt += "\n"
+        end
+        
+        if feedback_summary[:saved].any?
+          prompt += "Books they saved:\n"
+          feedback_summary[:saved].each { |book| prompt += "- #{book}\n" }
+          prompt += "\n"
+        end
+        
+        prompt += "IMPORTANT: Use this feedback to avoid recommending books similar to disliked ones and prioritize books similar to liked ones.\n\n"
+      end
+    end
+    
+    # Add user refinement history for better personalization (only if signed in)
+    if user_signed_in? && current_user.user_refinements.any?
+      refinement_history = current_user.refinement_history(5)
+      if refinement_history.any?
+        prompt += "USER REFINEMENT HISTORY:\n"
+        refinement_history.each do |refinement|
+          prompt += "- #{refinement.refinement_text} (context: #{refinement.context})\n"
+        end
+        prompt += "\n"
+        prompt += "IMPORTANT: Consider these past refinements when making new recommendations. If the user has asked for similar refinements before, provide variety.\n\n"
       end
     end
     

@@ -34,8 +34,7 @@
             
             <% if user_signed_in? %>
               <%= link_to "My Library", books_path, class: "text-gray-600 hover:text-gray-900 px-3 py-2 text-sm font-medium transition-colors duration-200" %>
-              <%= link_to "Reading History", readings_path, class: "text-gray-600 hover:text-gray-900 px-3 py-2 text-sm font-medium transition-colors duration-200" %>
-              <%= link_to "Import Books", new_import_path, class: "text-gray-600 hover:text-gray-900 px-3 py-2 text-sm font-medium transition-colors duration-200" %>
+              <%= link_to "Share Reading History", new_import_path, class: "text-gray-600 hover:text-gray-900 px-3 py-2 text-sm font-medium transition-colors duration-200" %>
             <% end %>
           </div>
 
@@ -65,7 +64,7 @@
                 <!-- Dropdown Menu -->
                 <div class="hidden absolute right-0 mt-2 w-48 bg-white rounded-lg shadow-lg border border-gray-200 py-1 z-50" id="user-menu-dropdown">
                   <%= link_to "Account Settings", edit_user_registration_path, class: "block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100" %>
-                  <%= link_to "Sign Out", destroy_user_session_path, method: :delete, class: "block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100" %>
+                  <%= button_to "Sign Out", destroy_user_session_path, method: :delete, class: "block w-full text-left px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 bg-transparent border-0 cursor-pointer" %>
                 </div>
               </div>
             <% else %>
@@ -133,15 +132,13 @@
               <span class="text-xl font-bold text-gray-900">My Next Book</span>
             </div>
             <p class="text-gray-600 mb-4">Discover your next great read with AI-powered recommendations. No account required to get started.</p>
-            <%= link_to "Get My Next Book", new_recommendation_path, class: "inline-flex items-center px-4 py-2 bg-indigo-600 text-white text-sm font-medium rounded-lg hover:bg-indigo-700 transition-colors duration-200" %>
+            <p class="text-sm text-gray-500">Use the form on the home page to get instant recommendations, or sign up for enhanced personalization.</p>
           </div>
           
           <div>
             <h3 class="text-sm font-semibold text-gray-900 mb-4">Features</h3>
             <ul class="space-y-2 text-sm text-gray-600">
-              <li><%= link_to "AI Recommendations", new_recommendation_path, class: "hover:text-gray-900 transition-colors duration-200" %></li>
               <li><%= link_to "Import Goodreads", new_import_path, class: "hover:text-gray-900 transition-colors duration-200" %></li>
-              <li><%= link_to "Reading History", readings_path, class: "hover:text-gray-900 transition-colors duration-200" %></li>
               <li><%= link_to "Personal Library", books_path, class: "hover:text-gray-900 transition-colors duration-200" %></li>
             </ul>
           </div>
@@ -151,7 +148,7 @@
             <ul class="space-y-2 text-sm text-gray-600">
               <% if user_signed_in? %>
                 <li><%= link_to "My Account", edit_user_registration_path, class: "hover:text-gray-900 transition-colors duration-200" %></li>
-                <li><%= link_to "Sign Out", destroy_user_session_path, method: :delete, class: "hover:text-gray-900 transition-colors duration-200" %></li>
+                <li><%= button_to "Sign Out", destroy_user_session_path, method: :delete, class: "hover:text-gray-900 transition-colors duration-200 bg-transparent border-0 cursor-pointer text-left p-0" %></li>
               <% else %>
                 <li><%= link_to "Sign In", new_user_session_path, class: "hover:text-gray-900 transition-colors duration-200" %></li>
                 <li><%= link_to "Sign Up", new_user_registration_path, class: "hover:text-gray-900 transition-colors duration-200" %></li>

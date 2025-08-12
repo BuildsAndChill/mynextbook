@@ -10,6 +10,16 @@ class BooksController < ApplicationController
     # Si un statut est présent → filtre, sinon affiche tout
     @books = current_user.books
     @books = @books.by_status(@status) if @status.present?
+    
+    # Get library summary
+    @library_summary = {
+      to_read: current_user.books.to_read.count,
+      reading: current_user.books.reading.count,
+      read: current_user.books.read.count,
+      imported: current_user.books.imported.count,
+      manual: current_user.books.manual.count,
+      total: current_user.books.count
+    }
   end
 
   def show
@@ -65,6 +75,8 @@ class BooksController < ApplicationController
   end
 
   def book_params
-    params.require(:book).permit(:title, :author, :rating, :status)
+    params.require(:book).permit(:title, :author, :rating, :status, :goodreads_book_id, 
+                                :average_rating, :shelves, :date_added, :date_read, 
+                                :isbn, :isbn13, :pages, :exclusive_shelf)
   end
 end

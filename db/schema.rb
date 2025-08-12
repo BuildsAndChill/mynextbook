@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[8.0].define(version: 2025_08_12_212938) do
+ActiveRecord::Schema[8.0].define(version: 2025_08_12_224446) do
   # These are extensions that must be enabled in order to support this database
   enable_extension "pg_catalog.plpgsql"
 
@@ -22,14 +22,7 @@ ActiveRecord::Schema[8.0].define(version: 2025_08_12_212938) do
     t.datetime "created_at", null: false
     t.datetime "updated_at", null: false
     t.bigint "user_id", null: false
-    t.index ["user_id"], name: "index_books_on_user_id"
-  end
-
-  create_table "readings", force: :cascade do |t|
     t.bigint "goodreads_book_id"
-    t.string "title"
-    t.string "author"
-    t.integer "my_rating"
     t.decimal "average_rating", precision: 4, scale: 2
     t.text "shelves"
     t.date "date_added"
@@ -37,12 +30,29 @@ ActiveRecord::Schema[8.0].define(version: 2025_08_12_212938) do
     t.string "isbn"
     t.string "isbn13"
     t.integer "pages"
+    t.string "exclusive_shelf"
+    t.index ["goodreads_book_id"], name: "index_books_on_goodreads_book_id", unique: true
+    t.index ["user_id"], name: "index_books_on_user_id"
+  end
+
+  create_table "user_book_feedbacks", force: :cascade do |t|
+    t.bigint "user_id", null: false
+    t.string "book_title"
+    t.string "book_author"
+    t.integer "feedback_type"
+    t.text "recommendation_context"
     t.datetime "created_at", null: false
     t.datetime "updated_at", null: false
-    t.string "exclusive_shelf"
+    t.index ["user_id"], name: "index_user_book_feedbacks_on_user_id"
+  end
+
+  create_table "user_refinements", force: :cascade do |t|
     t.bigint "user_id", null: false
-    t.index ["goodreads_book_id"], name: "index_readings_on_goodreads_book_id", unique: true
-    t.index ["user_id"], name: "index_readings_on_user_id"
+    t.text "refinement_text"
+    t.text "context"
+    t.datetime "created_at", null: false
+    t.datetime "updated_at", null: false
+    t.index ["user_id"], name: "index_user_refinements_on_user_id"
   end
 
   create_table "users", force: :cascade do |t|
@@ -58,5 +68,6 @@ ActiveRecord::Schema[8.0].define(version: 2025_08_12_212938) do
   end
 
   add_foreign_key "books", "users"
-  add_foreign_key "readings", "users"
+  add_foreign_key "user_book_feedbacks", "users"
+  add_foreign_key "user_refinements", "users"
 end
