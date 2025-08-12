@@ -1,0 +1,15 @@
+<h1 class="text-2xl font-bold mb-4">Trouve mon prochain livre</h1>
+
+<%= form_with url: recommendations_path, method: :post, local: true, class: "space-y-4", data: {turbo: false} do %>
+  <!-- Champ texte pour le contexte -->
+  <div>
+    <%= label_tag :context, "Décris ton contexte actuel", class: "block font-medium" %>
+    <%= text_area_tag :context, nil, rows: 6, class: "border rounded px-3 py-2 w-full" %>
+    <p class="text-gray-500 text-sm mt-1">
+      Exemple : "Je viens de finir Sapiens, je veux creuser les liens entre technologie et société..."
+    </p>
+  </div>
+
+  <!-- Bouton de soumission -->
+  <%= submit_tag "Construire le prompt", class: "bg-green-500 text-white px-4 py-2 rounded" %>
+<% end %>

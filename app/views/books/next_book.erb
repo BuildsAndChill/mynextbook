@@ -1,0 +1,18 @@
+<h1 class="text-2xl font-bold mb-4">Your Next Book</h1>
+
+<% if @book %>
+  <!-- Affichage du livre proposé -->
+  <div class="p-4 border rounded shadow max-w-md">
+    <h2 class="text-lg font-semibold"><%= @book.title %></h2>
+    <p class="text-gray-700">By <%= @book.author %></p>
+    <p>Status: <%= @book.status.humanize %></p>
+  </div>
+
+  <!-- Feedback : like / dislike -->
+  <div class="mt-4 space-x-2">
+    <%= button_to "👍 Yes, I'll read it", feedback_books_path(liked: true), method: :post, class: "bg-blue-500 text-white px-4 py-2 rounded" %>
+    <%= button_to "👎 No, show another", feedback_books_path(liked: false), method: :post, class: "bg-red-500 text-white px-4 py-2 rounded" %>
+  </div>
+<% else %>
+  <p>No books to recommend. Add some to your 'To Read' list.</p>
+<% end %>

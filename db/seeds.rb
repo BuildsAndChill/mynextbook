@@ -1,9 +1,25 @@
-# This file should ensure the existence of records required to run the application in every environment (production,
-# development, test). The code here should be idempotent so that it can be executed at any point in every environment.
-# The data can then be loaded with the bin/rails db:seed command (or created alongside the database with db:setup).
-#
-# Example:
-#
-#   ["Action", "Comedy", "Drama", "Horror"].each do |genre_name|
-#     MovieGenre.find_or_create_by!(name: genre_name)
-#   end
+# Supprime tous les livres existants pour éviter les doublons
+Book.delete_all
+
+# Liste simulée comme si elle venait de Goodreads (titre, auteur, note éventuelle, statut)
+books = [
+  # Déjà lus
+  { title: "Sapiens", author: "Yuval Noah Harari", rating: 5, status: "read" },
+  { title: "Deep Work", author: "Cal Newport", rating: 5, status: "read" },
+  { title: "1984", author: "George Orwell", rating: 5, status: "read" },
+
+  # En cours de lecture
+  { title: "Thinking, Fast and Slow", author: "Daniel Kahneman", rating: 4, status: "reading" },
+  { title: "Clean Code", author: "Robert C. Martin", rating: 4, status: "reading" },
+
+  # À lire
+  { title: "Homo Deus", author: "Yuval Noah Harari", status: "to_read" },
+  { title: "Atomic Habits", author: "James Clear", status: "to_read" },
+  { title: "Educated", author: "Tara Westover", status: "to_read" },
+  { title: "The Lean Startup", author: "Eric Ries", status: "to_read" }
+]
+
+# Insertion en base
+Book.create!(books)
+
+puts "✅ #{Book.count} livres ajoutés (simulation import Goodreads)"

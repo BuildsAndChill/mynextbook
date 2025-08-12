@@ -1,0 +1,16 @@
+<h1 class="text-2xl font-bold mb-4">Tes recommandations</h1>
+
+<% if @ai_error.present? %>
+  <div class="p-3 bg-red-100 text-red-800 rounded mb-4">
+    Erreur IA : <%= @ai_error %>
+  </div>
+<% end %>
+
+<div class="p-4 rounded-xl bg-white shadow whitespace-pre-wrap">
+  <%= @ai_raw %>
+</div>
+
+<div class="mt-8">
+  <h4 class="font-medium">Prompt envoyé</h4>
+  <pre class="mt-2 whitespace-pre-wrap"><%= @user_prompt %></pre>
+</div>

@@ -1,18 +1,19 @@
-<h1 class="text-2xl font-bold mb-4">My Books</h1>
+<h1 class="text-2xl font-bold mb-4">My Library</h1>
 
 <!-- Menu de filtres -->
 <div class="mb-4 space-x-2">
-  <!-- Lien 'All' : réinitialise le filtre -->
-  <%= link_to "All", books_path,
-      class: "px-3 py-1 rounded #{'bg-blue-500 text-white' unless @status}" %>
+  <!-- Bouton "All" actif si aucun filtre -->
+  <%= link_to "All", books_path, class: "px-3 py-1 rounded #{'bg-blue-500 text-white' unless @status}" %>
 
-  <!-- Génère un bouton par status défini dans le modèle -->
+  <!-- Génère un bouton par statut -->
   <% Book.statuses.keys.each do |status| %>
     <%= link_to status.humanize, books_path(status: status),
-        # Ajoute un style spécial si ce status est le filtre actif
         class: "px-3 py-1 rounded #{'bg-blue-500 text-white' if @status == status}" %>
   <% end %>
 </div>
+
+<!-- Bouton Next Book -->
+<%= link_to "📖 What's my next book?", next_book_books_path, class: "bg-green-500 text-white px-4 py-2 rounded" %>
 
 <!-- Liste des livres -->
 <div class="mt-6 grid gap-4">
@@ -22,20 +23,6 @@
       <p class="text-gray-700">By <%= book.author %></p>
       <p>Status: <%= book.status.humanize %></p>
       <p>Rating: <%= book.rating || "N/A" %></p>
-
-      <!-- Liens d'action -->
-      <div class="mt-2 space-x-2">
-        <%= link_to "Show", book, class: "text-blue-500" %>
-        <%= link_to "Edit", edit_book_path(book), class: "text-yellow-500" %>
-        <%= link_to "Delete", book,
-            data: { turbo_method: :delete, turbo_confirm: "Are you sure?" },
-            class: "text-red-500" %>
-      </div>
     </div>
   <% end %>
 </div>
-  enum :status, {
-    to_read: 'to_read',
-    reading: 'reading',
-    read: 'read'
-  }, validate: true
