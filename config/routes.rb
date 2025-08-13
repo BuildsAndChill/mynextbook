@@ -1,4 +1,7 @@
 Rails.application.routes.draw do
+  # Healthcheck minimal pour Render
+  get "/health", to: proc { [200, {}, ["OK"]] }
+  
   get "home/index"
   devise_for :users
   

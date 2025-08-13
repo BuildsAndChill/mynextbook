@@ -1,0 +1,27 @@
+services:
+  - type: web
+    name: mynextbook
+    env: ruby
+    plan: free
+    region: frankfurt
+    buildCommand: bundle install && bundle exec rake assets:precompile
+    startCommand: bundle exec puma -C config/puma.rb
+    autoDeploy: true
+    envVars:
+      - key: RAILS_ENV
+        value: production
+      - key: RAILS_MASTER_KEY
+        sync: false
+      - key: DATABASE_URL
+        fromDatabase:
+          name: mynextbook-db
+          property: connectionString
+      - key: RAILS_LOG_TO_STDOUT
+        value: "1"
+      - key: AI_DISABLED
+        value: "0"
+    postDeployCommand: bundle exec rails db:migrate
+
+databases:
+  - name: mynextbook-db
+    plan: free

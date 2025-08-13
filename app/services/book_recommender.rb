@@ -14,6 +14,9 @@ class BookRecommender
   private
 
   def call_with_prompt(prompt)
+    # Feature flag IA (garde-fou)
+    return "IA désactivée momentanément." if ENV["AI_DISABLED"] == "1"
+    
     # Check if AI is disabled (for testing/mock mode)
     if ENV["AI_DISABLED"] == "1"
       Rails.logger.info "AI_DISABLED=1, returning mock response"
