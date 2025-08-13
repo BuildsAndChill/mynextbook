@@ -1,0 +1,45 @@
+# Git Workflow Configuration
+
+## Branches principales :
+- `master` → Production (lien principal)
+- `dev` → Développement (lien dev public)
+
+## Workflow de développement :
+1. **Nouveau sprint** → Créer branche `feature/nom-feature` depuis `dev`
+2. **Développement** → Travailler sur la branche feature
+3. **Tests** → Tester localement et sur la branche feature
+4. **Merge** → Fusionner la feature dans `dev`
+5. **Déploiement dev** → `dev` se déploie automatiquement sur Render (lien dev)
+6. **Validation** → Tester sur l'environnement de développement
+7. **Release** → Fusionner `dev` dans `master` pour la production
+
+## Commandes utiles :
+```bash
+# Créer une nouvelle feature
+git checkout dev
+git pull origin dev
+git checkout -b feature/nom-feature
+
+# Développer et tester
+# ... travail sur la feature ...
+
+# Finaliser la feature
+git add .
+git commit -m "feat: description de la feature"
+git push origin feature/nom-feature
+
+# Merge dans dev
+git checkout dev
+git merge feature/nom-feature
+git push origin dev
+
+# Release en production
+git checkout master
+git merge dev
+git push origin master
+```
+
+## Environnements :
+- **Local** → Développement et tests
+- **Dev (Render)** → Tests d'intégration et validation
+- **Production (Render)** → Application en ligne pour les utilisateurs
