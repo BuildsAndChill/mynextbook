@@ -6,10 +6,18 @@ class BooksController < ApplicationController
   def index
     # Récupère le paramètre "status" dans l'URL (?status=to_read, etc.)
     @status = params[:status]
+    @show_imported = params[:imported] == 'true'
 
     # Si un statut est présent → filtre, sinon affiche tout
     @books = current_user.user_readings.includes(:book_metadata)
-    @books = @books.by_status(@status) if @status.present?
+    
+    if @show_imported
+      # Show only imported books (from Goodreads)
+      @books = @books.joins(:book_metadata).where.not(book_metadata: { goodreads_book_id: nil })
+      @imported_count = @books.count
+    elsif @status.present?
+      @books = @books.by_status(@status)
+    end
     
     # Get library summary
     @library_summary = UserReading.reading_list_summary(current_user)

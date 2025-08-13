@@ -9,7 +9,7 @@ class UserRefinement < ApplicationRecord
   
   # Get user's refinement history
   def self.refinement_history(user, limit = 10)
-    user.user_refinements.recent.limit(limit)
+    user.user_refinements.order(created_at: :desc).limit(limit)
   end
   
   # Get most common refinements for AI learning

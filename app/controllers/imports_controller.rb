@@ -1,33 +1,45 @@
 # app/controllers/imports_controller.rb
-# Rôle : afficher le formulaire d’upload + traiter l’import CSV via le service.
+# Rôle : afficher le formulaire d'upload + traiter l'import CSV via le service.
 class ImportsController < ApplicationController
   before_action :authenticate_user!
+  skip_before_action :verify_authenticity_token, only: [:create]
   
   def new
   end
 
   def create
-    Rails.logger.info "Import request received. File present: #{params[:file].present?}"
-    Rails.logger.info "Current user: #{current_user.id}"
+    # Completely disable session for CSV import to prevent CookieOverflow
+    request.session_options[:skip] = true
+    session.clear if session
     
     if params[:file].present?
+      file = params[:file]
+      
+      # Validate file type
+      unless file.content_type == 'text/csv' || file.original_filename.end_with?('.csv')
+        redirect_to new_import_path, alert: "Please select a valid CSV file."
+        return
+      end
+      
+      # Validate file size (max 10MB)
+      if file.size > 10.megabytes
+        redirect_to new_import_path, alert: "File too large. Maximum size is 10MB."
+        return
+      end
+      
       begin
-        Rails.logger.info "Starting CSV import with file: #{params[:file].original_filename}"
-        Rails.logger.info "File path: #{params[:file].path}"
-        
-        importer = GoodreadsCsvImporter.new(params[:file].path, current_user)
+        importer = GoodreadsCsvImporter.new(file.tempfile, current_user)
         result = importer.import
         
-        Rails.logger.info "Import result: #{result.inspect}"
-        
         if result[:success]
-          redirect_to books_path, notice: "Successfully imported #{result[:count]} books from Goodreads!"
+          # Redirect to library with imported books filter and success message
+          redirect_to books_path(imported: true), notice: "Successfully imported #{result[:count]} books from Goodreads! Here are your imported books:"
         else
           redirect_to new_import_path, alert: "Import failed: #{result[:error]}"
         end
+        
       rescue => e
         Rails.logger.error "Import error: #{e.message}"
-        Rails.logger.error e.backtrace.join("\n")
         redirect_to new_import_path, alert: "Import failed: #{e.message}"
       end
     else

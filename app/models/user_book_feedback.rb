@@ -1,7 +1,7 @@
 class UserBookFeedback < ApplicationRecord
   belongs_to :user
   
-  enum feedback_type: { like: 0, dislike: 1, save: 2, more_info: 3 }
+  enum :feedback_type, { like: 0, dislike: 1, save: 2, more_info: 3 }, prefix: true
   
   validates :book_title, presence: true
   validates :book_author, presence: true

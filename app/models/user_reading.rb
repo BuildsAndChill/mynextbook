@@ -66,8 +66,6 @@ class UserReading < ApplicationRecord
       to_read: user_readings.to_read.count,
       reading: user_readings.reading.count,
       read: user_readings.read.count,
-      imported: user_readings.imported.count,
-      manual: user_readings.manual.count,
       total: user_readings.count
     }
   end
@@ -76,7 +74,7 @@ class UserReading < ApplicationRecord
   
   # Vérifie si c'est un livre importé (depuis Goodreads)
   def imported?
-    goodreads_book_id.present?
+    book_metadata.goodreads_book_id.present?
   end
   
   # Vérifie si c'est un livre ajouté manuellement

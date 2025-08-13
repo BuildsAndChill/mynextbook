@@ -149,7 +149,9 @@ class GoodreadsCsvImporter
   def to_i_or_nil(v)
     s = safe_s(v)
     return nil if s.blank?
-    Integer(s) rescue nil
+    rating = Integer(s) rescue nil
+    # Goodreads uses 0 to mean "no rating", convert to nil
+    rating == 0 ? nil : rating
   end
 
   # Convertit en BigDecimal, sinon nil
