@@ -49,8 +49,8 @@ development:
   #schema_search_path: myapp,sharedapp,public
 
   # Minimum log levels, in increasing order:
-  #   debug5, debug4, debug3, debug2, debug1,
-  #   log, notice, warning, error, fatal, and panic
+  # debug5, debug4, debug3, debug2, debug1,
+  # log, notice, warning, error, fatal, and panic
   # Defaults to warning.
   #min_messages: notice
 
@@ -86,20 +86,5 @@ test:
 # for a full overview on how database connection configuration can be specified.
 #
 production:
-  primary: &primary_production
-    <<: *default
-    database: my_next_book_production
-    username: my_next_book
-    password: <%= ENV["MY_NEXT_BOOK_DATABASE_PASSWORD"] %>
-  cache:
-    <<: *primary_production
-    database: my_next_book_production_cache
-    migrations_paths: db/cache_migrate
-  queue:
-    <<: *primary_production
-    database: my_next_book_production_queue
-    migrations_paths: db/queue_migrate
-  cable:
-    <<: *primary_production
-    database: my_next_book_production_cable
-    migrations_paths: db/cable_migrate
+  <<: *default
+  url: <%= ENV['DATABASE_URL'] %>
