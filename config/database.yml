@@ -87,4 +87,4 @@ test:
 #
 production:
   <<: *default
-  url: <%= ENV['DATABASE_URL'] %>
+  url: <%= ENV['DATABASE_URL'] || "postgres://my_next_book:password123@localhost/my_next_book_production" %>
