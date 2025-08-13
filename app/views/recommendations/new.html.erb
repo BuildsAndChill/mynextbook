@@ -77,6 +77,10 @@
             <li>• Specify if you want to explore new genres or stick to favorites</li>
           </ul>
         </div>
+        
+
+        
+
       </div>
 
       <!-- Right Column: Results Display -->
@@ -291,7 +295,7 @@
                   <%= link_to "Import Library", new_import_path, 
                       class: "inline-flex items-center px-4 py-2 bg-green-600 text-white text-sm font-medium rounded-lg hover:bg-green-700 transition-colors duration-200" %>
                 <% else %>
-                  <button onclick="showSignupPopup('Sign up to import your Goodreads library and get personalized recommendations!')" 
+                  <button onclick="showSignupModal('Sign up to import your Goodreads library and get personalized recommendations!')" 
                           class="inline-flex items-center px-4 py-2 bg-green-600 text-white text-sm font-medium rounded-lg hover:bg-green-700 transition-colors duration-200">
                     Import Library
                   </button>
@@ -316,7 +320,7 @@
                   <%= link_to "Add Book", new_book_path, 
                       class: "inline-flex items-center px-4 py-2 bg-blue-600 text-white text-sm font-medium rounded-lg hover:bg-blue-700 transition-colors duration-200" %>
                 <% else %>
-                  <button onclick="showSignupPopup('Sign up to build your personal library and get better recommendations!')" 
+                  <button onclick="showSignupModal('Sign up to build your personal library and get better recommendations!')" 
                           class="inline-flex items-center px-4 py-2 bg-blue-600 text-white text-sm font-medium rounded-lg hover:bg-blue-700 transition-colors duration-200">
                     Add Book
                   </button>
@@ -396,10 +400,97 @@
   </div>
 </div>
 
+<!-- Simple Working Modal -->
+<div id="signup-modal" style="display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background-color: rgba(0, 0, 0, 0.5); z-index: 9999;">
+  <div id="signup-modal-content" style="position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); background-color: white; padding: 20px; border-radius: 10px; max-width: 400px; width: 90%;">
+    <!-- Close Button -->
+    <button onclick="closeSignupModal()" style="position: absolute; top: 10px; right: 15px; background: none; border: none; font-size: 20px; cursor: pointer;">×</button>
+    
+    <!-- Header -->
+    <div style="text-align: center; margin-bottom: 20px;">
+      <h3 style="font-size: 24px; font-weight: bold; margin-bottom: 10px;">Sign Up</h3>
+      <p id="signup-message" style="color: #666;">Sign up to save your feedback and get personalized recommendations!</p>
+    </div>
+    
+    <!-- Form -->
+    <div style="margin-bottom: 20px;">
+      <div style="margin-bottom: 15px;">
+        <label style="display: block; margin-bottom: 5px; font-weight: bold;">Email:</label>
+        <input type="email" id="signup-email" style="width: 100%; padding: 8px; border: 1px solid #ddd; border-radius: 4px;" placeholder="your@email.com" required>
+      </div>
+      
+      <div style="margin-bottom: 15px;">
+        <label style="display: block; margin-bottom: 5px; font-weight: bold;">Password:</label>
+        <input type="password" id="signup-password" style="width: 100%; padding: 8px; border: 1px solid #ddd; border-radius: 4px;" placeholder="••••••••" required>
+      </div>
+      
+      <div style="margin-bottom: 15px;">
+        <label style="display: block; margin-bottom: 5px; font-weight: bold;">Confirm Password:</label>
+        <input type="password" id="signup-password-confirm" style="width: 100%; padding: 8px; border: 1px solid #ddd; border-radius: 4px;" placeholder="••••••••" required>
+      </div>
+    </div>
+    
+    <!-- Buttons -->
+    <div style="display: flex; gap: 10px;">
+      <button onclick="closeSignupModal()" style="flex: 1; padding: 10px; border: 1px solid #ddd; background-color: #f9f9f9; border-radius: 4px; cursor: pointer;">Cancel</button>
+      <button onclick="submitSignup()" style="flex: 1; padding: 10px; background-color: #007bff; color: white; border: none; border-radius: 4px; cursor: pointer;">Sign Up</button>
+    </div>
+    
+    <!-- Sign In Link -->
+    <div style="text-align: center; margin-top: 15px;">
+      <p style="font-size: 14px; color: #666;">
+        Already have an account? 
+        <a href="<%= new_user_session_path %>" style="color: #007bff;">Sign in</a>
+      </p>
+    </div>
+  </div>
+</div>
+
+<!-- Welcome Message for New Users -->
+<% if @show_welcome_message %>
+<div id="welcome-message" class="fixed top-4 right-4 z-50 bg-green-50 border border-green-200 rounded-lg p-4 shadow-lg">
+  <div class="flex items-center">
+    <svg class="w-5 h-5 text-green-600 mr-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+    </svg>
+    <div>
+      <h4 class="text-sm font-medium text-green-800">Welcome to My Next Book!</h4>
+      <p class="text-sm text-green-700">Your recommendations are now saved and personalized.</p>
+    </div>
+    <button onclick="closeWelcomeMessage()" class="ml-4 text-green-400 hover:text-green-600">
+      <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
+      </svg>
+    </button>
+  </div>
+</div>
+<% end %>
+
+<!-- Signup Prompt from Other Pages -->
+<% if @signup_prompt && !user_signed_in? %>
 <script>
+  document.addEventListener('DOMContentLoaded', function() {
+    showSignupModal('<%= @signup_prompt %>');
+  });
+</script>
+<% end %>
+
+<script>
+// Basic JavaScript test
+console.log('JavaScript is loading...');
+
 // Handle tone chip selection
 document.addEventListener('DOMContentLoaded', function() {
   console.log('Recommendations page loaded');
+  console.log('Setting up event handlers...');
+  
+  // Test if we can find the refine button (it might not exist yet)
+  const refineBtn = document.getElementById('refine-btn');
+  console.log('Refine button found on load:', refineBtn);
+  
+  // Test if we can find any refinement chips
+  const refinementChips = document.querySelectorAll('.refinement-chip');
+  console.log('Refinement chips found on load:', refinementChips.length);
   
   const toneChips = document.querySelectorAll('input[name="tone_chips[]"]');
   
@@ -452,176 +543,351 @@ document.addEventListener('DOMContentLoaded', function() {
     });
   }
 
+});
+
+// Handle refinement chip clicks and button submission using event delegation
+// This ensures the handlers work even when elements are added dynamically
+console.log('Setting up global click event delegation...');
+document.addEventListener('click', function(e) {
+  console.log('Click event on:', e.target.tagName, e.target.id, e.target.className);
+  
   // Handle refinement chip clicks
-  const refinementChips = document.querySelectorAll('.refinement-chip');
-  refinementChips.forEach(chip => {
-    chip.addEventListener('click', function() {
-      const refinement = this.dataset.refinement;
-      const customInput = document.getElementById('custom-refinement');
+  if (e.target.classList.contains('refinement-chip')) {
+    console.log('Refinement chip clicked:', e.target.dataset.refinement);
+    const refinement = e.target.dataset.refinement;
+    const customInput = document.getElementById('custom-refinement');
+    if (customInput) {
       customInput.value = refinement;
       customInput.focus();
-    });
-  });
-
-  // Handle custom refinement submission
-  const refineBtn = document.getElementById('refine-btn');
-  if (refineBtn) {
-    refineBtn.addEventListener('click', function() {
-      const refinement = document.getElementById('custom-refinement').value.trim();
-      if (refinement) {
-        console.log('Refinement submitted:', refinement);
-        
-        // Check if user is signed in
-        const isSignedIn = <%= user_signed_in? ? 'true' : 'false' %>;
-        
-        if (!isSignedIn) {
-          // Show signup popup for anonymous users
-          showSignupPopup('Sign up to save your refinements and get better suggestions!');
-          return;
-        }
-        
-        // Show toast notification
-        showToast('Refinement submitted! Getting new recommendations...', 'success');
-        
-        // TODO: Submit refinement to backend
-        // For now, just log it
-        setTimeout(() => {
-          showToast('This feature is coming soon!', 'info');
-        }, 2000);
-      }
-    });
+    }
   }
-
-  // Handle feedback button clicks
-  const feedbackBtns = document.querySelectorAll('.feedback-btn');
-  feedbackBtns.forEach(btn => {
-    btn.addEventListener('click', function() {
-      const bookTitle = this.dataset.bookTitle;
-      const bookAuthor = this.dataset.bookAuthor;
-      const feedback = this.dataset.feedback;
-      
-      console.log('Feedback submitted:', { bookTitle, bookAuthor, feedback });
+  
+  // Handle refine button clicks
+  if (e.target.id === 'refine-btn') {
+    console.log('Refine button clicked!');
+    const refinement = document.getElementById('custom-refinement')?.value.trim();
+    console.log('Refinement value:', refinement);
+    
+    if (refinement) {
+      console.log('Refinement submitted:', refinement);
       
       // Check if user is signed in
       const isSignedIn = <%= user_signed_in? ? 'true' : 'false' %>;
+      console.log('User signed in:', isSignedIn);
       
-      if (!isSignedIn) {
-        // Show signup popup for anonymous users
-        showSignupPopup('Sign up to save your feedback and get better recommendations!');
-        return;
+              if (!isSignedIn) {
+          // Show signup modal for unlogged users
+          try {
+            console.log('Attempting to show signup modal...');
+            showSignupModal('Sign up to save your refinements and get better suggestions!', {
+              refinementText: refinement,
+              context: document.querySelector('textarea[name="context"]')?.value || ''
+            });
+            console.log('Signup modal shown successfully');
+          } catch (error) {
+            console.error('Error showing signup modal:', error);
+            alert('Signup modal error: ' + error.message);
+          }
+          return;
+        }
+      
+      // Show toast notification
+      try {
+        showToast('Refinement submitted! Getting new recommendations...', 'success');
+        console.log('Toast notification shown successfully');
+      } catch (error) {
+        console.error('Error showing toast:', error);
+        alert('Toast error: ' + error.message);
       }
       
-      // Visual feedback
-      this.classList.add('scale-110');
-      setTimeout(() => {
-        this.classList.remove('scale-110');
-      }, 200);
-      
-      // Submit feedback to server
+      // Submit refinement to backend
       const formData = new FormData();
-      formData.append('book_title', bookTitle);
-      formData.append('book_author', bookAuthor);
-      formData.append('feedback_type', feedback);
+      formData.append('refinement_text', refinement);
       formData.append('context', document.querySelector('textarea[name="context"]')?.value || '');
+      
+              console.log('Submitting refinement to backend...');
+        
+        // Debug CSRF token
+        const csrfToken = document.querySelector('meta[name="csrf-token"]')?.getAttribute('content');
+        console.log('CSRF Token found:', csrfToken ? 'Yes' : 'No');
+        if (!csrfToken) {
+          console.error('CSRF token not found!');
+          showToast('CSRF token missing. Please refresh the page.', 'error');
+          return;
+        }
+        
+        fetch('/recommendations/refine', {
+          method: 'POST',
+          body: formData,
+          headers: {
+            'X-CSRF-Token': csrfToken
+          }
+        })
+      .then(response => {
+        console.log('Refinement response:', response.status, response.ok);
+        if (response.ok) {
+          // Redirect to get new recommendations
+          window.location.reload();
+        } else {
+          showToast('Error submitting refinement. Please try again.', 'error');
+        }
+      })
+      .catch(error => {
+        console.error('Error:', error);
+        showToast('Error submitting refinement. Please try again.', 'error');
+      });
+    } else {
+      console.log('No refinement text entered');
+      showToast('Please enter a refinement before submitting.', 'error');
+    }
+  }
+
+  // Handle feedback button clicks
+  if (e.target.classList.contains('feedback-btn')) {
+    console.log('Feedback button clicked:', e.target.dataset);
+    const bookTitle = e.target.dataset.bookTitle;
+    const bookAuthor = e.target.dataset.bookAuthor;
+    const feedback = e.target.dataset.feedback;
+    
+    console.log('Feedback submitted:', { bookTitle, bookAuthor, feedback });
+    
+    // Check if user is signed in
+    const isSignedIn = <%= user_signed_in? ? 'true' : 'false' %>;
+    
+          if (!isSignedIn) {
+        // Show signup modal for unlogged users
+        try {
+          console.log('Attempting to show signup modal for feedback...');
+          showSignupModal('Sign up to save your feedback and get better recommendations!', {
+            bookTitle: bookTitle,
+            bookAuthor: bookAuthor,
+            feedbackType: feedback
+          });
+          console.log('Feedback signup modal shown successfully');
+        } catch (error) {
+          console.error('Error showing feedback signup modal:', error);
+          alert('Feedback signup modal error: ' + error.message);
+        }
+        return;
+      }
+    
+    // Visual feedback
+    e.target.classList.add('scale-110');
+    setTimeout(() => {
+      e.target.classList.remove('scale-110');
+    }, 200);
+    
+    // Submit feedback to server
+    const formData = new FormData();
+    formData.append('book_title', bookTitle);
+    formData.append('book_author', bookAuthor);
+    formData.append('feedback_type', feedback);
+    formData.append('context', document.querySelector('textarea[name="context"]')?.value || '');
+    
+          // Debug CSRF token
+      const csrfToken = document.querySelector('meta[name="csrf-token"]')?.getAttribute('content');
+      console.log('CSRF Token found for feedback:', csrfToken ? 'Yes' : 'No');
+      if (!csrfToken) {
+        console.error('CSRF token not found for feedback!');
+        showToast('CSRF token missing. Please refresh the page.', 'error');
+        return;
+      }
       
       fetch('/recommendations/feedback', {
         method: 'POST',
         body: formData,
         headers: {
-          'X-CSRF-Token': document.querySelector('meta[name="csrf-token"]').getAttribute('content')
+          'X-CSRF-Token': csrfToken
         }
       })
-      .then(response => {
-        if (response.ok) {
-          // Show appropriate message based on feedback type
-          const feedbackMessages = {
-            'like': 'Thanks! We\'ll recommend more like this.',
-            'dislike': 'Got it! We\'ll avoid similar books.',
-            'save': 'Book saved to your reading list!',
-            'more_info': 'Book details expanded!'
-          };
-          
+    .then(response => {
+      if (response.ok) {
+        // Show appropriate message based on feedback type
+        const feedbackMessages = {
+          'like': 'Thanks! We\'ll recommend more like this.',
+          'dislike': 'Got it! We\'ll avoid similar books.',
+          'save': 'Book saved to your reading list!',
+          'more_info': 'Book details expanded!'
+        };
+        
+        try {
           showToast(feedbackMessages[feedback] || 'Feedback recorded!', 'success');
-          
-          // If it's a save action, update the button to show it's saved
-          if (feedback === 'save') {
-            this.classList.add('text-blue-600');
-            this.title = 'Saved to reading list';
-          }
-        } else {
-          showToast('Error saving feedback. Please try again.', 'error');
+          console.log('Feedback toast shown successfully');
+        } catch (error) {
+          console.error('Error showing feedback toast:', error);
+          alert('Feedback toast error: ' + error.message);
         }
-      })
-      .catch(error => {
-        console.error('Error:', error);
+        
+        // If it's a save action, update the button to show it's saved
+        if (feedback === 'save') {
+          e.target.classList.add('text-blue-600');
+          e.target.title = 'Saved to reading list';
+        }
+      } else {
         showToast('Error saving feedback. Please try again.', 'error');
-      });
+      }
+    })
+    .catch(error => {
+      console.error('Error:', error);
+      showToast('Error saving feedback. Please try again.', 'error');
     });
-  });
+  }
+
+  // Test button handler
+  if (e.target.id === 'test-btn') {
+    console.log('Test button clicked! Event delegation is working.');
+    try {
+      showToast('Test button works! Event delegation is functioning.', 'success');
+      console.log('showToast function executed successfully');
+    } catch (error) {
+      console.error('Error in showToast:', error);
+      alert('showToast error: ' + error.message);
+    }
+  }
 });
 
 // Toast notification function
 function showToast(message, type = 'info') {
-  // Create toast element
-  const toast = document.createElement('div');
-  toast.className = `fixed top-4 right-4 z-50 px-6 py-3 rounded-lg text-white font-medium transform transition-all duration-300 translate-x-full ${
-    type === 'success' ? 'bg-green-500' : 
-    type === 'error' ? 'bg-red-500' : 
-    'bg-blue-500'
-  }`;
-  toast.textContent = message;
+  console.log('showToast called with:', message, type);
   
-  document.body.appendChild(toast);
-  
-  // Animate in
-  setTimeout(() => {
-    toast.classList.remove('translate-x-full');
-  }, 100);
-  
-  // Animate out and remove
-  setTimeout(() => {
-    toast.classList.add('translate-x-full');
+  try {
+    // Create toast element
+    const toast = document.createElement('div');
+    toast.className = `fixed top-4 right-4 z-50 px-6 py-3 rounded-lg text-white font-medium transform transition-all duration-300 translate-x-full ${
+      type === 'success' ? 'bg-green-500' : 
+      type === 'error' ? 'bg-red-500' : 
+      'bg-blue-500'
+    }`;
+    toast.textContent = message;
+    
+    console.log('Toast element created:', toast);
+    
+    document.body.appendChild(toast);
+    console.log('Toast added to body');
+    
+    // Animate in
     setTimeout(() => {
-      document.body.removeChild(toast);
-    }, 300);
-  }, 3000);
+      toast.classList.remove('translate-x-full');
+      console.log('Toast animation in applied');
+    }, 100);
+    
+    // Animate out and remove
+    setTimeout(() => {
+      toast.classList.add('translate-x-full');
+      setTimeout(() => {
+        document.body.removeChild(toast);
+        console.log('Toast removed from body');
+      }, 300);
+    }, 3000);
+    
+    console.log('showToast completed successfully');
+  } catch (error) {
+    console.error('Error in showToast:', error);
+    // Fallback to alert if toast fails
+    alert(`${type.toUpperCase()}: ${message}`);
+  }
 }
 
-// Function to show a signup popup
-function showSignupPopup(message) {
-  const popup = document.createElement('div');
-  popup.className = 'fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50';
+
+
+// Function to show a signup modal
+function showSignupModal(message, data = {}) {
+  const modal = document.getElementById('signup-modal');
+  const signupMessage = document.getElementById('signup-message');
   
-  const popupContent = document.createElement('div');
-  popupContent.className = 'bg-white p-6 rounded-lg shadow-xl max-w-md w-full';
+  if (!modal || !signupMessage) {
+    console.error('Required modal elements not found!');
+    return;
+  }
   
-  const title = document.createElement('h3');
-  title.className = 'text-lg font-medium text-gray-900 mb-2';
-  title.textContent = 'Sign Up Required';
+  // Update message
+  signupMessage.textContent = message;
   
-  const content = document.createElement('p');
-  content.className = 'text-sm text-gray-700 mb-4';
-  content.textContent = message;
+  // Show modal
+  modal.style.display = 'block';
   
-  const signupLink = document.createElement('a');
-  signupLink.href = '<%= new_user_registration_path %>'; // Adjust path as needed
-  signupLink.className = 'inline-flex items-center px-6 py-2 bg-gradient-to-r from-purple-600 to-indigo-600 text-white text-sm font-medium rounded-lg hover:from-purple-700 hover:to-indigo-700 transition-all duration-200';
-  signupLink.textContent = 'Sign Up Now';
+  // Store data for later use
+  modal.dataset.feedbackData = JSON.stringify(data);
   
-  const closeBtn = document.createElement('button');
-  closeBtn.className = 'mt-4 px-4 py-2 bg-gray-200 text-gray-800 rounded-lg font-medium hover:bg-gray-300 transition-colors duration-200';
-  closeBtn.textContent = 'Close';
-  closeBtn.onclick = () => {
-    document.body.removeChild(popup);
-  };
-  
-  popupContent.appendChild(title);
-  popupContent.appendChild(content);
-  popupContent.appendChild(signupLink);
-  popupContent.appendChild(closeBtn);
-  popup.appendChild(popupContent);
-  
-  document.body.appendChild(popup);
+  // Add click outside to close
+  modal.addEventListener('click', function(e) {
+    if (e.target === modal) {
+      closeSignupModal();
+    }
+  });
+}
+
+
+
+// Function to close the signup modal
+function closeSignupModal() {
+  const modal = document.getElementById('signup-modal');
+  modal.style.display = 'none';
+}
+
+// Function to submit the signup form
+function submitSignup() {
+  const email = document.getElementById('signup-email').value;
+  const password = document.getElementById('signup-password').value;
+  const passwordConfirm = document.getElementById('signup-password-confirm').value;
+
+  if (!email || !password || !passwordConfirm) {
+    showToast('Please fill in all fields.', 'error');
+    return;
+  }
+
+  if (password !== passwordConfirm) {
+    showToast('Passwords do not match.', 'error');
+    return;
+  }
+
+  if (password.length < 6) {
+    showToast('Password must be at least 6 characters long.', 'error');
+    return;
+  }
+
+  // Show loading state
+  const submitBtn = document.querySelector('#signup-modal button[onclick="submitSignup()"]');
+  const originalText = submitBtn.innerHTML;
+  submitBtn.innerHTML = '<svg class="animate-spin -ml-1 mr-3 h-5 w-5 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24"><circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle><path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path></svg>Creating Account...';
+  submitBtn.disabled = true;
+
+  const formData = new FormData();
+  formData.append('user[email]', email);
+  formData.append('user[password]', password);
+  formData.append('user[password_confirmation]', passwordConfirm);
+
+  fetch('<%= user_registration_path %>', {
+    method: 'POST',
+    body: formData,
+    headers: {
+      'X-CSRF-Token': document.querySelector('meta[name="csrf-token"]').getAttribute('content')
+    }
+  })
+  .then(response => {
+    if (response.ok) {
+      showToast('Account created successfully! Redirecting...', 'success');
+      setTimeout(() => {
+        // Redirect to recommendations page where they'll see their stored results
+        window.location.href = '<%= new_recommendation_path %>';
+      }, 1500);
+    } else {
+      return response.json().then(data => { 
+        throw new Error(data.error || 'Sign up failed') 
+      });
+    }
+  })
+  .catch(error => {
+    showToast(error.message || 'Sign up failed. Please try again.', 'error');
+    // Reset button
+    submitBtn.innerHTML = originalText;
+    submitBtn.disabled = false;
+  });
+}
+
+// Function to close the welcome message
+function closeWelcomeMessage() {
+  document.getElementById('welcome-message').classList.add('hidden');
 }
 
 </script>

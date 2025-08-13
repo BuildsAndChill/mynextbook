@@ -8,6 +8,27 @@ class RecommendationsController < ApplicationController
   
   def new
     # Show the unified recommendation screen
+    # Check if user just signed up and has stored results
+    if user_signed_in? && session[:recommendation_session_id]
+      # Retrieve AI data from file storage
+      stored_data = TemporaryRecommendationStorage.retrieve(session[:recommendation_session_id])
+      
+      if stored_data
+        @ai_response = stored_data[:ai_response]
+        @parsed_response = stored_data[:parsed_response]
+        @user_prompt = stored_data[:user_prompt]
+        @show_welcome_message = true
+        
+        # Clean up the file after retrieving
+        TemporaryRecommendationStorage.delete(session[:recommendation_session_id])
+        session.delete(:recommendation_session_id)
+        
+        Rails.logger.info "AI recommendation data retrieved from file storage"
+      end
+    end
+    
+    # Check for signup prompt from other pages
+    @signup_prompt = params[:signup_prompt]
   end
 
   def create
@@ -56,6 +77,23 @@ class RecommendationsController < ApplicationController
       @parsed_response = parse_ai_response(@ai_response)
       Rails.logger.info "Parsed response: #{@parsed_response}"
       
+      # Store results for unlogged users using file-based storage instead of session
+      if !user_signed_in?
+        # Store AI data in temporary files using the service
+        session_id = TemporaryRecommendationStorage.store(
+          @ai_response,
+          @parsed_response,
+          @user_prompt,
+          context,
+          tone_chips
+        )
+        
+        # Store only the session ID in the session cookie (very small)
+        session[:recommendation_session_id] = session_id
+        
+        Rails.logger.info "AI data stored using file storage. Session ID: #{session_id}"
+      end
+      
     rescue => e
       Rails.logger.error "Error in recommendations#create: #{e.message}"
       Rails.logger.error "Error class: #{e.class}"
@@ -101,9 +139,17 @@ class RecommendationsController < ApplicationController
       
       Rails.logger.info "Feedback stored: #{feedback.inspect}"
     else
-      # For unlogged users, just show a message encouraging signup
+      # For unlogged users, show signup prompt
       if !user_signed_in?
-        flash[:notice] = "Sign up to save your feedback and get better recommendations!"
+        # Return JSON response to trigger signup modal
+        render json: { 
+          action: 'show_signup',
+          message: 'Sign up to save your feedback and get better recommendations!',
+          book_title: book_title,
+          book_author: book_author,
+          feedback_type: feedback_type
+        }
+        return
       end
     end
     
@@ -116,7 +162,29 @@ class RecommendationsController < ApplicationController
     end
   end
 
+  def refine
+    # Handle refinement requests
+    refinement_text = params[:refinement_text]
+    context = params[:context]
+    
+    if user_signed_in?
+      # Store refinement and get new recommendations
+      UserRefinement.create_from_input(current_user, refinement_text, context)
+      redirect_to new_recommendation_path(refinement: refinement_text)
+    else
+      # For unlogged users, show signup prompt
+      render json: { 
+        action: 'show_signup',
+        message: 'Sign up to save your refinements and get personalized recommendations!',
+        refinement_text: refinement_text,
+        context: context
+      }
+    end
+  end
+
   private
+
+
 
   def build_structured_prompt(context, tone_chips, include_history)
     prompt = "You are a knowledgeable book recommendation expert. Please provide book recommendations in the EXACT format specified below.\n\n"

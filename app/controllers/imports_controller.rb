@@ -1,13 +1,24 @@
 # app/controllers/imports_controller.rb
 # Rôle : afficher le formulaire d'upload + traiter l'import CSV via le service.
 class ImportsController < ApplicationController
-  before_action :authenticate_user!
+  # Allow unlogged users to see the import form
+  before_action :authenticate_user!, only: [:create]
   skip_before_action :verify_authenticity_token, only: [:create]
   
   def new
+    # Show import form to all users
   end
 
   def create
+    # Require authentication for actual import
+    unless user_signed_in?
+      render json: { 
+        action: 'show_signup',
+        message: 'Sign up to import your Goodreads library and get personalized recommendations!'
+      }
+      return
+    end
+    
     # Completely disable session for CSV import to prevent CookieOverflow
     request.session_options[:skip] = true
     session.clear if session

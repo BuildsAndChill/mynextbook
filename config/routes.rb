@@ -15,6 +15,7 @@ Rails.application.routes.draw do
   # Gestion des recommandations de lecture
   resources :recommendations, only: [:index, :new, :create] do
     post :feedback, on: :collection
+    post :refine, on: :collection
   end
 
   resources :imports, only: [:new, :create]

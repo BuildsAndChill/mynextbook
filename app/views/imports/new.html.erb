@@ -133,3 +133,41 @@
     <%= link_to "← Back to My Library", books_path, class: "text-indigo-600 hover:text-indigo-900 text-sm font-medium" %>
   </div>
 </div>
+
+<script>
+// Handle import form submission for unlogged users
+document.addEventListener('DOMContentLoaded', function() {
+  const importForm = document.querySelector('form');
+  const isSignedIn = <%= user_signed_in? ? 'true' : 'false' %>;
+  
+  if (importForm && !isSignedIn) {
+    importForm.addEventListener('submit', function(e) {
+      e.preventDefault();
+      
+      // Show signup modal for unlogged users
+      showSignupModal('Sign up to import your Goodreads library and get personalized recommendations!');
+    });
+  }
+});
+
+// Function to show signup modal (defined in recommendations view)
+function showSignupModal(message, data = {}) {
+  // Check if we're on the recommendations page (where the modal is defined)
+  const modal = document.getElementById('signup-modal');
+  if (modal) {
+    // We're on recommendations page, use existing modal
+    const modalContent = document.getElementById('signup-modal-content');
+    const signupMessage = document.getElementById('signup-message');
+    
+    signupMessage.textContent = message;
+    modal.classList.remove('hidden');
+    setTimeout(() => {
+      modalContent.classList.remove('scale-95', 'opacity-0');
+      modalContent.classList.add('scale-100', 'opacity-100');
+    }, 10);
+  } else {
+    // We're on import page, redirect to recommendations with signup prompt
+    window.location.href = '<%= new_recommendation_path %>?signup_prompt=' + encodeURIComponent(message);
+  }
+}
+</script>
