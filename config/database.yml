@@ -19,17 +19,15 @@ default: &default
   # https://guides.rubyonrails.org/configuring.html#database-pooling
   pool: <%= ENV.fetch("RAILS_MAX_THREADS") { 5 } %>
 
-# Development environment - utilise Neon via DATABASE_URL
+# Configuration par défaut - sera écrasée par les fichiers spécifiques
 development:
   <<: *default
-  url: <%= ENV['DATABASE_URL'] %>
+  url: <%= ENV['DATABASE_URL_DEV'] %>
 
-# Test environment - utilise Neon via DATABASE_URL (ou base de test séparée)
 test:
   <<: *default
-  url: <%= ENV['DATABASE_URL_TEST'] || ENV['DATABASE_URL'] %>
+  url: <%= ENV['DATABASE_URL_DEV'] %>
 
-# Production environment - utilise Render via DATABASE_URL
 production:
   <<: *default
-  url: <%= ENV['DATABASE_URL'] %>
+  url: <%= ENV['DATABASE_URL_PROD'] %>
