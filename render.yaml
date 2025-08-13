@@ -1,7 +1,7 @@
 services:
   - type: web
     name: mynextbook
-    env: ruby
+    env: docker
     plan: free
     buildCommand: "./bin/render-build.sh"
     startCommand: "./bin/render-start.sh"
