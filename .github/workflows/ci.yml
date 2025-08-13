@@ -10,23 +10,9 @@ jobs:
   test:
     runs-on: ubuntu-latest
 
-    services:
-      postgres:
-        image: postgres:15
-        env:
-          POSTGRES_USER: postgres
-          POSTGRES_PASSWORD: postgres
-          POSTGRES_DB: app_test
-        ports: ["5432:5432"]
-        options: >-
-          --health-cmd="pg_isready -U postgres"
-          --health-interval=10s
-          --health-timeout=5s
-          --health-retries=5
-
     env:
       RAILS_ENV: test
-      DATABASE_URL: postgres://postgres:postgres@localhost:5432/app_test
+      DATABASE_URL: postgresql://neondb_owner:npg_Cescv3pSqhB7@ep-little-moon-afc2poep-pooler.c-2.us-west-2.aws.neon.tech/neondb?sslmode=require&channel_binding=require
       AI_DISABLED: "1"
       OPENAI_API_KEY: "sk-test-placeholder"
 
@@ -39,4 +25,6 @@ jobs:
       - name: Install packages
         run: sudo apt-get update && sudo apt-get install -y libpq-dev
       - name: DB setup
+        run: bundle exec rails db:create db:migrate
+      - name: Run tests
         run: bundle exec rails test

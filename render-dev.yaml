@@ -1,0 +1,16 @@
+services:
+  - type: web
+    name: mynextbook-dev
+    env: docker
+    plan: free
+    buildCommand: "./bin/render-build.sh"
+    startCommand: "./bin/render-start.sh"
+    envVars:
+      - key: RAILS_MASTER_KEY
+        sync: false
+      - key: DATABASE_URL
+        value: "postgresql://neondb_owner:npg_Cescv3pSqhB7@ep-little-moon-afc2poep-pooler.c-2.us-west-2.aws.neon.tech/neondb?sslmode=require&channel_binding=require"
+      - key: RAILS_ENV
+        value: development
+      - key: PORT
+        value: 10000
