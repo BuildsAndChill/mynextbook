@@ -3,7 +3,7 @@ services:
     name: mynextbook
     env: ruby
     plan: free
-    region: frankfurt
+    region: oregon
     buildCommand: bundle install && bundle exec rake assets:precompile
     startCommand: bundle exec puma -C config/puma.rb
     autoDeploy: true
@@ -25,3 +25,4 @@ services:
 databases:
   - name: mynextbook-db
     plan: free
+    region: oregon
