@@ -198,64 +198,117 @@
                                       data-book-author="<%= pick[:author] %>" 
                                       data-feedback="like" 
                                       title="I like this">
-                                👍
+                                <svg class="w-4 h-4" fill="currentColor" viewBox="0 0 20 20">
+                                  <path fill-rule="evenodd" d="M3.172 5.172a4 4 0 015.656 0L10 6.343l1.172-1.171a4 4 0 115.656 5.656L10 17.657l-6.828-6.829a4 4 0 010-5.656z" clip-rule="evenodd"></path>
+                                </svg>
                               </button>
+                              
                               <button class="feedback-btn p-1.5 text-gray-400 hover:text-red-600 transition-colors duration-200" 
                                       data-book-title="<%= pick[:title] %>" 
+                                      data-book-author="<%= pick[:author] %>" 
                                       data-feedback="dislike" 
                                       title="Not for me">
-                                👎
+                                <svg class="w-4 h-4" fill="currentColor" viewBox="0 0 20 20">
+                                  <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zM8.707 7.293a1 1 0 00-1.414 1.414L8.586 10l-1.293 1.293a1 1 0 101.414 1.414L10 11.414l1.293 1.293a1 1 0 001.414-1.414L11.414 10l1.293-1.293a1 1 0 00-1.414-1.414L10 8.586 8.707 7.293z" clip-rule="evenodd"></path>
+                                </svg>
                               </button>
+                              
                               <button class="feedback-btn p-1.5 text-gray-400 hover:text-blue-600 transition-colors duration-200" 
                                       data-book-title="<%= pick[:title] %>" 
                                       data-book-author="<%= pick[:author] %>" 
                                       data-feedback="save" 
-                                      title="Save to my list">
-                                💾
+                                      title="Save to reading list">
+                                <svg class="w-4 h-4" fill="currentColor" viewBox="0 0 20 20">
+                                  <path d="M5 4a2 2 0 012-2h6a2 2 0 012 2v14l-5-2.5L5 18V4z"></path>
+                                </svg>
                               </button>
+                              
                               <button class="feedback-btn p-1.5 text-gray-400 hover:text-purple-600 transition-colors duration-200" 
                                       data-book-title="<%= pick[:title] %>" 
                                       data-book-author="<%= pick[:author] %>" 
                                       data-feedback="more_info" 
-                                      title="Tell me more">
-                                📖
+                                      title="More info">
+                                <svg class="w-4 h-4" fill="currentColor" viewBox="0 0 20 20">
+                                  <path fill-rule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-8-3a1 1 0 00-.867.5 1 1 0 11-1.731-1A3 3 0 0113 8a3.001 3.001 0 01-2 2.83V11a1 1 0 11-2 0v-1a1 1 0 011-1 1 1 0 100-2zm0 8a1 1 0 100-2 1 1 0 000 2z" clip-rule="evenodd"></path>
+                                </svg>
                               </button>
                             </div>
                           </div>
                         </div>
                       </div>
-                    <% end %>
-                  </div>
-                <% end %>
+                    </div>
+                  <% end %>
+                </div>
               </div>
-
-        <% elsif @ai_error %>
-          <!-- Error State -->
-          <div class="text-center py-12">
-            <div class="mx-auto h-12 w-12 text-red-400 mb-4">
-              <svg fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-2.5L13.732 4c-.77-.833-1.964-.833-2.732 0L3.34 16.5c-.77.833.192 2.5 1.732 2.5z"></path>
-              </svg>
-            </div>
-            <h3 class="text-lg font-medium text-gray-900 mb-2">Something went wrong</h3>
-            <p class="text-gray-500 mb-4"><%= @ai_error %></p>
-            <button onclick="location.reload()" class="text-indigo-600 hover:text-indigo-500 font-medium">
-              Try again
-            </button>
+            <% end %>
           </div>
-
         <% else %>
           <!-- Empty State -->
           <div class="text-center py-12">
-            <div class="mx-auto h-12 w-12 text-gray-400 mb-4">
-              <svg fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9.663 17h4.673M12 3v1m6.364 1.636l-.707.707M21 12h-1M4 12H3m3.343-5.657l-.707-.707m2.828 9.9a5 5 0 117.072 0l-.548.547A3.374 3.374 0 0014 18.469V19a2 2 0 11-4 0v-.531c0-.895-.356-1.754-.988-2.386l-.548-.547z"></path>
+            <div class="mx-auto h-16 w-16 mb-4 flex items-center justify-center rounded-full bg-gray-100">
+              <svg class="h-8 w-8 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.747 0 3.332.477 4.5 1.253v13C19.832 18.477 18.246 18 16.5 18c-1.746 0-3.332.477-4.5 1.253"></path>
               </svg>
             </div>
             <h3 class="text-lg font-medium text-gray-900 mb-2">Ready for your next book?</h3>
-            <p class="text-gray-500">Fill out the form on the left and click "Get Instant Brief" to get started.</p>
+            <p class="text-gray-500">Fill out the form on the left to get personalized recommendations based on your mood and preferences.</p>
           </div>
         <% end %>
+      </div>
+    </div>
+
+    <!-- Refine & Discover More Section - Full Page Width -->
+    <div class="w-full bg-white rounded-2xl shadow-lg p-8 mb-12">
+      <h2 class="text-2xl font-bold text-gray-900 mb-6 text-center">Refine & Discover More</h2>
+      
+      <div class="grid md:grid-cols-3 gap-8">
+        <!-- Refine Recommendations -->
+        <div class="text-center">
+          <div class="mx-auto h-16 w-16 mb-4 flex items-center justify-center rounded-full bg-indigo-100">
+            <svg class="h-8 w-8 text-indigo-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"></path>
+            </svg>
+          </div>
+          <h3 class="text-lg font-semibold text-gray-900 mb-3">Refine Your Results</h3>
+          <p class="text-gray-600 mb-4">Not quite what you're looking for? Adjust your preferences and get new recommendations.</p>
+          <button onclick="scrollToTop()" class="inline-flex items-center px-4 py-2 bg-indigo-600 text-white text-sm font-medium rounded-lg hover:bg-indigo-700 transition-colors duration-200">
+            Try Different Mood
+          </button>
+        </div>
+
+        <!-- Explore New Genres -->
+        <div class="text-center">
+          <div class="mx-auto h-16 w-16 mb-4 flex items-center justify-center rounded-full bg-purple-100">
+            <svg class="h-8 w-8 text-purple-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 11H5m14 0a2 2 0 012 2v6a2 2 0 01-2 2H5a2 2 0 01-2-2v-6a2 2 0 012-2m14 0V9a2 2 0 00-2-2M5 11V9a2 2 0 012-2m0 0V5a2 2 0 012-2h6a2 2 0 012 2v2M7 7h10"></path>
+            </svg>
+          </div>
+          <h3 class="text-lg font-semibold text-gray-900 mb-3">Explore New Genres</h3>
+          <p class="text-gray-600 mb-4">Step outside your comfort zone and discover books from genres you haven't tried before.</p>
+          <button onclick="suggestNewGenre()" class="inline-flex items-center px-4 py-2 bg-purple-600 text-white text-sm font-medium rounded-lg hover:bg-purple-700 transition-colors duration-200">
+            Suggest Genre
+          </button>
+        </div>
+
+        <!-- Build Your Library -->
+        <div class="text-center">
+          <div class="mx-auto h-16 w-16 mb-4 flex items-center justify-center rounded-full bg-green-100">
+            <svg class="h-8 w-8 text-green-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6v6m0 0v6m0-6h6m-6 0H6"></path>
+            </svg>
+          </div>
+          <h3 class="text-lg font-semibold text-gray-900 mb-3">Build Your Library</h3>
+          <p class="text-gray-600 mb-4">Import your Goodreads library or add books manually for even better personalized recommendations.</p>
+          <% if user_signed_in? %>
+            <%= link_to "Import Goodreads", new_import_path, 
+                class: "inline-flex items-center px-4 py-2 bg-green-600 text-white text-sm font-medium rounded-lg hover:bg-green-700 transition-colors duration-200" %>
+          <% else %>
+            <button onclick="showSignupPopup('Sign up to import your Goodreads library and get personalized recommendations!')" 
+                    class="inline-flex items-center px-4 py-2 bg-green-600 text-white text-sm font-medium rounded-lg hover:bg-green-700 transition-colors duration-200">
+              Import Goodreads
+            </button>
+          <% end %>
+        </div>
       </div>
     </div>
 
@@ -624,5 +677,31 @@ function showSignupPopup(message) {
   popup.appendChild(popupContent);
   
   document.body.appendChild(popup);
+}
+
+// Function to scroll to top of the page
+function scrollToTop() {
+  window.scrollTo({ top: 0, behavior: 'smooth' });
+}
+
+// Function to suggest a new genre
+function suggestNewGenre() {
+  const genres = [
+    'Science Fiction', 'Fantasy', 'Mystery', 'Thriller', 'Romance', 
+    'Historical Fiction', 'Biography', 'Memoir', 'Self-Help', 'Philosophy',
+    'Economics', 'Psychology', 'Travel', 'Cooking', 'Art', 'Music',
+    'Poetry', 'Drama', 'Horror', 'Western', 'Young Adult', 'Children'
+  ];
+  
+  const randomGenre = genres[Math.floor(Math.random() * genres.length)];
+  const context = document.querySelector('textarea[name="context"]');
+  
+  if (context) {
+    context.value = `I want to explore ${randomGenre} books. Something engaging and well-written that will introduce me to this genre.`;
+    context.focus();
+    
+    // Show toast notification
+    showToast(`Try exploring ${randomGenre}! I've updated your request.`, 'success');
+  }
 }
 </script>

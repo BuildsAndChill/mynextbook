@@ -1,6 +1,11 @@
 class RecommendationsController < ApplicationController
   # Remove authentication requirement - allow unlogged users to get basic recommendations
   
+  def index
+    # Redirect to the new recommendations form
+    redirect_to new_recommendation_path
+  end
+  
   def new
     # Show the unified recommendation screen
   end
