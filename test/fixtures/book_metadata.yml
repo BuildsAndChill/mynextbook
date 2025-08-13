@@ -8,6 +8,8 @@ one:
   goodreads_book_id: 12345
   pages: 300
   average_rating: 4.5
+  created_at: <%= Time.current %>
+  updated_at: <%= Time.current %>
 
 two:
   title: "Test Book Two"
@@ -17,8 +19,12 @@ two:
   goodreads_book_id: 54321
   pages: 250
   average_rating: 3.8
+  created_at: <%= Time.current %>
+  updated_at: <%= Time.current %>
 
 three:
   title: "Test Book Three"
   author: "Test Author Three"
   pages: 400
+  created_at: <%= Time.current %>
+  updated_at: <%= Time.current %>

@@ -4,8 +4,12 @@ one:
   user: one
   refinement_text: MyText
   context: MyText
+  created_at: <%= Time.current %>
+  updated_at: <%= Time.current %>
 
 two:
   user: two
   refinement_text: MyText
   context: MyText
+  created_at: <%= Time.current %>
+  updated_at: <%= Time.current %>

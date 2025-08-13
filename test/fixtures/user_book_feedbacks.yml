@@ -6,6 +6,8 @@ one:
   book_author: MyString
   feedback_type: 1
   recommendation_context: MyText
+  created_at: <%= Time.current %>
+  updated_at: <%= Time.current %>
 
 two:
   user: two
@@ -13,3 +15,5 @@ two:
   book_author: MyString
   feedback_type: 1
   recommendation_context: MyText
+  created_at: <%= Time.current %>
+  updated_at: <%= Time.current %>
