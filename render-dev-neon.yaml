@@ -1,0 +1,16 @@
+services:
+  - type: web
+    name: mynextbook
+    env: ruby
+    plan: free
+    buildCommand: "./bin/render-build.sh"
+    startCommand: "./bin/render-start.sh"
+    envVars:
+      - key: RAILS_MASTER_KEY
+        sync: false
+      - key: DATABASE_URL
+        sync: false
+      - key: RAILS_ENV
+        value: development
+      - key: PORT
+        value: 10000
