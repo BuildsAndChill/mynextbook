@@ -257,61 +257,6 @@
       </div>
     </div>
 
-    <!-- Refine & Discover More Section - Full Page Width -->
-    <div class="w-full bg-white rounded-2xl shadow-lg p-8 mb-12">
-      <h2 class="text-2xl font-bold text-gray-900 mb-6 text-center">Refine & Discover More</h2>
-      
-      <div class="grid md:grid-cols-3 gap-8">
-        <!-- Refine Recommendations -->
-        <div class="text-center">
-          <div class="mx-auto h-16 w-16 mb-4 flex items-center justify-center rounded-full bg-indigo-100">
-            <svg class="h-8 w-8 text-indigo-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"></path>
-            </svg>
-          </div>
-          <h3 class="text-lg font-semibold text-gray-900 mb-3">Refine Your Results</h3>
-          <p class="text-gray-600 mb-4">Not quite what you're looking for? Adjust your preferences and get new recommendations.</p>
-          <button onclick="scrollToTop()" class="inline-flex items-center px-4 py-2 bg-indigo-600 text-white text-sm font-medium rounded-lg hover:bg-indigo-700 transition-colors duration-200">
-            Try Different Mood
-          </button>
-        </div>
-
-        <!-- Explore New Genres -->
-        <div class="text-center">
-          <div class="mx-auto h-16 w-16 mb-4 flex items-center justify-center rounded-full bg-purple-100">
-            <svg class="h-8 w-8 text-purple-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 11H5m14 0a2 2 0 012 2v6a2 2 0 01-2 2H5a2 2 0 01-2-2v-6a2 2 0 012-2m14 0V9a2 2 0 00-2-2M5 11V9a2 2 0 012-2m0 0V5a2 2 0 012-2h6a2 2 0 012 2v2M7 7h10"></path>
-            </svg>
-          </div>
-          <h3 class="text-lg font-semibold text-gray-900 mb-3">Explore New Genres</h3>
-          <p class="text-gray-600 mb-4">Step outside your comfort zone and discover books from genres you haven't tried before.</p>
-          <button onclick="suggestNewGenre()" class="inline-flex items-center px-4 py-2 bg-purple-600 text-white text-sm font-medium rounded-lg hover:bg-purple-700 transition-colors duration-200">
-            Suggest Genre
-          </button>
-        </div>
-
-        <!-- Build Your Library -->
-        <div class="text-center">
-          <div class="mx-auto h-16 w-16 mb-4 flex items-center justify-center rounded-full bg-green-100">
-            <svg class="h-8 w-8 text-green-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6v6m0 0v6m0-6h6m-6 0H6"></path>
-            </svg>
-          </div>
-          <h3 class="text-lg font-semibold text-gray-900 mb-3">Build Your Library</h3>
-          <p class="text-gray-600 mb-4">Import your Goodreads library or add books manually for even better personalized recommendations.</p>
-          <% if user_signed_in? %>
-            <%= link_to "Import Goodreads", new_import_path, 
-                class: "inline-flex items-center px-4 py-2 bg-green-600 text-white text-sm font-medium rounded-lg hover:bg-green-700 transition-colors duration-200" %>
-          <% else %>
-            <button onclick="showSignupPopup('Sign up to import your Goodreads library and get personalized recommendations!')" 
-                    class="inline-flex items-center px-4 py-2 bg-green-600 text-white text-sm font-medium rounded-lg hover:bg-green-700 transition-colors duration-200">
-              Import Goodreads
-            </button>
-          <% end %>
-        </div>
-      </div>
-    </div>
-
     <!-- Bottom Panel: Refinement & User Engagement -->
     <% if @ai_response %>
       <div class="bg-white rounded-2xl shadow-lg p-8">
@@ -679,29 +624,4 @@ function showSignupPopup(message) {
   document.body.appendChild(popup);
 }
 
-// Function to scroll to top of the page
-function scrollToTop() {
-  window.scrollTo({ top: 0, behavior: 'smooth' });
-}
-
-// Function to suggest a new genre
-function suggestNewGenre() {
-  const genres = [
-    'Science Fiction', 'Fantasy', 'Mystery', 'Thriller', 'Romance', 
-    'Historical Fiction', 'Biography', 'Memoir', 'Self-Help', 'Philosophy',
-    'Economics', 'Psychology', 'Travel', 'Cooking', 'Art', 'Music',
-    'Poetry', 'Drama', 'Horror', 'Western', 'Young Adult', 'Children'
-  ];
-  
-  const randomGenre = genres[Math.floor(Math.random() * genres.length)];
-  const context = document.querySelector('textarea[name="context"]');
-  
-  if (context) {
-    context.value = `I want to explore ${randomGenre} books. Something engaging and well-written that will introduce me to this genre.`;
-    context.focus();
-    
-    // Show toast notification
-    showToast(`Try exploring ${randomGenre}! I've updated your request.`, 'success');
-  }
-}
 </script>
