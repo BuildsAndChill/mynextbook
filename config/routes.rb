@@ -17,9 +17,11 @@ Rails.application.routes.draw do
 
   # Gestion des recommandations de lecture
   resources :recommendations, only: [:index, :new, :create] do
+    get :chat, on: :collection
     post :feedback, on: :collection
     post :refine, on: :collection
     post :cleanup_refined_session, on: :collection
+    post :chat_message, on: :collection
   end
 
   resources :imports, only: [:new, :create]

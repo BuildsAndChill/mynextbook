@@ -1,0 +1,35 @@
+<div id="chat-interface-container"></div>
+
+<%= javascript_include_tag "chat_interface", "data-turbo-track": "reload" %>
+
+<script>
+  document.addEventListener('DOMContentLoaded', function() {
+    console.log('DOM loaded, trying to initialize chat...');
+    
+    // Check if ChatInterface is available
+    if (typeof ChatInterface === 'undefined') {
+      console.error('ChatInterface class not found!');
+      document.getElementById('chat-interface-container').innerHTML = '<div class="p-8 text-center"><h2 class="text-xl font-bold text-red-600">Erreur: ChatInterface non trouvé</h2><p class="text-gray-600 mt-2">Vérifiez la console pour plus de détails</p></div>';
+      return;
+    }
+    
+    try {
+      // Initialize the chat interface
+      console.log('Creating ChatInterface instance...');
+      const chatInterface = new ChatInterface('chat-interface-container');
+      console.log('ChatInterface created successfully!');
+      
+      // Add CSRF token to all AJAX requests
+      const csrfToken = document.querySelector('meta[name="csrf-token"]')?.getAttribute('content');
+      if (csrfToken) {
+        window.csrfToken = csrfToken;
+        console.log('CSRF token found:', csrfToken);
+      } else {
+        console.warn('No CSRF token found');
+      }
+    } catch (error) {
+      console.error('Error initializing ChatInterface:', error);
+      document.getElementById('chat-interface-container').innerHTML = '<div class="p-8 text-center"><h2 class="text-xl font-bold text-red-600">Erreur d\'initialisation</h2><p class="text-gray-600 mt-2">' + error.message + '</p></div>';
+    }
+  });
+</script>

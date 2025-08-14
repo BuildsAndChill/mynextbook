@@ -61,6 +61,11 @@ class RecommendationsController < ApplicationController
     
     # Check for signup prompt from other pages
     @signup_prompt = params[:signup_prompt]
+    
+    # Initialize conversation context if not present
+    session[:conversation_history] ||= []
+    session[:current_context] ||= nil
+    session[:current_suggestions] ||= []
   end
 
   def create
@@ -280,6 +285,101 @@ class RecommendationsController < ApplicationController
       render json: { success: true, message: "Session cleaned up" }
     else
       render json: { success: false, message: "No session to clean up" }
+    end
+  end
+
+  def chat
+    # Initialize conversation context
+    session[:conversation_history] ||= []
+    session[:current_context] ||= nil
+    session[:current_suggestions] ||= []
+    
+    # Render the chat interface
+    render :chat
+  end
+
+  def chat_message
+    message = params[:message]
+    mode = params[:mode] || 'new'
+    
+    # Add user message to conversation history
+    session[:conversation_history] << {
+      type: 'user',
+      content: message,
+      timestamp: Time.current,
+      mode: mode
+    }
+    
+    if mode == 'new'
+      # New conversation - clear previous context
+      session[:current_context] = message
+      session[:current_suggestions] = []
+      
+      # Get AI recommendations
+      begin
+        recommender = BookRecommender.new
+        ai_response = recommender.get_recommendation(message)
+        parsed_response = parse_ai_response(ai_response)
+        
+        # Store suggestions in session
+        session[:current_suggestions] = parsed_response || []
+        
+        # Add AI response to conversation history
+        session[:conversation_history] << {
+          type: 'ai',
+          content: ai_response,
+          suggestions: parsed_response,
+          timestamp: Time.current
+        }
+        
+        render json: {
+          success: true,
+          ai_response: ai_response,
+          suggestions: parsed_response,
+          message: "Voici mes suggestions basées sur ta demande :"
+        }
+      rescue => e
+        Rails.logger.error "Error in chat_message: #{e.message}"
+        render json: {
+          success: false,
+          error: "Désolé, je n'ai pas pu traiter ta demande. Essaie encore !"
+        }
+      end
+    else
+      # Refinement mode
+      begin
+        # Build refined prompt
+        refined_prompt = build_refined_prompt(session[:current_context], message)
+        
+        recommender = BookRecommender.new
+        ai_response = recommender.get_recommendation(refined_prompt)
+        parsed_response = parse_ai_response(ai_response)
+        
+        # Update suggestions
+        session[:current_suggestions] = parsed_response || []
+        
+        # Add AI response to conversation history
+        session[:conversation_history] << {
+          type: 'ai',
+          content: ai_response,
+          suggestions: parsed_response,
+          timestamp: Time.current,
+          refinement: message
+        }
+        
+        render json: {
+          success: true,
+          ai_response: ai_response,
+          suggestions: parsed_response,
+          message: "Parfait ! Voici mes nouvelles suggestions raffinées :"
+        }
+      rescue => e
+        Rails.logger.error "Error in chat_message refinement: #{e.message}"
+        render json: {
+          success: false,
+          error: "Désolé, je n'ai pas pu raffiner tes suggestions. Essaie encore !"
+        }
+      end
     end
   end
 
