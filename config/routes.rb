@@ -22,6 +22,7 @@ Rails.application.routes.draw do
     post :refine, on: :collection
     post :cleanup_refined_session, on: :collection
     post :chat_message, on: :collection
+    post :clear_session, on: :collection
   end
 
   resources :imports, only: [:new, :create]

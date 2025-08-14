@@ -12,6 +12,9 @@ class ChatInterface {
     this.isSettingsOpen = false;
     this.isAdvancedOpen = false;
     
+    // Clear any existing session data on page load to prevent persistence
+    this.clearBackendSession();
+    
     this.init();
   }
   
@@ -34,8 +37,18 @@ class ChatInterface {
                 </svg>
               </div>
               <h2>Mon Libraire IA</h2>
+              <div class="debug-indicator" id="debug-indicator" style="display: none;">
+                <span class="debug-badge">🐛 Debug</span>
+              </div>
             </div>
             <div class="header-right">
+              <!-- New Chat Button -->
+              <button id="new-chat-btn" class="new-chat-btn" title="Nouvelle conversation">
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                  <path d="M12 5v14M5 12h14"/>
+                </svg>
+                <span>New Chat</span>
+              </button>
               <button class="settings-btn" id="settings-btn">
                 <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor">
                   <path d="M12 15a3 3 0 1 0 0-6 3 3 0 0 0 0 6Z" stroke-width="2"/>
@@ -65,9 +78,12 @@ class ChatInterface {
                 <path d="M12 19l9 2-9-18-9 18 9-2zm0 0v-8" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
               </svg>
             </button>
-            <button class="advanced-btn" id="advanced-btn">
-              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor">
-                <path d="M12 5v14M5 12h14" stroke-width="2"/>
+            <!-- Advanced Options Button -->
+            <button id="advanced-btn" class="advanced-btn" title="Options avancées">
+              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <!-- Elegant gear/settings icon -->
+                <path d="M12 15a3 3 0 1 0 0-6 3 3 0 0 0 0 6Z" stroke-width="2"/>
+                <path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1Z" stroke-width="2"/>
               </svg>
             </button>
           </div>
@@ -99,6 +115,17 @@ class ChatInterface {
           </div>
           
           <div class="advanced-section">
+            <h5>Options</h5>
+            <div class="option-item">
+              <label class="toggle-switch">
+                <input type="checkbox" id="include-history" />
+                <span class="toggle-slider"></span>
+              </label>
+              <span class="option-label">Utiliser mon historique de lecture</span>
+            </div>
+          </div>
+          
+          <div class="advanced-section">
             <h5>Suggestions rapides</h5>
             <div class="quick-suggestions">
               <button class="suggestion-btn">Romans français contemporains</button>
@@ -106,17 +133,6 @@ class ChatInterface {
               <button class="suggestion-btn">Thrillers psychologiques</button>
               <button class="suggestion-btn">Philosophie accessible</button>
               <button class="suggestion-btn">Histoire passionnante</button>
-            </div>
-          </div>
-          
-          <div class="advanced-section">
-            <h5>Préférences</h5>
-            <div class="preference-item">
-              <label>Utiliser mon historique de lecture</label>
-              <label class="toggle-switch">
-                <input type="checkbox" id="include-history" />
-                <span class="toggle-slider"></span>
-              </label>
             </div>
           </div>
         </div>
@@ -179,13 +195,12 @@ class ChatInterface {
     
     // Advanced panel
     const advancedBtn = document.getElementById('advanced-btn');
-    const advancedPanel = document.getElementById('advanced-panel');
     const closeAdvanced = document.getElementById('close-advanced');
     
     advancedBtn.addEventListener('click', () => this.toggleAdvanced());
     closeAdvanced.addEventListener('click', () => this.closeAdvanced());
     
-    // Settings panel
+    // Settings button
     const settingsBtn = document.getElementById('settings-btn');
     const settingsPanel = document.getElementById('settings-panel');
     const settingsOverlay = document.getElementById('settings-overlay');
@@ -194,6 +209,10 @@ class ChatInterface {
     settingsBtn.addEventListener('click', () => this.openSettings());
     settingsOverlay.addEventListener('click', () => this.closeSettings());
     closeSettings.addEventListener('click', () => this.closeSettings());
+    
+    // New chat button
+    const newChatBtn = document.getElementById('new-chat-btn');
+    newChatBtn.addEventListener('click', () => this.newChat());
     
     // Quick suggestions in advanced panel
     document.querySelectorAll('.suggestion-btn').forEach(btn => {
@@ -233,21 +252,13 @@ class ChatInterface {
   openAdvanced() {
     this.isAdvancedOpen = true;
     document.getElementById('advanced-panel').classList.add('open');
-    document.getElementById('advanced-btn').innerHTML = `
-      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor">
-        <path d="M18 6L6 18M6 6l12 12" stroke-width="2"/>
-      </svg>
-    `;
+    // Keep the same 3 sliders icon, don't change it
   }
   
   closeAdvanced() {
     this.isAdvancedOpen = false;
     document.getElementById('advanced-panel').classList.remove('open');
-    document.getElementById('advanced-btn').innerHTML = `
-      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor">
-        <path d="M12 5v14M5 12h14" stroke-width="2"/>
-      </svg>
-    `;
+    // Keep the same 3 sliders icon, don't change it
   }
   
   openSettings() {
@@ -288,6 +299,13 @@ class ChatInterface {
   }
   
   addMessage(message) {
+    // For user messages, include current context
+    if (message.type === 'user') {
+      message.toneChips = this.getSelectedTones();
+      message.includeHistory = document.getElementById('include-history')?.checked || false;
+      message.userFeedback = this.userFeedback;
+    }
+    
     this.messages.push(message);
     this.renderMessages();
     this.scrollToBottom();
@@ -305,14 +323,78 @@ class ChatInterface {
   
   renderMessage(message) {
     if (message.type === 'user') {
+      // Build comprehensive user message showing all communicated elements
+      let userContent = `<p class="user-text">${message.content}</p>`;
+      
+      // Add tone chips if any
+      if (message.toneChips && message.toneChips.length > 0) {
+        userContent += `
+          <div class="user-context">
+            <div class="context-tags">
+              ${message.toneChips.map(tone => `<span class="context-tag">#${tone}</span>`).join('')}
+            </div>
+          </div>
+        `;
+      }
+      
+      // Add history indicator if shared
+      if (message.includeHistory) {
+        userContent += `
+          <div class="user-context">
+            <span class="history-indicator">📚 History shared</span>
+          </div>
+        `;
+      }
+      
+      // Add user feedback if any
+      if (message.userFeedback && Object.keys(message.userFeedback).length > 0) {
+        const feedbackHtml = this.renderUserFeedback(message.userFeedback);
+        if (feedbackHtml) {
+          userContent += `
+            <div class="user-context">
+              <div class="feedback-summary">
+                <span class="feedback-label">Your feedback:</span>
+                ${feedbackHtml}
+              </div>
+            </div>
+          `;
+        }
+      }
+      
       return `
         <div class="message user-message">
           <div class="message-content">
-            <p>${message.content}</p>
+            ${userContent}
             <span class="timestamp">${this.formatTime(message.timestamp)}</span>
           </div>
           <div class="message-avatar">
             <div class="user-avatar">Vous</div>
+          </div>
+        </div>
+      `;
+    } else if (message.type === 'debug') {
+      // Debug message with collapsible content
+      const contentClass = message.isJson ? 'debug-json' : 'debug-text';
+      const toggleText = message.isJson ? 'Toggle JSON' : 'Toggle Text';
+      
+      return `
+        <div class="message debug-message">
+          <div class="message-avatar">
+            <div class="debug-avatar">🐛</div>
+          </div>
+          <div class="message-content">
+            <div class="debug-header">
+              <h5 class="debug-title">${message.title}</h5>
+              <button class="debug-toggle" onclick="this.parentElement.nextElementSibling.classList.toggle('collapsed')" title="${toggleText}">
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor">
+                  <path d="M6 9l6 6 6-6" stroke-width="2"/>
+                </svg>
+              </button>
+            </div>
+            <div class="debug-content collapsed">
+              <div class="${contentClass}">${message.content}</div>
+            </div>
+            <span class="timestamp">Debug • ${this.formatTime(message.timestamp)}</span>
           </div>
         </div>
       `;
@@ -346,32 +428,45 @@ class ChatInterface {
       <div class="book-suggestions">
         ${books.map(book => `
           <div class="book-card">
-            <div class="book-cover">
-              <svg width="48" height="64" viewBox="0 0 24 24" fill="none">
-                <path d="M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.747 0 3.332.477 4.5 1.253v13C19.832 18.477 18.246 18 16.5 18c-1.746 0-3.332.477-4.5 1.253" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
-              </svg>
-            </div>
-            <div class="book-info">
-              <h4 class="book-title">${book.title}</h4>
-              <p class="book-author">par ${book.author}</p>
-              <p class="book-pitch">${book.pitch}</p>
-              <div class="book-actions">
-                <button class="action-btn like-btn" data-action="like" data-book="${book.title}">
-                  <svg width="16" height="16" viewBox="0 0 20 20" fill="currentColor">
-                    <path fill-rule="evenodd" d="M3.172 5.172a4 4 0 015.656 0L10 6.343l1.172-1.171a4 4 0 115.656 5.656L10 17.657l-6.828-6.829a4 4 0 010-5.656z" clip-rule="evenodd"/>
-                  </svg>
-                </button>
-                <button class="action-btn dislike-btn" data-action="dislike" data-book="${book.title}">
-                  <svg width="16" height="16" viewBox="0 0 20 20" fill="currentColor">
-                    <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zM8.707 7.293a1 1 0 00-1.414 1.414L8.586 10l-1.293 1.293a1 1 0 101.414 1.414L10 11.414l1.293 1.293a1 1 0 001.414-1.414L11.414 10l1.293-1.293a1 1 0 00-1.414-1.414L10 8.586 8.707 7.293z" clip-rule="evenodd"/>
-                  </svg>
-                </button>
-                <button class="action-btn save-btn" data-action="save" data-book="${book.title}">
-                  <svg width="16" height="16" viewBox="0 0 20 20" fill="currentColor">
-                    <path d="M5 4a2 2 0 012-2h6a2 2 0 012 2v14l-5-2.5L5 18V4z"/>
-                  </svg>
-                </button>
+            <div class="book-header">
+              <div class="book-cover">
+                <svg width="24" height="24" viewBox="0 0 24 24" fill="none">
+                  <path d="M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.747 0 3.332.477 4.5 1.253v13C19.832 18.477 18.246 18 16.5 18c-1.746 0-3.332.477-4.5 1.253" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+                </svg>
               </div>
+              <div class="book-main-info">
+                <h4 class="book-title">${book.title}</h4>
+                <p class="book-author">par ${book.author}</p>
+              </div>
+            </div>
+            
+            <div class="book-content">
+              <p class="book-pitch">${book.pitch}</p>
+              
+              <!-- Additional book details like desktop version -->
+              ${book.why ? `<div class="book-why"><strong>Why:</strong> ${book.why}</div>` : ''}
+              ${book.confidence ? `<div class="book-confidence"><strong>Confidence:</strong> ${book.confidence}</div>` : ''}
+              ${book.genre ? `<div class="book-genre"><strong>Genre:</strong> ${book.genre}</div>` : ''}
+              ${book.length ? `<div class="book-length"><strong>Length:</strong> ${book.length}</div>` : ''}
+              ${book.difficulty ? `<div class="book-difficulty"><strong>Difficulty:</strong> ${book.difficulty}</div>` : ''}
+            </div>
+            
+            <div class="book-actions">
+              <button class="action-btn like-btn" data-action="like" data-book="${book.title}" title="Like this book">
+                <svg width="16" height="16" viewBox="0 0 20 20" fill="none" stroke="currentColor">
+                  <path d="M3.172 5.172a4 4 0 015.656 0L10 6.343l1.172-1.171a4 4 0 115.656 5.656L10 17.657l-6.828-6.829a4 4 0 010-5.656z" stroke-width="2"/>
+                </svg>
+              </button>
+              <button class="action-btn dislike-btn" data-action="dislike" data-book="${book.title}" title="Dislike this book">
+                <svg width="16" height="16" viewBox="0 0 20 20" fill="none" stroke="currentColor">
+                  <path d="M10 18a8 8 0 100-16 8 8 0 000 16zM8.707 7.293a1 1 0 00-1.414 1.414L8.586 10l-1.293 1.293a1 1 0 101.414 1.414L10 11.414l1.293 1.293a1 1 0 001.414-1.414L11.414 10l1.293-1.293a1 1 0 00-1.414-1.414L10 8.586 8.707 7.293z" stroke-width="2"/>
+                </svg>
+              </button>
+              <button class="action-btn save-btn" data-action="save" data-book="${book.title}" title="Save this book">
+                <svg width="16" height="16" viewBox="0 0 20 20" fill="none" stroke="currentColor">
+                  <path d="M5 4a2 2 0 012-2h6a2 2 0 012 2v14l-5-2.5L5 18V4z" stroke-width="2"/>
+                </svg>
+              </button>
             </div>
           </div>
         `).join('')}
@@ -407,6 +502,9 @@ class ChatInterface {
         user_feedback: this.userFeedback
       };
       
+      // Add debug message showing what we're sending
+      this.addDebugMessage('📤 Request Data', requestData);
+      
       const response = await fetch('/recommendations/chat_message', {
         method: 'POST',
         headers: {
@@ -421,6 +519,40 @@ class ChatInterface {
       }
       
       const data = await response.json();
+      
+      // Add debug message showing AI response
+      this.addDebugMessage('🤖 AI Response', data);
+      
+      // Only show debug messages if server has debug enabled
+      if (data.debug_enabled) {
+        // Store server debug status globally
+        window.serverDebugEnabled = true;
+        
+        // Show debug indicator
+        const debugIndicator = document.getElementById('debug-indicator');
+        if (debugIndicator) {
+          debugIndicator.style.display = 'inline-block';
+        }
+        
+        // Add debug message showing raw prompt
+        if (data.raw_prompt) {
+          this.addDebugMessage('📝 Raw Prompt Sent to AI', data.raw_prompt);
+        }
+        
+        // Add debug message showing raw AI response
+        if (data.raw_ai_response) {
+          this.addDebugMessage('📄 Raw AI Response', data.raw_ai_response);
+        }
+      } else {
+        // Server debug is disabled
+        window.serverDebugEnabled = false;
+        
+        // Hide debug indicator
+        const debugIndicator = document.getElementById('debug-indicator');
+        if (debugIndicator) {
+          debugIndicator.style.display = 'none';
+        }
+      }
       
       this.addMessage({
         type: 'ai',
@@ -444,6 +576,29 @@ class ChatInterface {
     }
     
     this.hideTypingIndicator();
+  }
+  
+  addDebugMessage(title, data) {
+    // Only show debug messages if server has debug enabled
+    if (window.serverDebugEnabled) {
+      // Determine if data is JSON object or plain text
+      let content, isJson;
+      if (typeof data === 'object' && data !== null) {
+        content = JSON.stringify(data, null, 2);
+        isJson = true;
+      } else {
+        content = String(data);
+        isJson = false;
+      }
+      
+      this.addMessage({
+        type: 'debug',
+        title: title,
+        content: content,
+        isJson: isJson,
+        timestamp: new Date()
+      });
+    }
   }
   
   generateMockResponse(userMessage) {
@@ -636,38 +791,148 @@ class ChatInterface {
         btn.style.background = '#dcfce7';
         btn.style.color = '#16a34a';
         btn.innerHTML = '<svg width="16" height="16" viewBox="0 0 20 20" fill="currentColor"><path fill-rule="evenodd" d="M3.172 5.172a4 4 0 015.656 0L10 6.343l1.172-1.171a4 4 0 115.656 5.656L10 17.657l-6.828-6.829a4 4 0 010-5.656z" clip-rule="evenodd"/></svg>';
+        
+        // Store like in user feedback
+        if (!this.userFeedback.likes) this.userFeedback.likes = [];
+        if (!this.userFeedback.likes.includes(bookTitle)) {
+          this.userFeedback.likes.push(bookTitle);
+        }
+        
+        // Remove from dislikes if present
+        if (this.userFeedback.dislikes) {
+          this.userFeedback.dislikes = this.userFeedback.dislikes.filter(book => book !== bookTitle);
+        }
+        
       } else if (action === 'dislike') {
         btn.style.background = '#fee2e2';
         btn.style.color = '#dc2626';
         btn.innerHTML = '<svg width="16" height="16" viewBox="0 0 20 20" fill="currentColor"><path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zM8.707 7.293a1 1 0 00-1.414 1.414L8.586 10l-1.293 1.293a1 1 0 101.414 1.414L10 11.414l1.293 1.293a1 1 0 001.414-1.414L11.414 10l1.293-1.293a1 1 0 00-1.414-1.414L10 8.586 8.707 7.293z" clip-rule="evenodd"/></svg>';
+        
+        // Store dislike in user feedback
+        if (!this.userFeedback.dislikes) this.userFeedback.dislikes = [];
+        if (!this.userFeedback.dislikes.includes(bookTitle)) {
+          this.userFeedback.dislikes.push(bookTitle);
+        }
+        
+        // Remove from likes if present
+        if (this.userFeedback.likes) {
+          this.userFeedback.likes = this.userFeedback.likes.filter(book => book !== bookTitle);
+        }
+        
       } else if (action === 'save') {
         btn.style.background = '#dbeafe';
         btn.style.color = '#2563eb';
         btn.innerHTML = '<svg width="16" height="16" viewBox="0 0 20 20" fill="currentColor"><path d="M5 4a2 2 0 012-2h6a2 2 0 012 2v14l-5-2.5L5 18V4z"/></svg>';
       }
       
+      // Reset button after 2 seconds
       setTimeout(() => {
         btn.style.background = '';
         btn.style.color = '';
         btn.innerHTML = originalHTML;
       }, 2000);
+      
+      console.log('Current user feedback:', this.userFeedback);
+    }
+  }
+
+  renderUserFeedback(feedback) {
+    if (!feedback || Object.keys(feedback).length === 0) return '';
+    
+    let feedbackHtml = '';
+    
+    if (feedback.likes && feedback.likes.length > 0) {
+      feedbackHtml += `
+        <div class="feedback-item">
+          <span class="feedback-icon">❤️</span>
+          <span class="feedback-text">Liked: ${feedback.likes.join(', ')}</span>
+        </div>
+      `;
     }
     
-    if (!this.userFeedback) this.userFeedback = {};
-    if (!this.userFeedback[bookTitle]) this.userFeedback[bookTitle] = {};
-    this.userFeedback[bookTitle][action] = true;
+    if (feedback.dislikes && feedback.dislikes.length > 0) {
+      feedbackHtml += `
+        <div class="feedback-item">
+          <span class="feedback-icon">👎</span>
+          <span class="feedback-text">Disliked: ${feedback.dislikes.join(', ')}</span>
+        </div>
+      `;
+    }
     
-    const messages = {
-      like: `J'ai noté que tu aimes "${bookTitle}" !`,
-      dislike: `J'ai noté que "${bookTitle}" ne t'intéresse pas.`,
-      message: `"${bookTitle}" a été ajouté à ta liste de lecture !`
-    };
-    
-    this.addMessage({
-      type: 'ai',
-      content: messages[action],
-      timestamp: new Date()
-    });
+    return feedbackHtml;
+  }
+
+  newChat() {
+    // Confirm before clearing
+    if (confirm('Êtes-vous sûr de vouloir commencer une nouvelle session ? Cela effacera tout l\'historique de la conversation.')) {
+      // Clear all messages
+      this.messages = [];
+      
+      // Reset all state variables
+      this.currentContext = null;
+      this.selectedTones = [];
+      this.userFeedback = {};
+      this.includeHistory = false;
+      this.hasFirstResults = false;
+      this.isAdvancedOpen = false;
+      this.isSettingsOpen = false;
+      
+      // Clear tone chip selections
+      document.querySelectorAll('.tone-chip').forEach(chip => {
+        chip.classList.remove('active');
+      });
+      
+      // Clear history toggle
+      const historyToggle = document.getElementById('include-history');
+      if (historyToggle) {
+        historyToggle.checked = false;
+      }
+      
+      // Clear chat input
+      const chatInput = document.getElementById('chat-input');
+      if (chatInput) {
+        chatInput.value = '';
+        chatInput.style.height = 'auto';
+      }
+      
+      // Close any open panels
+      const advancedPanel = document.getElementById('advanced-panel');
+      const settingsPanel = document.getElementById('settings-panel');
+      if (advancedPanel) advancedPanel.classList.remove('open');
+      if (settingsPanel) settingsPanel.classList.remove('open');
+      
+      // Reset button text
+      this.updateButtonText();
+      
+      // Clear any stored data in localStorage
+      localStorage.removeItem('chatContext');
+      localStorage.removeItem('chatTones');
+      localStorage.removeItem('chatFeedback');
+      
+      // Re-render with welcome message
+      this.renderMessages();
+      this.addWelcomeMessage();
+      
+      // Clear session storage on backend
+      this.clearBackendSession();
+      
+      console.log('New chat session started - all data cleared completely');
+    }
+  }
+  
+  async clearBackendSession() {
+    try {
+      // Call backend to clear session data
+      await fetch('/recommendations/clear_session', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'X-CSRF-Token': document.querySelector('meta[name="csrf-token"]')?.getAttribute('content') || ''
+        }
+      });
+    } catch (error) {
+      console.log('Could not clear backend session:', error);
+    }
   }
 }
 

@@ -316,15 +316,30 @@ class RecommendationsController < ApplicationController
       
       Rails.logger.info "Chat message received: context=#{context.inspect}, tones=#{tone_chips.inspect}, history=#{include_history}"
       
-      # Always use refined prompt since everything is refinement
-      if session[:current_context]
-        # Refinement of previous context
+      # Clean up any stale session data that might interfere
+      if !session[:current_session_id] || !session[:current_context]
+        Rails.logger.info "Cleaning up stale session data"
+        session.delete(:current_context)
+        session.delete(:current_session_id)
+        session.delete(:current_feedback)
+      end
+      
+      # Determine if this is a new session or refinement
+      has_valid_session = session[:current_session_id] && session[:current_context]
+      
+      if has_valid_session
+        # Refinement of previous context - we have a valid ongoing session
         user_prompt = build_refined_prompt(session[:current_context], context)
-        Rails.logger.info "Using REFINED prompt: #{context}"
+        Rails.logger.info "Using REFINED prompt for existing session: #{context}"
       else
-        # First interaction: create initial context and use structured prompt
+        # First interaction or new session: create initial context and use structured prompt
         user_prompt = build_structured_prompt(context, tone_chips, include_history)
-        Rails.logger.info "Using INITIAL prompt: #{context}"
+        Rails.logger.info "Using INITIAL prompt for new session: #{context}"
+        
+        # Clear any stale session data to ensure clean start
+        session.delete(:current_context)
+        session.delete(:current_session_id)
+        session.delete(:current_feedback)
       end
       
       Rails.logger.info "Built prompt length: #{user_prompt&.length || 0}"
@@ -361,6 +376,19 @@ class RecommendationsController < ApplicationController
         parsed_response: parsed_response
       }
       
+      # Include debug data only in development environment
+      if Rails.env.development?
+        response_data[:raw_prompt] = user_prompt
+        response_data[:raw_ai_response] = ai_response
+        response_data[:debug_enabled] = true
+        
+        # Log debug info to Rails logger
+        Rails.logger.debug "=== DEBUG INFO ==="
+        Rails.logger.debug "Raw Prompt: #{user_prompt}"
+        Rails.logger.debug "Raw AI Response: #{ai_response}"
+        Rails.logger.debug "=================="
+      end
+      
       render json: response_data
       
     rescue => e
@@ -375,6 +403,46 @@ class RecommendationsController < ApplicationController
     end
   end
 
+  def clear_session
+    # Clear all session data related to recommendations
+    session.delete(:current_context)
+    session.delete(:current_session_id)
+    session.delete(:current_feedback)
+    session.delete(:recommendation_session_id)
+    session.delete(:refined_session_id)
+    session.delete(:last_context)
+    session.delete(:current_session_feedback)
+    
+    # Clear temporary storage for all possible session IDs
+    [:current_session_id, :recommendation_session_id, :refined_session_id].each do |session_key|
+      if session[session_key]
+        begin
+          TemporaryRecommendationStorage.clear(session[session_key])
+          Rails.logger.info "Cleared temporary storage for session: #{session[session_key]}"
+        rescue => e
+          Rails.logger.warn "Could not clear temporary storage for #{session_key}: #{e.message}"
+        end
+      end
+    end
+    
+    # Clear any other potential session variables with pattern matching
+    session.keys.grep(/recommendation|refinement|feedback|context|session/).each do |key|
+      Rails.logger.info "Clearing session key: #{key}"
+      session.delete(key)
+    end
+    
+    # Force session cleanup by setting to nil
+    session[:current_context] = nil
+    session[:current_session_id] = nil
+    session[:current_feedback] = nil
+    
+    Rails.logger.info "Session completely cleared for user"
+    
+    render json: {
+      success: true,
+      message: "Session cleared successfully"
+    }
+  end
 
 
   private
