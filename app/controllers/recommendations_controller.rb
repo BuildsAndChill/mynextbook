@@ -314,7 +314,14 @@ class RecommendationsController < ApplicationController
       include_history = request_data['include_history'] || false
       user_feedback = request_data['user_feedback'] || {}
       
-      Rails.logger.info "Chat message received: context=#{context.inspect}, tones=#{tone_chips.inspect}, history=#{include_history}"
+      # Validate user feedback - ensure likes and dislikes are mutually exclusive
+      if user_feedback['likes'] && user_feedback['dislikes']
+        # Remove any books that appear in both likes and dislikes
+        user_feedback['likes'] = user_feedback['likes'].reject { |book| user_feedback['dislikes'].include?(book) }
+        Rails.logger.info "Cleaned conflicting feedback - removed books that were both liked and disliked"
+      end
+      
+      Rails.logger.info "Chat message received: context=#{context.inspect}, tones=#{tone_chips.inspect}, history=#{include_history}, feedback=#{user_feedback.inspect}"
       
       # Clean up any stale session data that might interfere
       if !session[:current_session_id] || !session[:current_context]
@@ -329,11 +336,11 @@ class RecommendationsController < ApplicationController
       
       if has_valid_session
         # Refinement of previous context - we have a valid ongoing session
-        user_prompt = build_refined_prompt(session[:current_context], context)
+        user_prompt = build_refined_prompt(session[:current_context], context, user_feedback)
         Rails.logger.info "Using REFINED prompt for existing session: #{context}"
       else
         # First interaction or new session: create initial context and use structured prompt
-        user_prompt = build_structured_prompt(context, tone_chips, include_history)
+        user_prompt = build_structured_prompt(context, tone_chips, include_history, user_feedback)
         Rails.logger.info "Using INITIAL prompt for new session: #{context}"
         
         # Clear any stale session data to ensure clean start
@@ -449,7 +456,7 @@ class RecommendationsController < ApplicationController
 
 
 
-  def build_refined_prompt(original_context, refinement_text)
+  def build_refined_prompt(original_context, refinement_text, user_feedback = {})
     # Build a refined prompt that conserves context and adds refinement
     prompt = "You are a knowledgeable book recommendation expert. The user wants to REFINE their previous request.\n\n"
     prompt += "⚠️  CRITICAL: You are being asked to REFINE, not repeat. You MUST provide NEW, DIFFERENT book recommendations.\n\n"
@@ -462,13 +469,23 @@ class RecommendationsController < ApplicationController
     # New refinement
     prompt += "REFINEMENT REQUEST: #{refinement_text}\n\n"
     
-    # Add current session feedback if available (no database storage)
-    if session[:current_feedback]&.any?
+    # Add current session user feedback (likes/dislikes from current conversation)
+    if user_feedback && (user_feedback['likes']&.any? || user_feedback['dislikes']&.any?)
       prompt += "CURRENT SESSION FEEDBACK:\n"
-      session[:current_feedback].each do |feedback|
-        prompt += "- #{feedback[:type]}: #{feedback[:book_title]} by #{feedback[:book_author]}\n"
+      
+      if user_feedback['likes']&.any?
+        prompt += "Books they liked in this session:\n"
+        user_feedback['likes'].each { |book| prompt += "- #{book}\n" }
+        prompt += "\n"
       end
-      prompt += "\n"
+      
+      if user_feedback['dislikes']&.any?
+        prompt += "Books they disliked in this session:\n"
+        user_feedback['dislikes'].each { |book| prompt += "- #{book}\n" }
+        prompt += "\n"
+      end
+      
+      prompt += "IMPORTANT: Use this current session feedback to avoid recommending books similar to disliked ones and prioritize books similar to liked ones.\n\n"
     end
     
     # Add reading history if user is signed in
@@ -547,8 +564,8 @@ class RecommendationsController < ApplicationController
     prompt
   end
 
-  def build_structured_prompt(context, tone_chips, include_history)
-    Rails.logger.info "build_structured_prompt called with: context=#{context.inspect}, tone_chips=#{tone_chips.inspect}, include_history=#{include_history}"
+  def build_structured_prompt(context, tone_chips, include_history, user_feedback = {})
+    Rails.logger.info "build_structured_prompt called with: context=#{context.inspect}, tone_chips=#{tone_chips.inspect}, include_history=#{include_history}, user_feedback=#{user_feedback.inspect}"
     
     prompt = "You are a knowledgeable book recommendation expert. Please provide book recommendations in the EXACT format specified below.\n\n"
     
@@ -560,6 +577,25 @@ class RecommendationsController < ApplicationController
     # Add tone preferences
     if tone_chips && tone_chips.any?
       prompt += "TONE PREFERENCES: #{tone_chips.join(', ')}\n\n"
+    end
+    
+    # Add current session user feedback (likes/dislikes from current conversation)
+    if user_feedback && (user_feedback['likes']&.any? || user_feedback['dislikes']&.any?)
+      prompt += "CURRENT SESSION FEEDBACK:\n"
+      
+      if user_feedback['likes']&.any?
+        prompt += "Books they liked in this session:\n"
+        user_feedback['likes'].each { |book| prompt += "- #{book}\n" }
+        prompt += "\n"
+      end
+      
+      if user_feedback['dislikes']&.any?
+        prompt += "Books they disliked in this session:\n"
+        user_feedback['dislikes'].each { |book| prompt += "- #{book}\n" }
+        prompt += "\n"
+      end
+      
+      prompt += "IMPORTANT: Use this current session feedback to avoid recommending books similar to disliked ones and prioritize books similar to liked ones.\n\n"
     end
     
           # Add reading history if requested and user is signed in

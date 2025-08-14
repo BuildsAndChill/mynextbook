@@ -480,10 +480,16 @@ class ChatInterface {
     
     if (!message) return;
     
+    // Store current user feedback before sending (to preserve likes/dislikes)
+    const currentFeedback = { ...this.userFeedback };
+    
     this.addMessage({
       type: 'user',
       content: message,
-      timestamp: new Date()
+      timestamp: new Date(),
+      toneChips: this.getSelectedTones(),
+      includeHistory: this.includeHistory,
+      userFeedback: currentFeedback
     });
     
     input.value = '';
@@ -499,7 +505,7 @@ class ChatInterface {
         context: message,
         tone_chips: selectedTones,
         include_history: includeHistory,
-        user_feedback: this.userFeedback
+        user_feedback: currentFeedback
       };
       
       // Add debug message showing what we're sending
@@ -562,6 +568,9 @@ class ChatInterface {
       });
       
       this.currentContext = message;
+      
+      // Restore button states after adding new suggestions
+      this.restoreButtonStates();
       
     } catch (error) {
       console.error('Error calling AI API:', error);
@@ -781,59 +790,97 @@ class ChatInterface {
   }
 
   handleBookAction(action, bookTitle) {
-    console.log(`Action ${action} sur le livre: ${bookTitle}`);
+    // Use the clicked button directly, not closest
+    const btn = event.target.closest('.action-btn') || event.target;
+    if (!btn || !btn.classList.contains('action-btn')) return;
     
-    const btn = document.querySelector(`[data-action="${action}"][data-book="${bookTitle}"]`);
-    if (btn) {
-      const originalHTML = btn.innerHTML;
-      
-      if (action === 'like') {
-        btn.style.background = '#dcfce7';
-        btn.style.color = '#16a34a';
-        btn.innerHTML = '<svg width="16" height="16" viewBox="0 0 20 20" fill="currentColor"><path fill-rule="evenodd" d="M3.172 5.172a4 4 0 015.656 0L10 6.343l1.172-1.171a4 4 0 115.656 5.656L10 17.657l-6.828-6.829a4 4 0 010-5.656z" clip-rule="evenodd"/></svg>';
+    // Store original HTML for reset
+    const originalHTML = btn.innerHTML;
+    
+    // Check if this book is already liked/disliked
+    const isAlreadyLiked = this.userFeedback.likes && this.userFeedback.likes.includes(bookTitle);
+    const isAlreadyDisliked = this.userFeedback.dislikes && this.userFeedback.dislikes.includes(bookTitle);
+    
+    if (action === 'like') {
+      if (isAlreadyLiked) {
+        // Already liked - remove like (toggle off)
+        this.userFeedback.likes = this.userFeedback.likes.filter(book => book !== bookTitle);
+        btn.style.background = '';
+        btn.style.color = '';
+        btn.innerHTML = originalHTML;
+      } else {
+        // Not liked - add like
+        btn.style.background = '#fce7f3';
+        btn.style.color = '#ec4899';
+        btn.innerHTML = '<svg width="16" height="16" viewBox="0 0 20 20" fill="currentColor"><path d="M3.172 5.172a4 4 0 015.656 0L10 6.343l1.172-1.171a4 4 0 115.656 5.656L10 17.657l-6.828-6.829a4 4 0 010-5.656z"/></svg>';
         
         // Store like in user feedback
         if (!this.userFeedback.likes) this.userFeedback.likes = [];
-        if (!this.userFeedback.likes.includes(bookTitle)) {
-          this.userFeedback.likes.push(bookTitle);
-        }
+        this.userFeedback.likes.push(bookTitle);
         
-        // Remove from dislikes if present
+        // CRITICAL: Remove from dislikes if present (can't like and dislike same book)
         if (this.userFeedback.dislikes) {
           this.userFeedback.dislikes = this.userFeedback.dislikes.filter(book => book !== bookTitle);
+          // Also reset the dislike button visual state for THIS SPECIFIC BOOK
+          const dislikeBtn = document.querySelector(`[data-action="dislike"][data-book="${bookTitle}"]`);
+          if (dislikeBtn) {
+            dislikeBtn.style.background = '';
+            dislikeBtn.style.color = '';
+            // Find the original HTML for the dislike button
+            const dislikeOriginalHTML = dislikeBtn.dataset.originalHtml || 
+              '<svg width="16" height="16" viewBox="0 0 20 20" fill="none" stroke="currentColor"><path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zM8.707 7.293a1 1 0 00-1.414 1.414L8.586 10l-1.293 1.293a1 1 0 101.414 1.414L10 11.414l1.293 1.293a1 1 0 001.414-1.414L11.414 10l1.293-1.293a1 1 0 00-1.414-1.414L10 8.586 8.707 7.293z" clip-rule="evenodd"/></svg>';
+            dislikeBtn.innerHTML = dislikeOriginalHTML;
+          }
         }
-        
-      } else if (action === 'dislike') {
+      }
+      
+    } else if (action === 'dislike') {
+      if (isAlreadyDisliked) {
+        // Already disliked - remove dislike (toggle off)
+        this.userFeedback.dislikes = this.userFeedback.dislikes.filter(book => book !== bookTitle);
+        btn.style.background = '';
+        btn.style.color = '';
+        btn.innerHTML = originalHTML;
+      } else {
+        // Not disliked - add dislike
         btn.style.background = '#fee2e2';
         btn.style.color = '#dc2626';
         btn.innerHTML = '<svg width="16" height="16" viewBox="0 0 20 20" fill="currentColor"><path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zM8.707 7.293a1 1 0 00-1.414 1.414L8.586 10l-1.293 1.293a1 1 0 101.414 1.414L10 11.414l1.293 1.293a1 1 0 001.414-1.414L11.414 10l1.293-1.293a1 1 0 00-1.414-1.414L10 8.586 8.707 7.293z" clip-rule="evenodd"/></svg>';
         
         // Store dislike in user feedback
         if (!this.userFeedback.dislikes) this.userFeedback.dislikes = [];
-        if (!this.userFeedback.dislikes.includes(bookTitle)) {
-          this.userFeedback.dislikes.push(bookTitle);
-        }
+        this.userFeedback.dislikes.push(bookTitle);
         
-        // Remove from likes if present
+        // CRITICAL: Remove from likes if present (can't like and dislike same book)
         if (this.userFeedback.likes) {
           this.userFeedback.likes = this.userFeedback.likes.filter(book => book !== bookTitle);
+          // Also reset the like button visual state for THIS SPECIFIC BOOK
+          const likeBtn = document.querySelector(`[data-action="like"][data-book="${bookTitle}"]`);
+          if (likeBtn) {
+            likeBtn.style.background = '';
+            likeBtn.style.color = '';
+            // Find the original HTML for the like button
+            const likeOriginalHTML = likeBtn.dataset.originalHtml || 
+              '<svg width="16" height="16" viewBox="0 0 20 20" fill="none" stroke="currentColor"><path d="M3.172 5.172a4 4 0 015.656 0L10 6.343l1.172-1.171a4 4 0 115.656 5.656L10 17.657l-6.828-6.829a4 4 0 010-5.656z" stroke-width="2"/></svg>';
+            likeBtn.innerHTML = likeOriginalHTML;
+          }
         }
-        
-      } else if (action === 'save') {
-        btn.style.background = '#dbeafe';
-        btn.style.color = '#2563eb';
-        btn.innerHTML = '<svg width="16" height="16" viewBox="0 0 20 20" fill="currentColor"><path d="M5 4a2 2 0 012-2h6a2 2 0 012 2v14l-5-2.5L5 18V4z"/></svg>';
       }
       
-      // Reset button after 2 seconds
+    } else if (action === 'save') {
+      btn.style.background = '#dbeafe';
+      btn.style.color = '#2563eb';
+      btn.innerHTML = '<svg width="16" height="16" viewBox="0 0 20 20" fill="currentColor"><path d="M5 4a2 2 0 012-2h6a2 2 0 012 2v14l-5-2.5L5 18V4z"/></svg>';
+      
+      // Reset save button after 2 seconds
       setTimeout(() => {
         btn.style.background = '';
         btn.style.color = '';
         btn.innerHTML = originalHTML;
       }, 2000);
-      
-      console.log('Current user feedback:', this.userFeedback);
     }
+    
+    console.log('Current user feedback:', this.userFeedback);
   }
 
   renderUserFeedback(feedback) {
@@ -933,6 +980,42 @@ class ChatInterface {
     } catch (error) {
       console.log('Could not clear backend session:', error);
     }
+  }
+
+  restoreButtonStates() {
+    // Restore visual states of like/dislike buttons based on current feedback
+    document.querySelectorAll('.action-btn').forEach(btn => {
+      const action = btn.dataset.action;
+      const bookTitle = btn.dataset.book;
+      
+      if (!bookTitle) return; // Skip buttons without book data
+      
+      // Reset to default state first
+      btn.style.background = '';
+      btn.style.color = '';
+      
+      if (action === 'like') {
+        // Restore like state
+        if (this.userFeedback.likes && this.userFeedback.likes.includes(bookTitle)) {
+          btn.style.background = '#fce7f3';
+          btn.style.color = '#ec4899';
+          btn.innerHTML = '<svg width="16" height="16" viewBox="0 0 20 20" fill="currentColor"><path d="M3.172 5.172a4 4 0 015.656 0L10 6.343l1.172-1.171a4 4 0 115.656 5.656L10 17.657l-6.828-6.829a4 4 0 010-5.656z"/></svg>';
+        } else {
+          // Restore default like button
+          btn.innerHTML = '<svg width="16" height="16" viewBox="0 0 20 20" fill="none" stroke="currentColor"><path d="M3.172 5.172a4 4 0 015.656 0L10 6.343l1.172-1.171a4 4 0 115.656 5.656L10 17.657l-6.828-6.829a4 4 0 010-5.656z" stroke-width="2"/></svg>';
+        }
+      } else if (action === 'dislike') {
+        // Restore dislike state
+        if (this.userFeedback.dislikes && this.userFeedback.dislikes.includes(bookTitle)) {
+          btn.style.background = '#fee2e2';
+          btn.style.color = '#dc2626';
+          btn.innerHTML = '<svg width="16" height="16" viewBox="0 0 20 20" fill="currentColor"><path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zM8.707 7.293a1 1 0 00-1.414 1.414L8.586 10l-1.293 1.293a1 1 0 101.414 1.414L10 11.414l1.293 1.293a1 1 0 001.414-1.414L11.414 10l1.293-1.293a1 1 0 00-1.414-1.414L10 8.586 8.707 7.293z" clip-rule="evenodd"/></svg>';
+        } else {
+          // Restore default dislike button
+          btn.innerHTML = '<svg width="16" height="16" viewBox="0 0 20 20" fill="none" stroke="currentColor"><path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zM8.707 7.293a1 1 0 00-1.414 1.414L8.586 10l-1.293 1.293a1 1 0 101.414 1.414L10 11.414l1.293 1.293a1 1 0 001.414-1.414L11.414 10l1.293-1.293a1 1 0 00-1.414-1.414L10 8.586 8.707 7.293z" clip-rule="evenodd"/></svg>';
+        }
+      }
+    });
   }
 }
 
