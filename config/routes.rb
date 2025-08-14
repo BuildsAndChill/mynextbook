@@ -19,6 +19,7 @@ Rails.application.routes.draw do
   resources :recommendations, only: [:index, :new, :create] do
     post :feedback, on: :collection
     post :refine, on: :collection
+    post :cleanup_refined_session, on: :collection
   end
 
   resources :imports, only: [:new, :create]

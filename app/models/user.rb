@@ -7,7 +7,6 @@ class User < ApplicationRecord
   has_many :user_readings, dependent: :destroy
   has_many :books, through: :user_readings, source: :book_metadata
   has_many :user_book_feedbacks, dependent: :destroy
-  has_many :user_refinements, dependent: :destroy
   
   # Get user's reading preferences for AI recommendations
   def reading_preferences
@@ -19,15 +18,7 @@ class User < ApplicationRecord
     UserBookFeedback.feedback_summary_for_ai(self)
   end
   
-  # Get refinement history
-  def refinement_history(limit = 10)
-    UserRefinement.refinement_history(self, limit)
-  end
-  
-  # Get common refinements
-  def common_refinements(limit = 5)
-    UserRefinement.common_refinements(self, limit)
-  end
+
   
   # Get imported books count (for display purposes)
   def imported_books_count

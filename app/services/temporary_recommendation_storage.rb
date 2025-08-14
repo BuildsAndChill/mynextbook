@@ -20,11 +20,14 @@ class TemporaryRecommendationStorage
     # Ensure storage directory exists
     FileUtils.mkdir_p(STORAGE_DIR)
     
+    # Clean up ALL old files on EVERY new request (fresh start each time)
+    cleanup_all_files
+    
     # Save to JSON file
     file_path = STORAGE_DIR.join("#{session_id}.json")
     File.write(file_path, ai_data.to_json)
     
-    # Clean up old files
+    # Clean up expired files (redundant but safe)
     cleanup_expired_files
     
     Rails.logger.info "AI recommendation data stored in file: #{file_path}"
@@ -63,6 +66,19 @@ class TemporaryRecommendationStorage
   end
 
   private
+
+  def self.cleanup_all_files
+    return unless Dir.exist?(STORAGE_DIR)
+    
+    Dir.glob(STORAGE_DIR.join('*.json')).each do |file_path|
+      begin
+        File.delete(file_path)
+        Rails.logger.info "Cleaned up all files on fresh start: #{file_path}"
+      rescue => e
+        Rails.logger.error "Error cleaning up file #{file_path}: #{e.message}"
+      end
+    end
+  end
 
   def self.cleanup_expired_files
     return unless Dir.exist?(STORAGE_DIR)
