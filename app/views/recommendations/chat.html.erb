@@ -1,35 +1,402 @@
-<div id="chat-interface-container"></div>
+<!-- Device Detection and Responsive UI -->
+<div id="chat-interface-container" class="mobile-only"></div>
+<div id="desktop-form-container" class="desktop-only"></div>
 
 <%= javascript_include_tag "chat_interface", "data-turbo-track": "reload" %>
 
 <script>
   document.addEventListener('DOMContentLoaded', function() {
-    console.log('DOM loaded, trying to initialize chat...');
+    console.log('DOM loaded, detecting device type...');
     
-    // Check if ChatInterface is available
-    if (typeof ChatInterface === 'undefined') {
-      console.error('ChatInterface class not found!');
-      document.getElementById('chat-interface-container').innerHTML = '<div class="p-8 text-center"><h2 class="text-xl font-bold text-red-600">Erreur: ChatInterface non trouvé</h2><p class="text-gray-600 mt-2">Vérifiez la console pour plus de détails</p></div>';
-      return;
-    }
+    // Device detection
+    const isMobile = window.innerWidth < 768 || 
+                   /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent) ||
+                   (navigator.maxTouchPoints && navigator.maxTouchPoints > 2);
+    const mobileContainer = document.getElementById('chat-interface-container');
+    const desktopContainer = document.getElementById('desktop-form-container');
     
-    try {
-      // Initialize the chat interface
-      console.log('Creating ChatInterface instance...');
-      const chatInterface = new ChatInterface('chat-interface-container');
-      console.log('ChatInterface created successfully!');
+    if (isMobile) {
+      console.log('Mobile device detected, showing chat interface...');
+      mobileContainer.style.display = 'block';
+      desktopContainer.style.display = 'none';
       
-      // Add CSRF token to all AJAX requests
-      const csrfToken = document.querySelector('meta[name="csrf-token"]')?.getAttribute('content');
-      if (csrfToken) {
-        window.csrfToken = csrfToken;
-        console.log('CSRF token found:', csrfToken);
-      } else {
-        console.warn('No CSRF token found');
+      // Initialize chat interface for mobile
+      if (typeof ChatInterface === 'undefined') {
+        console.error('ChatInterface class not found!');
+        mobileContainer.innerHTML = '<div class="p-8 text-center"><h2 class="text-xl font-bold text-red-600">Erreur: ChatInterface non trouvé</h2><p class="text-gray-600 mt-2">Vérifiez la console pour plus de détails</p></div>';
+        return;
       }
-    } catch (error) {
-      console.error('Error initializing ChatInterface:', error);
-      document.getElementById('chat-interface-container').innerHTML = '<div class="p-8 text-center"><h2 class="text-xl font-bold text-red-600">Erreur d\'initialisation</h2><p class="text-gray-600 mt-2">' + error.message + '</p></div>';
+      
+      try {
+        console.log('Creating ChatInterface instance for mobile...');
+        window.chatInterface = new ChatInterface('chat-interface-container');
+        console.log('ChatInterface created successfully for mobile!');
+      } catch (error) {
+        console.error('Error initializing ChatInterface:', error);
+        mobileContainer.innerHTML = '<div class="p-8 text-center"><h2 class="text-xl font-bold text-red-600">Erreur d\'initialisation</h2><p class="text-gray-600 mt-2">' + error.message + '</p></div>';
+      }
+      
+    } else {
+      console.log('Desktop/Tablet detected, showing form interface...');
+      mobileContainer.style.display = 'none';
+      desktopContainer.style.display = 'block';
+      
+      // Load desktop form interface
+      loadDesktopForm();
     }
+    
+    // Add CSRF token to all AJAX requests
+    const csrfToken = document.querySelector('meta[name="csrf-token"]')?.getAttribute('content');
+    if (csrfToken) {
+      window.csrfToken = csrfToken;
+      console.log('CSRF token found:', csrfToken);
+    } else {
+      console.warn('No CSRF token found');
+    }
+    
+    // Handle window resize for responsive switching
+    window.addEventListener('resize', function() {
+      const isMobileNow = window.innerWidth < 768 || 
+                   /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent) ||
+                   (navigator.maxTouchPoints && navigator.maxTouchPoints > 2);
+      const mobileContainer = document.getElementById('chat-interface-container');
+      const desktopContainer = document.getElementById('desktop-form-container');
+      
+      if (isMobileNow && mobileContainer.style.display === 'none') {
+        console.log('Switching to mobile view...');
+        mobileContainer.style.display = 'block';
+        desktopContainer.style.display = 'none';
+        
+        // Re-initialize chat interface if needed
+        if (!window.chatInterface) {
+          try {
+            window.chatInterface = new ChatInterface('chat-interface-container');
+          } catch (error) {
+            console.error('Error re-initializing ChatInterface:', error);
+          }
+        }
+      } else if (!isMobileNow && desktopContainer.style.display === 'none') {
+        console.log('Switching to desktop view...');
+        mobileContainer.style.display = 'none';
+        desktopContainer.style.display = 'block';
+        
+        // Load desktop form if not already loaded
+        if (!document.getElementById('recommendation-form')) {
+          loadDesktopForm();
+        }
+      }
+    });
   });
+  
+  function loadDesktopForm() {
+    const desktopContainer = document.getElementById('desktop-form-container');
+    
+    // Create desktop form interface
+    desktopContainer.innerHTML = `
+      <div class="min-h-screen bg-gray-50 py-8">
+        <div class="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8">
+          <!-- Header -->
+          <div class="text-center mb-8">
+            <h1 class="text-3xl font-bold text-gray-900 mb-2">Mon Libraire IA</h1>
+            <p class="text-lg text-gray-600">Découvre ta prochaine lecture idéale</p>
+          </div>
+          
+          <!-- Main Form -->
+          <div class="bg-white rounded-lg shadow-lg p-6 md:p-8">
+            <form id="recommendation-form" class="space-y-6">
+              <!-- Context Input -->
+              <div>
+                <label for="context" class="block text-sm font-medium text-gray-700 mb-2">
+                  Que veux-tu lire aujourd'hui ?
+                </label>
+                <textarea
+                  id="context"
+                  name="context"
+                  rows="4"
+                  class="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500"
+                  placeholder="Décris ce que tu cherches : genre, humeur, thème, longueur..."
+                  required
+                ></textarea>
+              </div>
+              
+              <!-- Tone Chips -->
+              <div>
+                <label class="block text-sm font-medium text-gray-700 mb-3">
+                  Ton et style de lecture
+                </label>
+                <div class="flex flex-wrap gap-2">
+                  <button type="button" class="tone-chip" data-tone="Deep dive">Deep dive</button>
+                  <button type="button" class="tone-chip" data-tone="Fast-paced">Fast-paced</button>
+                  <button type="button" class="tone-chip" data-tone="Optimistic">Optimistic</button>
+                  <button type="button" class="tone-chip" data-tone="Thoughtful">Thoughtful</button>
+                  <button type="button" class="tone-chip" data-tone="Adventure">Adventure</button>
+                  <button type="button" class="tone-chip" data-tone="Cozy">Cozy</button>
+                  <button type="button" class="tone-chip" data-tone="Challenging">Challenging</button>
+                  <button type="button" class="tone-chip" data-tone="Light">Light</button>
+                </div>
+              </div>
+              
+              <!-- Quick Suggestions -->
+              <div>
+                <label class="block text-sm font-medium text-gray-700 mb-3">
+                  Suggestions rapides
+                </label>
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-3">
+                  <button type="button" class="suggestion-btn">Romans français contemporains</button>
+                  <button type="button" class="suggestion-btn">Science-fiction optimiste</button>
+                  <button type="button" class="suggestion-btn">Thrillers psychologiques</button>
+                  <button type="button" class="suggestion-btn">Philosophie accessible</button>
+                  <button type="button" class="suggestion-btn">Histoire passionnante</button>
+                  <button type="button" class="suggestion-btn">Biographies inspirantes</button>
+                </div>
+              </div>
+              
+              <!-- Reading History Toggle -->
+              <div class="flex items-center justify-between p-4 bg-gray-50 rounded-lg">
+                <div>
+                  <label class="text-sm font-medium text-gray-700">Utiliser mon historique de lecture</label>
+                  <p class="text-sm text-gray-500">Pour des recommandations personnalisées</p>
+                </div>
+                <label class="toggle-switch">
+                  <input type="checkbox" id="include-history" />
+                  <span class="toggle-slider"></span>
+                </label>
+              </div>
+              
+              <!-- Submit Button -->
+              <div class="pt-4">
+                <button
+                  type="submit"
+                  class="w-full bg-gradient-to-r from-indigo-600 to-purple-600 text-white font-medium py-3 px-6 rounded-lg hover:from-indigo-700 hover:to-purple-700 transform hover:scale-105 transition-all duration-200 flex items-center justify-center gap-2"
+                >
+                  <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9.663 17h4.673M12 3v1m6.364 1.636l-.707.707M21 12h-1M4 12H3m3.343-5.657l-.707-.707m2.828 9.9a5 5 0 117.072 0l-.548.547A3.374 0 0014 18.469V19a2 2 0 11-4 0v-.531c0-.895-.356-1.754-.988-2.386l-.548-.547z"/>
+                  </svg>
+                  Obtenir mes recommandations
+                </button>
+              </div>
+            </form>
+          </div>
+          
+          <!-- Results Section (hidden initially) -->
+          <div id="results-section" class="mt-8 hidden">
+            <div class="bg-white rounded-lg shadow-lg p-6 md:p-8">
+              <h2 class="text-2xl font-bold text-gray-900 mb-6">Tes recommandations</h2>
+              <div id="book-results" class="space-y-4">
+                <!-- Results will be populated here -->
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    `;
+    
+    // Initialize desktop form functionality
+    initializeDesktopForm();
+  }
+  
+  function initializeDesktopForm() {
+    // Tone chip selection
+    document.querySelectorAll('.tone-chip').forEach(chip => {
+      chip.addEventListener('click', function() {
+        this.classList.toggle('active');
+      });
+    });
+    
+    // Quick suggestions
+    document.querySelectorAll('.suggestion-btn').forEach(btn => {
+      btn.addEventListener('click', function() {
+        document.getElementById('context').value = this.textContent;
+      });
+    });
+    
+    // Form submission
+    document.getElementById('recommendation-form').addEventListener('submit', async function(e) {
+      e.preventDefault();
+      
+      const formData = new FormData(this);
+      const context = formData.get('context');
+      const selectedTones = Array.from(document.querySelectorAll('.tone-chip.active')).map(chip => chip.dataset.tone);
+      const includeHistory = document.getElementById('include-history').checked;
+      
+      // Show loading state
+      const submitBtn = this.querySelector('button[type="submit"]');
+      const originalText = submitBtn.innerHTML;
+      submitBtn.innerHTML = '<svg class="animate-spin w-5 h-5" fill="none" viewBox="0 0 24 24"><circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle><path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path></svg> Génération en cours...';
+      submitBtn.disabled = true;
+      
+      try {
+        const response = await fetch('/recommendations/chat_message', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            'X-CSRF-Token': window.csrfToken || ''
+          },
+          body: JSON.stringify({
+            context: context,
+            tone_chips: selectedTones,
+            include_history: includeHistory,
+            user_feedback: {}
+          })
+        });
+        
+        if (!response.ok) {
+          throw new Error(`HTTP error! status: ${response.status}`);
+        }
+        
+        const data = await response.json();
+        
+        // Display results
+        displayResults(data);
+        
+      } catch (error) {
+        console.error('Error:', error);
+        alert('Erreur lors de la génération des recommandations. Veuillez réessayer.');
+      } finally {
+        // Reset button
+        submitBtn.innerHTML = originalText;
+        submitBtn.disabled = false;
+      }
+    });
+  }
+  
+  function displayResults(data) {
+    const resultsSection = document.getElementById('results-section');
+    const bookResults = document.getElementById('book-results');
+    
+    // Show results section
+    resultsSection.classList.remove('hidden');
+    
+    // Populate results
+    if (data.suggestions && data.suggestions.length > 0) {
+      bookResults.innerHTML = data.suggestions.map(book => `
+        <div class="border border-gray-200 rounded-lg p-4 hover:shadow-md transition-shadow">
+          <div class="flex items-start gap-4">
+            <div class="w-16 h-20 bg-gradient-to-br from-gray-200 to-gray-300 rounded flex items-center justify-center flex-shrink-0">
+              <svg class="w-8 h-8 text-gray-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.747 0 3.332.477 4.5 1.253v13C19.832 18.477 18.246 18 16.5 18c-1.746 0-3.332.477-4.5 1.253"/>
+              </svg>
+            </div>
+            <div class="flex-1">
+              <h3 class="text-lg font-semibold text-gray-900 mb-1">${book.title}</h3>
+              <p class="text-sm text-gray-600 mb-2">par ${book.author}</p>
+              <p class="text-gray-700">${book.pitch}</p>
+            </div>
+          </div>
+        </div>
+      `).join('');
+    } else {
+      bookResults.innerHTML = '<p class="text-gray-500 text-center py-8">Aucune recommandation trouvée.</p>';
+    }
+    
+    // Scroll to results
+    resultsSection.scrollIntoView({ behavior: 'smooth' });
+  }
 </script>
+
+<style>
+  /* Desktop-specific styles */
+  .mobile-only { display: none; }
+  .desktop-only { display: none; }
+  
+  @media (max-width: 767px) {
+    .mobile-only { display: block; }
+    .desktop-only { display: none; }
+  }
+  
+  @media (min-width: 768px) {
+    .mobile-only { display: none; }
+    .desktop-only { display: block; }
+  }
+  
+  /* Tone chips for desktop */
+  .tone-chip {
+    padding: 0.5rem 1rem;
+    font-size: 0.875rem;
+    background: #f8fafc;
+    color: #475569;
+    border: 1px solid #e2e8f0;
+    border-radius: 0.75rem;
+    cursor: pointer;
+    transition: all 0.2s;
+    font-weight: 500;
+  }
+  
+  .tone-chip:hover {
+    background: #f1f5f9;
+    border-color: #cbd5e1;
+  }
+  
+  .tone-chip.active {
+    background: #3b82f6;
+    border-color: #3b82f6;
+    color: white;
+  }
+  
+  /* Suggestion buttons for desktop */
+  .suggestion-btn {
+    padding: 0.75rem 1rem;
+    font-size: 0.875rem;
+    background: #fef3c7;
+    color: #92400e;
+    border: 1px solid #fde68a;
+    border-radius: 0.5rem;
+    cursor: pointer;
+    transition: all 0.2s;
+    font-weight: 500;
+    text-align: left;
+  }
+  
+  .suggestion-btn:hover {
+    background: #fde68a;
+    border-color: #f59e0b;
+    transform: translateY(-1px);
+  }
+  
+  /* Toggle switch for desktop */
+  .toggle-switch {
+    position: relative;
+    display: inline-block;
+    width: 3rem;
+    height: 1.5rem;
+  }
+  
+  .toggle-switch input {
+    opacity: 0;
+    width: 0;
+    height: 0;
+  }
+  
+  .toggle-slider {
+    position: absolute;
+    cursor: pointer;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background-color: #cbd5e1;
+    transition: 0.3s;
+    border-radius: 1.5rem;
+  }
+  
+  .toggle-slider:before {
+    position: absolute;
+    content: "";
+    height: 1.25rem;
+    width: 1.25rem;
+    left: 0.125rem;
+    bottom: 0.125rem;
+    background-color: white;
+    transition: 0.3s;
+    border-radius: 50%;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
+  }
+  
+  input:checked + .toggle-slider {
+    background-color: #3b82f6;
+  }
+  
+  input:checked + .toggle-slider:before {
+    transform: translateX(1.5rem);
+  }
+</style>

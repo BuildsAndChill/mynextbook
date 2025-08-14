@@ -8,6 +8,9 @@ class ChatInterface {
     this.selectedTones = [];
     this.userFeedback = {};
     this.includeHistory = false;
+    this.hasFirstResults = false;
+    this.isSettingsOpen = false;
+    this.isAdvancedOpen = false;
     
     this.init();
   }
@@ -21,7 +24,7 @@ class ChatInterface {
   render() {
     this.container.innerHTML = `
       <div class="chat-container">
-        <!-- Header -->
+        <!-- Ultra-Simple Header -->
         <div class="chat-header">
           <div class="header-content">
             <div class="header-left">
@@ -30,31 +33,25 @@ class ChatInterface {
                   <path d="M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.747 0 3.332.477 4.5 1.253v13C19.832 18.477 18.246 18 16.5 18c-1.746 0-3.332.477-4.5 1.253" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
                 </svg>
               </div>
-              <div class="header-info">
-                <h2>Mon Libraire IA</h2>
-                <div class="status">
-                  <span class="status-dot"></span>
-                  En conversation...
-                </div>
-              </div>
+              <h2>Mon Libraire IA</h2>
             </div>
-                         <div class="header-right">
-               <button class="new-chat-btn" onclick="window.location.reload()">
-                 <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor">
-                   <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"/>
-                 </svg>
-                 Nouveau Chat
-               </button>
-             </div>
+            <div class="header-right">
+              <button class="settings-btn" id="settings-btn">
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor">
+                  <path d="M12 15a3 3 0 1 0 0-6 3 3 0 0 0 0 6Z" stroke-width="2"/>
+                  <path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1Z" stroke-width="2"/>
+                </svg>
+              </button>
+            </div>
           </div>
         </div>
         
-        <!-- Messages -->
+        <!-- Messages - Scrollable Area -->
         <div class="chat-messages" id="chat-messages">
           <!-- Messages will be added here -->
         </div>
         
-        <!-- Input -->
+        <!-- Sticky Input - Ultra Simple -->
         <div class="chat-input">
           <div class="input-container">
             <textarea 
@@ -62,24 +59,34 @@ class ChatInterface {
               placeholder="Dis-moi ce que tu veux lire..."
               rows="1"
             ></textarea>
-            <button id="send-btn" class="send-btn">
-              <svg width="20" height="20" viewBox="0 0 24 24" fill="none">
-                <path d="M12 19l9 2-9-18-9 18 9-2zm0 0v-8" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+            <button id="send-btn" class="send-btn primary-btn">
+              <span class="btn-text">Get suggestions</span>
+              <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor">
+                <path d="M12 19l9 2-9-18-9 18 9-2zm0 0v-8" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+              </svg>
+            </button>
+            <button class="advanced-btn" id="advanced-btn">
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor">
+                <path d="M12 5v14M5 12h14" stroke-width="2"/>
+              </svg>
+            </button>
+          </div>
+        </div>
+        
+        <!-- Advanced Options Panel -->
+        <div class="advanced-panel" id="advanced-panel">
+          <div class="advanced-header">
+            <h4>Options avancées</h4>
+            <button class="close-advanced" id="close-advanced">
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor">
+                <path d="M18 6L6 18M6 6l12 12" stroke-width="2"/>
               </svg>
             </button>
           </div>
           
-          <!-- Quick Suggestions -->
-          <div class="quick-suggestions">
-            <button class="suggestion-btn">Romans français contemporains</button>
-            <button class="suggestion-btn">Science-fiction optimiste</button>
-            <button class="suggestion-btn">Thrillers psychologiques</button>
-          </div>
-          
-          <!-- Tone & Mood Chips -->
-          <div class="tone-chips-section">
-            <p class="text-xs text-gray-500 mb-2">Ton & Style :</p>
-            <div class="flex flex-wrap gap-2">
+          <div class="advanced-section">
+            <h5>Ton & Style</h5>
+            <div class="tone-chips">
               <button class="tone-chip" data-tone="Deep dive">Deep dive</button>
               <button class="tone-chip" data-tone="Fast-paced">Fast-paced</button>
               <button class="tone-chip" data-tone="Optimistic">Optimistic</button>
@@ -91,17 +98,58 @@ class ChatInterface {
             </div>
           </div>
           
-          <!-- Reading History Toggle -->
-          <div class="history-toggle-section">
-            <div class="flex items-center justify-between p-3 bg-gray-50 rounded-lg">
-              <div>
-                <label class="text-sm font-medium text-gray-700">Utiliser mon historique de lecture</label>
-                <p class="text-xs text-gray-500">Pour des recommandations personnalisées</p>
-              </div>
-              <label class="relative inline-flex items-center cursor-pointer">
-                <input type="checkbox" id="include-history" class="sr-only" />
-                <div class="w-11 h-6 bg-gray-200 rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-0.5 after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-indigo-600"></div>
+          <div class="advanced-section">
+            <h5>Suggestions rapides</h5>
+            <div class="quick-suggestions">
+              <button class="suggestion-btn">Romans français contemporains</button>
+              <button class="suggestion-btn">Science-fiction optimiste</button>
+              <button class="suggestion-btn">Thrillers psychologiques</button>
+              <button class="suggestion-btn">Philosophie accessible</button>
+              <button class="suggestion-btn">Histoire passionnante</button>
+            </div>
+          </div>
+          
+          <div class="advanced-section">
+            <h5>Préférences</h5>
+            <div class="preference-item">
+              <label>Utiliser mon historique de lecture</label>
+              <label class="toggle-switch">
+                <input type="checkbox" id="include-history" />
+                <span class="toggle-slider"></span>
               </label>
+            </div>
+          </div>
+        </div>
+        
+        <!-- Settings Side Panel -->
+        <div class="settings-panel" id="settings-panel">
+          <div class="settings-overlay" id="settings-overlay"></div>
+          <div class="settings-content">
+            <div class="settings-header">
+              <h3>Paramètres</h3>
+              <button class="close-settings" id="close-settings">
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor">
+                  <path d="M18 6L6 18M6 6l12 12" stroke-width="2"/>
+                </svg>
+              </button>
+            </div>
+            
+            <div class="settings-section">
+              <h4>Compte</h4>
+              <div class="auth-buttons">
+                <button class="auth-btn signin-btn">
+                  <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor">
+                    <path d="M15 3h4a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2h-4M10 17l5-5-5-5M13.8 12H3" stroke-width="2"/>
+                  </svg>
+                  Se connecter
+                </button>
+                <button class="auth-btn signup-btn">
+                  <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor">
+                    <path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2M12 11a4 4 0 1 0 0-8 4 4 0 0 0 0 8Z" stroke-width="2"/>
+                  </svg>
+                  S'inscrire
+                </button>
+              </div>
             </div>
           </div>
         </div>
@@ -129,22 +177,41 @@ class ChatInterface {
       input.style.height = Math.min(input.scrollHeight, 120) + 'px';
     });
     
-    // Quick suggestions
+    // Advanced panel
+    const advancedBtn = document.getElementById('advanced-btn');
+    const advancedPanel = document.getElementById('advanced-panel');
+    const closeAdvanced = document.getElementById('close-advanced');
+    
+    advancedBtn.addEventListener('click', () => this.toggleAdvanced());
+    closeAdvanced.addEventListener('click', () => this.closeAdvanced());
+    
+    // Settings panel
+    const settingsBtn = document.getElementById('settings-btn');
+    const settingsPanel = document.getElementById('settings-panel');
+    const settingsOverlay = document.getElementById('settings-overlay');
+    const closeSettings = document.getElementById('close-settings');
+    
+    settingsBtn.addEventListener('click', () => this.openSettings());
+    settingsOverlay.addEventListener('click', () => this.closeSettings());
+    closeSettings.addEventListener('click', () => this.closeSettings());
+    
+    // Quick suggestions in advanced panel
     document.querySelectorAll('.suggestion-btn').forEach(btn => {
       btn.addEventListener('click', (e) => {
         input.value = e.target.textContent;
+        this.closeAdvanced();
         input.focus();
       });
     });
     
-    // Tone chips
+    // Tone chips in advanced panel
     document.querySelectorAll('.tone-chip').forEach(chip => {
       chip.addEventListener('click', (e) => {
         this.toggleToneChip(e.target);
       });
     });
     
-    // Delegate book actions (for dynamically added content)
+    // Delegate book actions
     document.addEventListener('click', (e) => {
       if (e.target.closest('.action-btn')) {
         const btn = e.target.closest('.action-btn');
@@ -155,20 +222,48 @@ class ChatInterface {
     });
   }
   
-
+  toggleAdvanced() {
+    if (this.isAdvancedOpen) {
+      this.closeAdvanced();
+    } else {
+      this.openAdvanced();
+    }
+  }
+  
+  openAdvanced() {
+    this.isAdvancedOpen = true;
+    document.getElementById('advanced-panel').classList.add('open');
+    document.getElementById('advanced-btn').innerHTML = `
+      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor">
+        <path d="M18 6L6 18M6 6l12 12" stroke-width="2"/>
+      </svg>
+    `;
+  }
+  
+  closeAdvanced() {
+    this.isAdvancedOpen = false;
+    document.getElementById('advanced-panel').classList.remove('open');
+    document.getElementById('advanced-btn').innerHTML = `
+      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor">
+        <path d="M12 5v14M5 12h14" stroke-width="2"/>
+      </svg>
+    `;
+  }
+  
+  openSettings() {
+    this.isSettingsOpen = true;
+    document.getElementById('settings-panel').classList.add('open');
+    document.body.style.overflow = 'hidden';
+  }
+  
+  closeSettings() {
+    this.isSettingsOpen = false;
+    document.getElementById('settings-panel').classList.remove('open');
+    document.body.style.overflow = '';
+  }
   
   toggleToneChip(chip) {
-    const isActive = chip.classList.contains('active');
-    
-    if (isActive) {
-      chip.classList.remove('active', 'bg-indigo-100', 'border-indigo-300', 'text-indigo-700');
-      chip.classList.add('bg-gray-50', 'border-gray-200', 'text-gray-600');
-    } else {
-      chip.classList.remove('bg-gray-50', 'border-gray-200', 'text-gray-600');
-      chip.classList.add('active', 'bg-indigo-100', 'border-indigo-300', 'text-indigo-700');
-    }
-    
-    // Update selected tones
+    chip.classList.toggle('active');
     this.updateSelectedTones();
   }
   
@@ -185,15 +280,22 @@ class ChatInterface {
   addWelcomeMessage() {
     this.addMessage({
       type: 'ai',
-      content: "Salut ! 👋 Dis-moi ce que tu veux lire aujourd'hui. Tu peux être aussi spécifique que tu veux : genre, ton, longueur, ou juste ton humeur du moment !",
+      content: "Salut ! 👋 Dis-moi ce que tu veux lire aujourd'hui.",
       timestamp: new Date()
     });
+    
+    this.updateButtonText();
   }
   
   addMessage(message) {
     this.messages.push(message);
     this.renderMessages();
     this.scrollToBottom();
+    
+    if (message.type === 'ai' && message.suggestions && message.suggestions.length > 0 && !this.hasFirstResults) {
+      this.hasFirstResults = true;
+      this.updateButtonText();
+    }
   }
   
   renderMessages() {
@@ -217,7 +319,6 @@ class ChatInterface {
     } else {
       let content = `<p>${message.content}</p>`;
       
-      // Add book suggestions if available
       if (message.suggestions && message.suggestions.length > 0) {
         content += this.renderBookSuggestions(message.suggestions);
       }
@@ -284,26 +385,21 @@ class ChatInterface {
     
     if (!message) return;
     
-    // Add user message
     this.addMessage({
       type: 'user',
       content: message,
       timestamp: new Date()
     });
     
-    // Clear input
     input.value = '';
     input.style.height = 'auto';
     
-    // Show typing indicator
     this.showTypingIndicator();
     
     try {
-      // Get selected tones and history preference
       const selectedTones = this.getSelectedTones();
       const includeHistory = document.getElementById('include-history')?.checked || false;
       
-      // Prepare request data
       const requestData = {
         context: message,
         tone_chips: selectedTones,
@@ -311,7 +407,6 @@ class ChatInterface {
         user_feedback: this.userFeedback
       };
       
-      // Call real AI API
       const response = await fetch('/recommendations/chat_message', {
         method: 'POST',
         headers: {
@@ -327,7 +422,6 @@ class ChatInterface {
       
       const data = await response.json();
       
-      // Add AI response
       this.addMessage({
         type: 'ai',
         content: data.message || data.ai_response || "Voici mes suggestions basées sur ta demande :",
@@ -335,13 +429,11 @@ class ChatInterface {
         timestamp: new Date()
       });
       
-      // Update context
       this.currentContext = message;
       
     } catch (error) {
       console.error('Error calling AI API:', error);
       
-      // Fallback to mock response if API fails
       const mockResponse = this.generateMockResponse(message);
       this.addMessage({
         type: 'ai',
@@ -358,18 +450,15 @@ class ChatInterface {
     const lowerMessage = userMessage.toLowerCase();
     const selectedTones = this.getSelectedTones();
     
-    // Check if this is a refinement request (based on user feedback)
     if (this.userFeedback && Object.keys(this.userFeedback).length > 0) {
       return this.generateRefinedResponse();
     }
     
-    // Include selected tones in the response
     let toneContext = '';
     if (selectedTones.length > 0) {
       toneContext = ` (avec un ton ${selectedTones.join(', ')})`;
     }
     
-    // Generate different responses based on keywords
     if (lowerMessage.includes('roman') || lowerMessage.includes('fiction')) {
       return {
         message: `Parfait ! Voici mes suggestions de romans basées sur ta demande${toneContext} :`,
@@ -377,7 +466,7 @@ class ChatInterface {
           {
             title: "Le Petit Prince",
             author: "Antoine de Saint-Exupéry",
-            pitch: "Un conte poétique et philosophique sur l'amitié et l'amour, parfait pour tous les âges."
+            pitch: "Un conte poétique et philosophique sur l'amour et l'amitié, parfait pour tous les âges."
           },
           {
             title: "L'Étranger",
@@ -412,71 +501,7 @@ class ChatInterface {
           }
         ]
       };
-    } else if (lowerMessage.includes('thriller') || lowerMessage.includes('policier') || lowerMessage.includes('suspense')) {
-      return {
-        message: "Parfait pour un bon moment de tension ! Voici mes suggestions :",
-        suggestions: [
-          {
-            title: "Le Parrain",
-            author: "Mario Puzo",
-            pitch: "L'histoire de la famille Corleone, un chef-d'œuvre du roman noir."
-          },
-          {
-            title: "Gone Girl",
-            author: "Gillian Flynn",
-            pitch: "Un thriller psychologique haletant sur la disparition d'une femme."
-          },
-          {
-            title: "Le Silence des agneaux",
-            author: "Thomas Harris",
-            pitch: "Un thriller horrifique avec le célèbre Dr. Hannibal Lecter."
-          }
-        ]
-      };
-    } else if (lowerMessage.includes('philosophie') || lowerMessage.includes('réflexion') || lowerMessage.includes('pensée')) {
-      return {
-        message: "Des lectures qui font réfléchir ! Voici mes suggestions :",
-        suggestions: [
-          {
-            title: "Ainsi parlait Zarathoustra",
-            author: "Friedrich Nietzsche",
-            pitch: "Une œuvre philosophique majeure sur la volonté de puissance et l'éternel retour."
-          },
-          {
-            title: "L'Existentialisme est un humanisme",
-            author: "Jean-Paul Sartre",
-            pitch: "Une introduction accessible à la philosophie existentialiste."
-          },
-          {
-            title: "Le Mythe de Sisyphe",
-            author: "Albert Camus",
-            pitch: "Une réflexion sur l'absurdité de la vie et la révolte."
-          }
-        ]
-      };
-    } else if (lowerMessage.includes('mood') || lowerMessage.includes('humeur') || lowerMessage.includes('sentiment')) {
-      return {
-        message: "Je vois que tu veux partager ton humeur ! Voici des suggestions qui pourraient correspondre :",
-        suggestions: [
-          {
-            title: "Le Petit Prince",
-            author: "Antoine de Saint-Exupéry",
-            pitch: "Un livre réconfortant qui réchauffe le cœur et l'âme."
-          },
-          {
-            title: "L'Alchimiste",
-            author: "Paulo Coelho",
-            pitch: "Une histoire inspirante qui donne de l'espoir et de la motivation."
-          },
-          {
-            title: "Le Seigneur des Anneaux",
-            author: "J.R.R. Tolkien",
-            pitch: "Une épopée qui transporte dans un monde merveilleux et échappe au quotidien."
-          }
-        ]
-      };
     } else {
-      // Default response for any other message
       return {
         message: "Merci pour ta demande ! Voici quelques suggestions variées qui pourraient t'intéresser :",
         suggestions: [
@@ -517,7 +542,6 @@ class ChatInterface {
       message += `Je vais éviter les styles similaires à ${dislikedBooks.join(', ')}. `;
     }
     
-    // Suggestions basées sur les préférences
     const refinedSuggestions = [
       {
         title: "Le Château",
@@ -586,15 +610,28 @@ class ChatInterface {
     });
   }
   
+  updateButtonText() {
+    const btn = document.getElementById('send-btn');
+    const btnText = btn.querySelector('.btn-text');
+    
+    if (!this.hasFirstResults) {
+      btnText.textContent = 'Get suggestions';
+      btn.classList.remove('refine-btn');
+      btn.classList.add('primary-btn');
+    } else {
+      btnText.textContent = 'More like this';
+      btn.classList.remove('primary-btn');
+      btn.classList.add('refine-btn');
+    }
+  }
+
   handleBookAction(action, bookTitle) {
     console.log(`Action ${action} sur le livre: ${bookTitle}`);
     
-    // Feedback visuel immédiat
     const btn = document.querySelector(`[data-action="${action}"][data-book="${bookTitle}"]`);
     if (btn) {
       const originalHTML = btn.innerHTML;
       
-      // Animation de feedback
       if (action === 'like') {
         btn.style.background = '#dcfce7';
         btn.style.color = '#16a34a';
@@ -609,7 +646,6 @@ class ChatInterface {
         btn.innerHTML = '<svg width="16" height="16" viewBox="0 0 20 20" fill="currentColor"><path d="M5 4a2 2 0 012-2h6a2 2 0 012 2v14l-5-2.5L5 18V4z"/></svg>';
       }
       
-      // Reset après 2 secondes
       setTimeout(() => {
         btn.style.background = '';
         btn.style.color = '';
@@ -617,16 +653,14 @@ class ChatInterface {
       }, 2000);
     }
     
-    // Stocker l'action en session pour les futures recommandations
     if (!this.userFeedback) this.userFeedback = {};
     if (!this.userFeedback[bookTitle]) this.userFeedback[bookTitle] = {};
     this.userFeedback[bookTitle][action] = true;
     
-    // Message de confirmation
     const messages = {
       like: `J'ai noté que tu aimes "${bookTitle}" !`,
       dislike: `J'ai noté que "${bookTitle}" ne t'intéresse pas.`,
-      save: `"${bookTitle}" a été ajouté à ta liste de lecture !`
+      message: `"${bookTitle}" a été ajouté à ta liste de lecture !`
     };
     
     this.addMessage({

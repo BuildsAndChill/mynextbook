@@ -1,0 +1,40 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <title>Mon Libraire IA - Chat</title>
+    <meta name="viewport" content="width=device-width,initial-scale=1">
+    <%= csrf_meta_tags %>
+    <%= csp_meta_tag %>
+    <%= stylesheet_link_tag "tailwind", "data-turbo-track": "reload" %>
+    <%= stylesheet_link_tag "chat_interface", "data-turbo-track": "reload" %>
+    <%= stylesheet_link_tag "application", "data-turbo-track": "reload" %>
+    <%= javascript_importmap_tags %>
+  </head>
+
+  <body class="bg-gray-50">
+    <!-- No Navigation Bar for Chat -->
+    <%= yield %>
+    
+    <!-- User Menu Script -->
+    <script>
+      // User menu dropdown functionality
+      document.addEventListener('DOMContentLoaded', function() {
+        const userMenuButton = document.getElementById('user-menu-button');
+        const userMenuDropdown = document.getElementById('user-menu-dropdown');
+        
+        if (userMenuButton && userMenuDropdown) {
+          userMenuButton.addEventListener('click', function() {
+            userMenuDropdown.classList.toggle('hidden');
+          });
+          
+          // Close dropdown when clicking outside
+          document.addEventListener('click', function(event) {
+            if (!userMenuButton.contains(event.target) && !userMenuDropdown.contains(event.target)) {
+              userMenuDropdown.classList.add('hidden');
+            }
+          });
+        }
+      });
+    </script>
+  </body>
+</html>

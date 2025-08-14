@@ -2,8 +2,19 @@ class RecommendationsController < ApplicationController
   # Remove authentication requirement - allow unlogged users to get basic recommendations
   
   def index
-    # Redirect to the new recommendations form
-    redirect_to new_recommendation_path
+    # Device detection and smart routing
+    user_agent = request.user_agent.downcase
+    is_mobile = user_agent.include?('mobile') || user_agent.include?('android') || user_agent.include?('iphone') || user_agent.include?('ipad')
+    
+    # Check if it's a mobile device
+    if is_mobile
+      Rails.logger.info "Mobile device detected, redirecting to chat interface"
+      redirect_to chat_recommendations_path
+    else
+      Rails.logger.info "Desktop/Tablet detected, redirecting to normal form"
+      # Redirect desktop/tablet users to the normal form
+      redirect_to new_recommendation_path
+    end
   end
   
   def new
@@ -289,13 +300,8 @@ class RecommendationsController < ApplicationController
   end
 
   def chat
-    # Initialize conversation context
-    session[:conversation_history] ||= []
-    session[:current_context] ||= nil
-    session[:current_suggestions] ||= []
-    
-    # Render the chat interface
-    render :chat
+    # Use chat layout without navigation bar
+    render layout: 'chat'
   end
   
   def chat_message
@@ -310,15 +316,15 @@ class RecommendationsController < ApplicationController
       
       Rails.logger.info "Chat message received: context=#{context.inspect}, tones=#{tone_chips.inspect}, history=#{include_history}"
       
-      # Check if this is the first user request or a follow-up
-      if session[:current_context] && session[:current_context] != ""
-        # Follow-up: use refined prompt
+      # Always use refined prompt since everything is refinement
+      if session[:current_context]
+        # Refinement of previous context
         user_prompt = build_refined_prompt(session[:current_context], context)
-        Rails.logger.info "Using REFINED prompt for follow-up: #{context}"
+        Rails.logger.info "Using REFINED prompt: #{context}"
       else
-        # First request: use new prompt
+        # First interaction: create initial context and use structured prompt
         user_prompt = build_structured_prompt(context, tone_chips, include_history)
-        Rails.logger.info "Using NEW prompt for first request: #{context}"
+        Rails.logger.info "Using INITIAL prompt: #{context}"
       end
       
       Rails.logger.info "Built prompt length: #{user_prompt&.length || 0}"
