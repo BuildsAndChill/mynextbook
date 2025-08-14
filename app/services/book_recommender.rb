@@ -34,7 +34,7 @@ class BookRecommender
     ai_error = nil
 
     begin
-      Rails.logger.info "Calling OpenAI API with prompt length: #{prompt.length}"
+      Rails.logger.info "Calling OpenAI API with prompt length: #{prompt&.length || 0}"
       client = OpenAI::Client.new(access_token: ENV["OPENAI_API_KEY"])
       response = client.chat(
         parameters: {

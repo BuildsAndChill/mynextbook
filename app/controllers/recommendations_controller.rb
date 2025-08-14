@@ -297,93 +297,83 @@ class RecommendationsController < ApplicationController
     # Render the chat interface
     render :chat
   end
-
+  
   def chat_message
-    message = params[:message]
-    mode = params[:mode] || 'new'
-    
-    # Add user message to conversation history
-    session[:conversation_history] << {
-      type: 'user',
-      content: message,
-      timestamp: Time.current,
-      mode: mode
-    }
-    
-    if mode == 'new'
-      # New conversation - clear previous context
-      session[:current_context] = message
-      session[:current_suggestions] = []
+    # Handle chat messages and return AI recommendations
+    begin
+      # Parse JSON request
+      request_data = JSON.parse(request.body.read)
+      context = request_data['context']
+      tone_chips = request_data['tone_chips'] || []
+      include_history = request_data['include_history'] || false
+      user_feedback = request_data['user_feedback'] || {}
       
-      # Get AI recommendations
-      begin
-        recommender = BookRecommender.new
-        ai_response = recommender.get_recommendation(message)
-        parsed_response = parse_ai_response(ai_response)
-        
-        # Store suggestions in session
-        session[:current_suggestions] = parsed_response || []
-        
-        # Add AI response to conversation history
-        session[:conversation_history] << {
-          type: 'ai',
-          content: ai_response,
-          suggestions: parsed_response,
-          timestamp: Time.current
-        }
-        
-        render json: {
-          success: true,
-          ai_response: ai_response,
-          suggestions: parsed_response,
-          message: "Voici mes suggestions basées sur ta demande :"
-        }
-      rescue => e
-        Rails.logger.error "Error in chat_message: #{e.message}"
-        render json: {
-          success: false,
-          error: "Désolé, je n'ai pas pu traiter ta demande. Essaie encore !"
-        }
+      Rails.logger.info "Chat message received: context=#{context.inspect}, tones=#{tone_chips.inspect}, history=#{include_history}"
+      
+      # Check if this is the first user request or a follow-up
+      if session[:current_context] && session[:current_context] != ""
+        # Follow-up: use refined prompt
+        user_prompt = build_refined_prompt(session[:current_context], context)
+        Rails.logger.info "Using REFINED prompt for follow-up: #{context}"
+      else
+        # First request: use new prompt
+        user_prompt = build_structured_prompt(context, tone_chips, include_history)
+        Rails.logger.info "Using NEW prompt for first request: #{context}"
       end
-    else
-      # Refinement mode
-      begin
-        # Build refined prompt
-        refined_prompt = build_refined_prompt(session[:current_context], message)
-        
-        recommender = BookRecommender.new
-        ai_response = recommender.get_recommendation(refined_prompt)
-        parsed_response = parse_ai_response(ai_response)
-        
-        # Update suggestions
-        session[:current_suggestions] = parsed_response || []
-        
-        # Add AI response to conversation history
-        session[:conversation_history] << {
-          type: 'ai',
-          content: ai_response,
-          suggestions: parsed_response,
-          timestamp: Time.current,
-          refinement: message
-        }
-        
-        render json: {
-          success: true,
-          ai_response: ai_response,
-          suggestions: parsed_response,
-          message: "Parfait ! Voici mes nouvelles suggestions raffinées :"
-        }
-      rescue => e
-        Rails.logger.error "Error in chat_message refinement: #{e.message}"
-        render json: {
-          success: false,
-          error: "Désolé, je n'ai pas pu raffiner tes suggestions. Essaie encore !"
-        }
+      
+      Rails.logger.info "Built prompt length: #{user_prompt&.length || 0}"
+      Rails.logger.info "Prompt preview: #{user_prompt&.first(200)}..."
+      
+      # Get AI recommendation
+      recommender = BookRecommender.new
+      ai_response = recommender.get_recommendation(user_prompt)
+      
+      # Parse AI response
+      parsed_response = parse_ai_response(ai_response)
+      
+      # Store only essential data in session (avoid cookie overflow)
+      session[:current_context] = context
+      
+      # Store AI response in temporary storage instead of session
+      if ai_response
+        session_id = TemporaryRecommendationStorage.store(
+          ai_response,
+          parsed_response,
+          user_prompt,
+          context,
+          tone_chips
+        )
+        session[:current_session_id] = session_id
       end
+      
+      # Prepare response data
+      response_data = {
+        success: true,
+        message: "Voici mes suggestions basées sur ta demande :",
+        suggestions: parsed_response&.dig(:picks) || [],
+        ai_response: ai_response,
+        parsed_response: parsed_response
+      }
+      
+      render json: response_data
+      
+    rescue => e
+      Rails.logger.error "Error in chat_message: #{e.message}"
+      Rails.logger.error e.backtrace.join("\n")
+      
+      render json: {
+        success: false,
+        error: "Désolé, une erreur s'est produite. Veuillez réessayer.",
+        details: e.message
+      }, status: :internal_server_error
     end
   end
 
+
+
   private
+
+
 
   def build_refined_prompt(original_context, refinement_text)
     # Build a refined prompt that conserves context and adds refinement
@@ -484,6 +474,8 @@ class RecommendationsController < ApplicationController
   end
 
   def build_structured_prompt(context, tone_chips, include_history)
+    Rails.logger.info "build_structured_prompt called with: context=#{context.inspect}, tone_chips=#{tone_chips.inspect}, include_history=#{include_history}"
+    
     prompt = "You are a knowledgeable book recommendation expert. Please provide book recommendations in the EXACT format specified below.\n\n"
     
     # Add context
@@ -492,7 +484,7 @@ class RecommendationsController < ApplicationController
     end
     
     # Add tone preferences
-    if tone_chips.any?
+    if tone_chips && tone_chips.any?
       prompt += "TONE PREFERENCES: #{tone_chips.join(', ')}\n\n"
     end
     
@@ -577,11 +569,16 @@ class RecommendationsController < ApplicationController
     
     prompt += "IMPORTANT: Follow this exact format. Use real book titles and authors. Make confidence assessments based on how well the book matches the user's stated preferences and reading history."
     
+    Rails.logger.info "Final prompt length: #{prompt.length}"
+    Rails.logger.info "Final prompt preview: #{prompt.first(200)}..."
+    
     prompt
   end
 
   def parse_ai_response(response)
     # Try to parse the AI response into structured format
+    return { brief: {}, picks: [] } unless response
+    
     parsed = {
       brief: {},
       picks: []
@@ -622,6 +619,8 @@ class RecommendationsController < ApplicationController
     # Enhanced extraction of book picks with better logging
     picks = []
     
+    return picks unless text
+    
     Rails.logger.info "Extracting book picks from text: #{text.length} characters"
     
     # Find numbered book entries with better pattern matching
@@ -658,6 +657,8 @@ class RecommendationsController < ApplicationController
   def extract_field(text, book_number, field_name)
     # Extract specific field for a book with more flexible pattern
     # Look for the field after the book entry, handling various formats
+    
+    return nil unless text
     
     Rails.logger.info "Extracting field '#{field_name}' for book #{book_number}"
     

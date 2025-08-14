@@ -298,22 +298,58 @@ class ChatInterface {
     // Show typing indicator
     this.showTypingIndicator();
     
-    // Simulate AI thinking time
-    await new Promise(resolve => setTimeout(resolve, 1000));
-    
-    // Generate mock response based on message content
-    const mockResponse = this.generateMockResponse(message);
-    
-    // Add AI response
-    this.addMessage({
-      type: 'ai',
-      content: mockResponse.message,
-      suggestions: mockResponse.suggestions,
-      timestamp: new Date()
-    });
-    
-    // Update context
-    this.currentContext = message;
+    try {
+      // Get selected tones and history preference
+      const selectedTones = this.getSelectedTones();
+      const includeHistory = document.getElementById('include-history')?.checked || false;
+      
+      // Prepare request data
+      const requestData = {
+        context: message,
+        tone_chips: selectedTones,
+        include_history: includeHistory,
+        user_feedback: this.userFeedback
+      };
+      
+      // Call real AI API
+      const response = await fetch('/recommendations/chat_message', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'X-CSRF-Token': document.querySelector('meta[name="csrf-token"]')?.getAttribute('content') || ''
+        },
+        body: JSON.stringify(requestData)
+      });
+      
+      if (!response.ok) {
+        throw new Error(`HTTP error! status: ${response.status}`);
+      }
+      
+      const data = await response.json();
+      
+      // Add AI response
+      this.addMessage({
+        type: 'ai',
+        content: data.message || data.ai_response || "Voici mes suggestions basées sur ta demande :",
+        suggestions: data.suggestions || data.parsed_response?.picks || [],
+        timestamp: new Date()
+      });
+      
+      // Update context
+      this.currentContext = message;
+      
+    } catch (error) {
+      console.error('Error calling AI API:', error);
+      
+      // Fallback to mock response if API fails
+      const mockResponse = this.generateMockResponse(message);
+      this.addMessage({
+        type: 'ai',
+        content: `Erreur de connexion à l'IA. Voici des suggestions basées sur ta demande : ${mockResponse.message}`,
+        suggestions: mockResponse.suggestions,
+        timestamp: new Date()
+      });
+    }
     
     this.hideTypingIndicator();
   }
