@@ -238,34 +238,92 @@
            }
            
            function createPickHTML(pick) {
+             // Use cover image if available, otherwise fallback to initials
+             let coverHTML = '';
+             if (pick.cover_url) {
+               coverHTML = `<img src="${pick.cover_url}" alt="${pick.title}" class="w-16 h-20 object-cover rounded-lg shadow-sm" onerror="this.style.display='none'; this.nextElementSibling.style.display='flex';">`;
+             }
+             
+             // Fallback to initials if no cover
              const initials = pick.title.split(' ').map(word => word.charAt(0)).join('').toUpperCase().substring(0, 2);
+             const fallbackHTML = `<div class="w-16 h-20 bg-gradient-to-br from-indigo-400 to-purple-500 rounded-lg flex items-center justify-center text-white font-bold text-lg flex-shrink-0" style="display: ${pick.cover_url ? 'none' : 'flex'};">${initials}</div>`;
+             
+             // Rating display
+             let ratingHTML = '';
+             if (pick.rating) {
+               const fullStars = Math.floor(pick.rating);
+               const hasHalfStar = pick.rating % 1 !== 0;
+               
+               ratingHTML = '<div class="flex items-center mb-2">';
+               // Full stars
+               for (let i = 0; i < fullStars; i++) {
+                 ratingHTML += '<svg class="w-4 h-4 text-yellow-400" fill="currentColor" viewBox="0 0 20 20"><path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z"/></svg>';
+               }
+               // Half star
+               if (hasHalfStar) {
+                 ratingHTML += '<svg class="w-4 h-4 text-yellow-400" fill="currentColor" viewBox="0 0 20 20"><path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z"/></svg>';
+               }
+               // Empty stars
+               const emptyStars = 5 - fullStars - (hasHalfStar ? 1 : 0);
+               for (let i = 0; i < emptyStars; i++) {
+                 ratingHTML += '<svg class="w-4 h-4 text-gray-300" fill="currentColor" viewBox="0 0 20 20"><path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z"/></svg>';
+               }
+               ratingHTML += `<span class="ml-2 text-sm font-medium text-gray-700">${pick.rating}/5</span>`;
+               if (pick.review_count) {
+                 ratingHTML += `<span class="ml-2 text-sm text-gray-500">(${pick.review_count} reviews)</span>`;
+               }
+               ratingHTML += '</div>';
+             }
+             
+             // Additional metadata
+             let metadataHTML = '';
+             if (pick.page_count || pick.published_date || pick.categories) {
+               metadataHTML = '<div class="flex flex-wrap gap-2 text-xs text-gray-500 mb-2">';
+               if (pick.page_count) {
+                 metadataHTML += `<span class="bg-gray-100 px-2 py-1 rounded">${pick.page_count} pages</span>`;
+               }
+               if (pick.published_date) {
+                 metadataHTML += `<span class="bg-gray-100 px-2 py-1 rounded">${pick.published_date}</span>`;
+               }
+               if (pick.categories) {
+                 metadataHTML += `<span class="bg-gray-100 px-2 py-1 rounded">${pick.categories}</span>`;
+               }
+               metadataHTML += '</div>';
+             }
              
              let html = '<div class="bg-gray-50 rounded-lg p-4">';
              html += '<div class="flex items-start space-x-4">';
-             html += `<div class="w-16 h-20 bg-gradient-to-br from-indigo-400 to-purple-500 rounded-lg flex items-center justify-center text-white font-bold text-lg flex-shrink-0">${initials}</div>`;
+             html += coverHTML + fallbackHTML;
              html += '<div class="flex-1 min-w-0">';
              html += `<h5 class="text-lg font-semibold text-gray-900 mb-1">${pick.title}</h5>`;
              html += `<p class="text-sm text-gray-600 mb-2">by ${pick.author}</p>`;
              
+             // Rating and metadata
+             html += ratingHTML;
+             html += metadataHTML;
+             
              if (pick.pitch) {
-               html += `<p class="text-sm text-gray-700 mb-2">${pick.pitch}</p>`;
+               html += `<p class="text-sm text-gray-700 mb-2 italic">"${pick.pitch}"</p>`;
              }
              
              if (pick.why) {
-               html += `<p class="text-xs text-gray-600 mb-3"><strong>Why this pick:</strong> ${pick.why}</p>`;
+               html += `<p class="text-sm text-gray-600 mb-3">${pick.why}</p>`;
              }
              
-             // Confidence meter
-             const confidenceClass = pick.confidence?.toLowerCase() === 'high' ? 'bg-green-100 text-green-800' : 
-                                   pick.confidence?.toLowerCase() === 'medium' ? 'bg-yellow-100 text-yellow-800' : 
-                                   'bg-gray-100 text-gray-800';
+             // Confidence badge
+             if (pick.confidence) {
+               const confidenceColor = pick.confidence.toLowerCase() === 'high' ? 'green' : 
+                                     pick.confidence.toLowerCase() === 'medium' ? 'yellow' : 'gray';
+               html += `<span class="inline-flex items-center px-2 py-1 rounded-full text-xs font-medium bg-${confidenceColor}-100 text-${confidenceColor}-800 mb-3">Confidence: ${pick.confidence}</span>`;
+             }
              
-             html += '<div class="flex items-center justify-between">';
-             html += '<div class="flex items-center space-x-2">';
-             html += '<span class="text-xs text-gray-500">Confidence:</span>';
-             html += `<span class="inline-flex items-center px-2 py-1 rounded-full text-xs font-medium ${confidenceClass}">${pick.confidence || 'Medium'}</span>`;
-             html += '</div></div></div></div></div>';
+             // Action buttons
+             html += '<div class="flex space-x-2 mt-3">';
+             html += '<button onclick="showBookDetails(\'' + pick.title + '\', \'' + pick.author + '\')" class="text-indigo-600 hover:text-indigo-900 text-sm font-medium transition-colors duration-200">Find Book</button>';
+             html += '<button onclick="addToLibrary(\'' + pick.title + '\', \'' + pick.author + '\')" class="text-green-600 hover:text-green-900 text-sm font-medium transition-colors duration-200">Add to Library</button>';
+             html += '</div>';
              
+             html += '</div></div></div>';
              return html;
            }
            
@@ -347,15 +405,75 @@
                 <div class="space-y-4">
                   <% @parsed_response[:picks].each do |pick| %>
                     <div class="bg-gray-50 rounded-lg p-4">
-                      <!-- Book Cover Placeholder -->
+                      <!-- Book Cover and Metadata -->
                       <div class="flex items-start space-x-4">
-                        <div class="w-16 h-20 bg-gradient-to-br from-indigo-400 to-purple-500 rounded-lg flex items-center justify-center text-white font-bold text-lg flex-shrink-0">
+                        <!-- Book Cover - Use Google Books cover if available, fallback to initials -->
+                        <% if pick[:cover_url].present? %>
+                          <img src="<%= pick[:cover_url] %>" 
+                               alt="<%= pick[:title] %>" 
+                               class="w-16 h-20 object-cover rounded-lg shadow-sm"
+                               onerror="this.style.display='none'; this.nextElementSibling.style.display='flex';">
+                        <% end %>
+                        
+                        <!-- Fallback to initials if no cover -->
+                        <div class="w-16 h-20 bg-gradient-to-br from-indigo-400 to-purple-500 rounded-lg flex items-center justify-center text-white font-bold text-lg flex-shrink-0"
+                             style="display: <%= pick[:cover_url].present? ? 'none' : 'flex' %>;">
                           <%= pick[:title].split(' ').map(&:first).join('').upcase[0..1] %>
-    </div>
+                        </div>
                         
                         <div class="flex-1 min-w-0">
                           <h5 class="text-lg font-semibold text-gray-900 mb-1"><%= pick[:title] %></h5>
                           <p class="text-sm text-gray-600 mb-2">by <%= pick[:author] %></p>
+                          
+                          <!-- Rating Display -->
+                          <% if pick[:rating].present? %>
+                            <div class="flex items-center mb-2">
+                              <% full_stars = pick[:rating].to_f.floor %>
+                              <% has_half_star = (pick[:rating].to_f % 1) != 0 %>
+                              
+                              <!-- Full stars -->
+                              <% full_stars.times do %>
+                                <svg class="w-4 h-4 text-yellow-400" fill="currentColor" viewBox="0 0 20 20">
+                                  <path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z"/>
+                                </svg>
+                              <% end %>
+                              
+                              <!-- Half star -->
+                              <% if has_half_star %>
+                                <svg class="w-4 h-4 text-yellow-400" fill="currentColor" viewBox="0 0 20 20">
+                                  <path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z"/>
+                                </svg>
+                              <% end %>
+                              
+                              <!-- Empty stars -->
+                              <% empty_stars = 5 - full_stars - (has_half_star ? 1 : 0) %>
+                              <% empty_stars.times do %>
+                                <svg class="w-4 h-4 text-gray-300" fill="currentColor" viewBox="0 0 20 20">
+                                  <path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z"/>
+                                </svg>
+                              <% end %>
+                              
+                              <span class="ml-2 text-sm font-medium text-gray-700"><%= pick[:rating] %>/5</span>
+                              <% if pick[:review_count].present? %>
+                                <span class="ml-2 text-sm text-gray-500">(<%= pick[:review_count] %> reviews)</span>
+                              <% end %>
+                            </div>
+                          <% end %>
+                          
+                          <!-- Additional Metadata -->
+                          <% if pick[:page_count].present? || pick[:published_date].present? || pick[:categories].present? %>
+                            <div class="flex flex-wrap gap-2 text-xs text-gray-500 mb-2">
+                              <% if pick[:page_count].present? %>
+                                <span class="bg-gray-100 px-2 py-1 rounded"><%= pick[:page_count] %> pages</span>
+                              <% end %>
+                              <% if pick[:published_date].present? %>
+                                <span class="bg-gray-100 px-2 py-1 rounded"><%= pick[:published_date] %></span>
+                              <% end %>
+                              <% if pick[:categories].present? %>
+                                <span class="bg-gray-100 px-2 py-1 rounded"><%= pick[:categories] %></span>
+                              <% end %>
+                            </div>
+                          <% end %>
                           
                           <% if pick[:pitch].present? %>
                             <p class="text-sm text-gray-700 mb-2"><%= pick[:pitch] %></p>
@@ -363,7 +481,7 @@
                           
                           <% if pick[:why].present? %>
                             <p class="text-xs text-gray-600 mb-3"><strong>Why this pick:</strong> <%= pick[:why] %></p>
-<% end %>
+                          <% end %>
                           
                           <!-- Confidence Meter -->
                           <div class="flex items-center justify-between">
@@ -1076,5 +1194,60 @@ function submitSignup() {
 function closeWelcomeMessage() {
   document.getElementById('welcome-message').classList.add('hidden');
 }
+
+           // Function to show a signup popup
+           function showSignupPopup(message) {
+             const popup = document.createElement('div');
+             popup.className = 'fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50';
+             
+             const popupContent = document.createElement('div');
+             popupContent.className = 'bg-white p-6 rounded-lg shadow-xl max-w-md w-full mx-4';
+             
+             const title = document.createElement('h3');
+             title.className = 'text-lg font-medium text-gray-900 mb-2';
+             title.textContent = 'Sign Up Required';
+             
+             const content = document.createElement('p');
+             content.className = 'text-sm text-gray-700 mb-4';
+             content.textContent = message;
+             
+             const signupLink = document.createElement('a');
+             signupLink.href = '<%= new_user_registration_path %>';
+             signupLink.className = 'inline-flex items-center px-6 py-2 bg-gradient-to-r from-indigo-600 to-purple-600 text-white text-sm font-medium rounded-lg hover:from-indigo-700 hover:to-purple-700 transition-all duration-200';
+             signupLink.textContent = 'Sign Up Now';
+             
+             const closeBtn = document.createElement('button');
+             closeBtn.className = 'mt-4 px-4 py-2 bg-gray-200 text-gray-800 rounded-lg font-medium hover:bg-gray-300 transition-colors duration-200';
+             closeBtn.textContent = 'Close';
+             closeBtn.onclick = () => {
+               document.body.removeChild(popup);
+             };
+             
+             popupContent.appendChild(title);
+             popupContent.appendChild(content);
+             popupContent.appendChild(signupLink);
+             popupContent.appendChild(closeBtn);
+             popup.appendChild(popupContent);
+             
+             document.body.appendChild(popup);
+           }
+
+           // Function to show book details
+           function showBookDetails(title, author) {
+             // Search for the book on Google Books
+             const searchQuery = encodeURIComponent(`${title} ${author}`);
+             window.open(`https://www.google.com/search?tbm=bks&q=${searchQuery}`, '_blank');
+           }
+
+           // Function to add book to library
+           function addToLibrary(title, author) {
+             <% if user_signed_in? %>
+               // User is signed in, redirect to add book form
+               window.location.href = '<%= new_book_path %>?title=' + encodeURIComponent(title) + '&author=' + encodeURIComponent(author);
+             <% else %>
+               // User is not signed in, show signup popup
+               showSignupPopup('Sign up to add books to your personal library and track your reading progress!');
+             <% end %>
+           }
 
 </script>

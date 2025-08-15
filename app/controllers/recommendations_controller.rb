@@ -121,6 +121,9 @@ class RecommendationsController < ApplicationController
       @parsed_response = parse_ai_response(@ai_response)
       Rails.logger.info "Parsed response: #{@parsed_response}"
       
+      # Enrich recommendations with metadata (non-blocking)
+      enrich_recommendations_with_metadata(@parsed_response)
+      
       # Store results for unlogged users using file-based storage instead of session
       if !user_signed_in?
         # Store AI data in temporary files using the service
@@ -804,5 +807,30 @@ class RecommendationsController < ApplicationController
     
     Rails.logger.warn "No field '#{field_name}' found for book #{book_number}"
     nil
+  end
+
+  # Enrich recommendations with metadata from Google Books API
+  def enrich_recommendations_with_metadata(parsed_response)
+    return unless parsed_response&.dig(:picks)&.any?
+    
+    # Initialize metadata service
+    metadata_service = BookMetadataService.new
+    
+    # Enrich each book pick synchronously to ensure UI displays enriched data
+    parsed_response[:picks].each do |pick|
+      begin
+        metadata = metadata_service.fetch_book_metadata(
+          pick[:title],
+          pick[:author]
+        )
+        
+        # Merge metadata with pick
+        pick.merge!(metadata)
+        Rails.logger.info "Enriched '#{pick[:title]}' with metadata: #{metadata.inspect}"
+      rescue => e
+        Rails.logger.error "Failed to enrich metadata for '#{pick[:title]}': #{e.message}"
+        # Continue without metadata - don't block the recommendation
+      end
+    end
   end
 end

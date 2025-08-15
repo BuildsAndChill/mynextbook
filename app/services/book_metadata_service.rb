@@ -2,164 +2,114 @@ class BookMetadataService
   require 'net/http'
   require 'json'
   
-  # Base URL pour l'API OpenLibrary
-  OPENLIBRARY_API_BASE = 'https://openlibrary.org/api/books'
-  
-  # Récupère les informations complètes d'un livre depuis OpenLibrary
-  def self.fetch_book_info(isbn)
-    return nil if isbn.blank?
-    
+  def initialize
+    @api_key = ENV['GOOGLE_BOOKS_API_KEY']
+  end
+
+  def fetch_book_metadata(title, author = nil, isbn = nil)
+    return {} unless @api_key && @api_key.strip.length > 0
+
     begin
-      # Normaliser l'ISBN (supprimer les tirets et espaces)
-      clean_isbn = isbn.gsub(/[-\s]/, '')
-      
-      # Construire l'URL de l'API
-      url = "#{OPENLIBRARY_API_BASE}?bibkeys=ISBN:#{clean_isbn}&format=json&jscmd=data"
-      
-      # Faire la requête HTTP
-      uri = URI(url)
-      response = Net::HTTP.get_response(uri)
-      
-      if response.is_a?(Net::HTTPSuccess)
-        data = JSON.parse(response.body)
-        book_key = "ISBN:#{clean_isbn}"
-        
-        if data[book_key]
-          book_data = data[book_key]
-          {
-            title: book_data['title'],
-            author: extract_author(book_data['authors']),
-            isbn: clean_isbn,
-            pages: book_data['number_of_pages'],
-            cover_url: book_data.dig('cover', 'large') || book_data.dig('cover', 'medium') || book_data.dig('cover', 'small'),
-            publisher: book_data['publishers']&.first&.dig('name'),
-            publish_date: book_data['publish_date'],
-            subjects: book_data['subjects']&.map { |s| s['name'] }&.first(5),
-            description: truncate_description(book_data['description']),
-            language: book_data['languages']&.first&.dig('key')&.split('/')&.last
-          }
-        else
-          nil
-        end
-      else
-        Rails.logger.warn "Failed to fetch book info for ISBN #{isbn}: HTTP #{response.code}"
-        nil
-      end
+      # Try Google Books first
+      metadata = fetch_from_google_books(title, author, isbn)
+      return metadata if metadata && !metadata.empty?
+
+      # Fallback to Open Library if Google Books fails
+      fetch_from_open_library(title, author, isbn)
     rescue => e
-      Rails.logger.error "Error fetching book info for ISBN #{isbn}: #{e.message}"
-      nil
+      log_error "Failed to fetch metadata for '#{title}': #{e.message}"
+      {} # Return empty hash to avoid blocking
     end
   end
-  
-  # Récupère les informations pour plusieurs ISBN en une seule fois
-  def self.fetch_multiple_books_info(isbns)
-    return {} if isbns.blank?
-    
-    results = {}
-    isbns.each do |isbn|
-      results[isbn] = fetch_book_info(isbn)
-    end
-    results
-  end
-  
-  # Enrichit les métadonnées d'un livre existant
-  def self.enrich_book_metadata(book_metadata)
-    return book_metadata unless book_metadata.has_reliable_identifier?
-    
-    # Essayer d'abord avec ISBN13, puis ISBN
-    isbn_to_try = book_metadata.isbn13.presence || book_metadata.isbn
-    
-    if isbn_to_try
-      api_data = fetch_book_info(isbn_to_try)
-      
-      if api_data
-        # Mettre à jour les métadonnées avec les informations de l'API
-        book_metadata.update!(
-          pages: api_data[:pages] || book_metadata.pages,
-          average_rating: book_metadata.average_rating # Garder la note existante
-        )
-        
-        # Log de l'enrichissement
-        Rails.logger.info "Enriched book metadata for '#{book_metadata.title}' with OpenLibrary data"
-      end
-    end
-    
-    book_metadata
-  end
-  
-  # Recherche de livres par titre et auteur
-  def self.search_books(query, limit = 10)
-    return [] if query.blank?
-    
-    begin
-      # Utiliser l'API de recherche OpenLibrary
-      search_url = "https://openlibrary.org/search.json?q=#{CGI.escape(query)}&limit=#{limit}"
-      
-      uri = URI(search_url)
-      response = Net::HTTP.get_response(uri)
-      
-      if response.is_a?(Net::HTTPSuccess)
-        data = JSON.parse(response.body)
-        books = data['docs'] || []
-        
-        books.map do |book|
-          {
-            title: book['title'],
-            author: extract_author(book['author_name']),
-            isbn: book['isbn']&.first,
-            isbn13: book['isbn_13']&.first,
-            pages: book['number_of_pages_median'],
-            cover_url: book['cover_i'] ? "https://covers.openlibrary.org/b/id/#{book['cover_i']}-L.jpg" : nil,
-            publish_date: book['first_publish_year'],
-            key: book['key']
-          }
-        end
-      else
-        Rails.logger.warn "Failed to search books: HTTP #{response.code}"
-        []
-      end
-    rescue => e
-      Rails.logger.error "Error searching books: #{e.message}"
-      []
-    end
-  end
-  
-  # Récupère les couvertures disponibles pour un livre
-  def self.get_cover_urls(isbn, size = 'L')
-    return [] if isbn.blank?
-    
-    clean_isbn = isbn.gsub(/[-\s]/, '')
-    base_url = "https://covers.openlibrary.org/b/isbn/#{clean_isbn}"
-    
-    # Tailles disponibles : S (small), M (medium), L (large)
-    sizes = ['S', 'M', 'L']
-    
-    sizes.map do |s|
-      "#{base_url}-#{s}.jpg"
-    end
-  end
-  
+
   private
-  
-  # Extrait le nom de l'auteur principal
-  def self.extract_author(authors)
-    return nil if authors.blank?
+
+  def fetch_from_google_books(title, author = nil, isbn = nil)
+    # Build search query
+    query_parts = [title]
+    query_parts << author if author && author.strip.length > 0
+    query_parts << "isbn:#{isbn}" if isbn && isbn.strip.length > 0
     
-    if authors.is_a?(Array)
-      authors.first&.dig('name') || authors.first
-    else
-      authors
-    end
+    query = query_parts.join(" ")
+    
+    # Make API call
+    uri = URI("https://www.googleapis.com/books/v1/volumes")
+    params = {
+      q: query,
+      key: @api_key,
+      maxResults: 1
+    }
+    uri.query = URI.encode_www_form(params)
+
+    response = Net::HTTP.get_response(uri)
+    return {} unless response.is_a?(Net::HTTPSuccess)
+
+    data = JSON.parse(response.body)
+    return {} unless data['items']&.any?
+
+    book = data['items'].first
+    volume_info = book['volumeInfo']
+    
+    {
+      cover_url: extract_cover_url(volume_info),
+      rating: volume_info['averageRating'],
+      review_count: volume_info['ratingsCount'],
+      page_count: volume_info['pageCount'],
+      published_date: volume_info['publishedDate'],
+      categories: volume_info['categories']&.first,
+      description: volume_info['description']
+    }
   end
-  
-  # Tronque la description si elle est trop longue
-  def self.truncate_description(description, max_length = 500)
-    return nil if description.blank?
-    
-    if description.length > max_length
-      description[0...max_length] + '...'
+
+  def fetch_from_open_library(title, author = nil, isbn = nil)
+    # Simple fallback to Open Library
+    return {} unless isbn && isbn.strip.length > 0
+
+    uri = URI("https://openlibrary.org/api/books?bibkeys=ISBN:#{isbn}&format=json&jscmd=data")
+    response = Net::HTTP.get_response(uri)
+    return {} unless response.is_a?(Net::HTTPSuccess)
+
+    data = JSON.parse(response.body)
+    book_key = "ISBN:#{isbn}"
+    book_data = data[book_key]
+    return {} unless book_data
+
+    {
+      cover_url: extract_open_library_cover(book_data),
+      rating: nil, # Open Library doesn't provide ratings
+      review_count: nil,
+      page_count: book_data['number_of_pages'],
+      published_date: book_data['publish_date'],
+      categories: book_data['subjects']&.first,
+      description: nil
+    }
+  end
+
+  def extract_cover_url(volume_info)
+    image_links = volume_info['imageLinks']
+    return nil unless image_links
+
+    # Prefer larger cover images
+    image_links['extraLarge'] || 
+    image_links['large'] || 
+    image_links['medium'] || 
+    image_links['small'] || 
+    image_links['thumbnail']
+  end
+
+  def extract_open_library_cover(book_data)
+    covers = book_data['cover']
+    return nil unless covers&.any?
+
+    cover = covers.first
+    "https://covers.openlibrary.org/b/id/#{cover['id']}-L.jpg"
+  end
+
+  def log_error(message)
+    if defined?(Rails)
+      Rails.logger.error message
     else
-      description
+      puts "ERROR: #{message}"
     end
   end
 end
