@@ -36,14 +36,14 @@ class ChatInterface {
                   <path d="M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.747 0 3.332.477 4.5 1.253v13C19.832 18.477 18.246 18 16.5 18c-1.746 0-3.332.477-4.5 1.253" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
                 </svg>
               </div>
-              <h2>Mon Libraire IA</h2>
+              <h2>My AI Librarian</h2>
               <div class="debug-indicator" id="debug-indicator" style="display: none;">
                 <span class="debug-badge">🐛 Debug</span>
               </div>
             </div>
             <div class="header-right">
               <!-- New Chat Button -->
-              <button id="new-chat-btn" class="new-chat-btn" title="Nouvelle conversation">
+              <button id="new-chat-btn" class="new-chat-btn" title="New conversation">
                 <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
                   <path d="M12 5v14M5 12h14"/>
                 </svg>
@@ -69,7 +69,7 @@ class ChatInterface {
           <div class="input-container">
             <textarea 
               id="chat-input" 
-              placeholder="Dis-moi ce que tu veux lire..."
+              placeholder="Tell me what you want to read..."
               rows="1"
             ></textarea>
             <button id="send-btn" class="send-btn primary-btn">
@@ -79,7 +79,7 @@ class ChatInterface {
               </svg>
             </button>
             <!-- Advanced Options Button -->
-            <button id="advanced-btn" class="advanced-btn" title="Options avancées">
+            <button id="advanced-btn" class="advanced-btn" title="Advanced options">
               <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
                 <!-- Elegant gear/settings icon -->
                 <path d="M12 15a3 3 0 1 0 0-6 3 3 0 0 0 0 6Z" stroke-width="2"/>
@@ -92,7 +92,7 @@ class ChatInterface {
         <!-- Advanced Options Panel -->
         <div class="advanced-panel" id="advanced-panel">
           <div class="advanced-header">
-            <h4>Options avancées</h4>
+            <h4>Advanced options</h4>
             <button class="close-advanced" id="close-advanced">
               <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor">
                 <path d="M18 6L6 18M6 6l12 12" stroke-width="2"/>
@@ -121,18 +121,18 @@ class ChatInterface {
                 <input type="checkbox" id="include-history" />
                 <span class="toggle-slider"></span>
               </label>
-              <span class="option-label">Utiliser mon historique de lecture</span>
+              <span class="option-label">Use my reading history</span>
             </div>
           </div>
           
           <div class="advanced-section">
-            <h5>Suggestions rapides</h5>
+            <h5>Quick suggestions</h5>
             <div class="quick-suggestions">
-              <button class="suggestion-btn">Romans français contemporains</button>
-              <button class="suggestion-btn">Science-fiction optimiste</button>
-              <button class="suggestion-btn">Thrillers psychologiques</button>
-              <button class="suggestion-btn">Philosophie accessible</button>
-              <button class="suggestion-btn">Histoire passionnante</button>
+              <button class="suggestion-btn">Contemporary fiction</button>
+              <button class="suggestion-btn">Optimistic sci-fi</button>
+              <button class="suggestion-btn">Psychological thrillers</button>
+              <button class="suggestion-btn">Accessible philosophy</button>
+              <button class="suggestion-btn">Fascinating history</button>
             </div>
           </div>
         </div>
@@ -142,7 +142,7 @@ class ChatInterface {
           <div class="settings-overlay" id="settings-overlay"></div>
           <div class="settings-content">
             <div class="settings-header">
-              <h3>Paramètres</h3>
+              <h3>Settings</h3>
               <button class="close-settings" id="close-settings">
                 <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor">
                   <path d="M18 6L6 18M6 6l12 12" stroke-width="2"/>
@@ -151,19 +151,19 @@ class ChatInterface {
             </div>
             
             <div class="settings-section">
-              <h4>Compte</h4>
+              <h4>Account</h4>
               <div class="auth-buttons">
                 <button class="auth-btn signin-btn">
                   <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor">
                     <path d="M15 3h4a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2h-4M10 17l5-5-5-5M13.8 12H3" stroke-width="2"/>
                   </svg>
-                  Se connecter
+                  Sign in
                 </button>
                 <button class="auth-btn signup-btn">
                   <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor">
                     <path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2M12 11a4 4 0 1 0 0-8 4 4 0 0 0 0 8Z" stroke-width="2"/>
                   </svg>
-                  S'inscrire
+                  Sign up
                 </button>
               </div>
             </div>
@@ -436,7 +436,7 @@ class ChatInterface {
               </div>
               <div class="book-main-info">
                 <h4 class="book-title">${book.title}</h4>
-                <p class="book-author">par ${book.author}</p>
+                <p class="book-author">by ${book.author}</p>
               </div>
             </div>
             
@@ -578,7 +578,7 @@ class ChatInterface {
       const mockResponse = this.generateMockResponse(message);
       this.addMessage({
         type: 'ai',
-        content: `Erreur de connexion à l'IA. Voici des suggestions basées sur ta demande : ${mockResponse.message}`,
+        content: `AI connection error. Here are suggestions based on your request: ${mockResponse.message}`,
         suggestions: mockResponse.suggestions,
         timestamp: new Date()
       });
@@ -630,7 +630,7 @@ class ChatInterface {
           {
             title: "Le Petit Prince",
             author: "Antoine de Saint-Exupéry",
-            pitch: "Un conte poétique et philosophique sur l'amour et l'amitié, parfait pour tous les âges."
+            pitch: "A poetic and philosophical tale about love and friendship, perfect for all ages."
           },
           {
             title: "L'Étranger",
@@ -640,13 +640,13 @@ class ChatInterface {
           {
             title: "Madame Bovary",
             author: "Gustave Flaubert",
-            pitch: "Un chef-d'œuvre du réalisme français, l'histoire d'Emma Bovary et ses rêves romantiques."
+            pitch: "A masterpiece of French realism, the story of Emma Bovary and her romantic dreams."
           }
         ]
       };
     } else if (lowerMessage.includes('science') || lowerMessage.includes('sf') || lowerMessage.includes('futur')) {
       return {
-        message: "Excellent choix ! Voici mes suggestions de science-fiction :",
+        message: "Excellent choice! Here are my science-fiction suggestions:",
         suggestions: [
           {
             title: "1984",
@@ -656,7 +656,7 @@ class ChatInterface {
           {
             title: "Le Meilleur des mondes",
             author: "Aldous Huxley",
-            pitch: "Une société futuriste où le bonheur est contrôlé par la technologie."
+            pitch: "A futuristic society where happiness is controlled by technology."
           },
           {
             title: "Fondation",
@@ -697,7 +697,7 @@ class ChatInterface {
       this.userFeedback[book].dislike
     );
     
-    let message = "Parfait ! En me basant sur tes préférences, voici des suggestions raffinées :";
+            let message = "Perfect! Based on your preferences, here are refined suggestions:";
     
     if (likedBooks.length > 0) {
       message += ` J'ai noté que tu aimes ${likedBooks.join(', ')}. `;
@@ -710,12 +710,12 @@ class ChatInterface {
       {
         title: "Le Château",
         author: "Franz Kafka",
-        pitch: "Un roman métaphorique sur la bureaucratie et la quête de sens, dans la lignée de tes lectures philosophiques."
+                  pitch: "A metaphorical novel about bureaucracy and the quest for meaning, in line with your philosophical readings."
       },
       {
         title: "Les Fleurs du Mal",
         author: "Charles Baudelaire",
-        pitch: "Une œuvre poétique majeure qui explore les thèmes de la beauté et de la mélancolie."
+                  pitch: "A major poetic work that explores themes of beauty and melancholy."
       },
       {
         title: "Le Procès",
@@ -911,7 +911,7 @@ class ChatInterface {
 
   newChat() {
     // Confirm before clearing
-    if (confirm('Êtes-vous sûr de vouloir commencer une nouvelle session ? Cela effacera tout l\'historique de la conversation.')) {
+          if (confirm('Are you sure you want to start a new session? This will clear all conversation history.')) {
       // Clear all messages
       this.messages = [];
       

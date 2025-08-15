@@ -404,7 +404,7 @@ class RecommendationsController < ApplicationController
       
       render json: {
         success: false,
-        error: "Désolé, une erreur s'est produite. Veuillez réessayer.",
+        error: "Sorry, an error occurred. Please try again.",
         details: e.message
       }, status: :internal_server_error
     end
