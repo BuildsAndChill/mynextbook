@@ -2,20 +2,27 @@ class RecommendationsController < ApplicationController
   # Remove authentication requirement - allow unlogged users to get basic recommendations
   
   def index
-    # Device detection and smart routing
-    user_agent = request.user_agent.downcase
-    is_mobile = user_agent.include?('mobile') || user_agent.include?('android') || user_agent.include?('iphone') || user_agent.include?('ipad')
+    # TEMPORAIREMENT DÉSACTIVÉ: Redirection mobile vers chat UX
+    # TODO: Réactiver après refactor du layout responsive desktop
+    # user_agent = request.user_agent.downcase
+    # is_mobile = user_agent.include?('mobile') || user_agent.include?('android') || user_agent.include?('iphone') || user_agent.include?('ipad')
     
     # Check if it's a mobile device
-    if is_mobile
-      Rails.logger.info "Mobile device detected, redirecting to chat interface"
-      redirect_to chat_recommendations_path
-    else
-      Rails.logger.info "Desktop/Tablet detected, showing initial form"
-      # Clean up any existing session data (fresh start)
-      cleanup_all_sessions
-      # Show the initial form directly (no redirect)
-    end
+    # if is_mobile
+    #   Rails.logger.info "Mobile device detected, redirecting to chat interface"
+    #   redirect_to chat_recommendations_path
+    # else
+    #   Rails.logger.info "Desktop/Tablet detected, showing initial form"
+    #   # Clean up any existing session data (fresh start)
+    #   cleanup_all_sessions
+    #   # Show the initial form directly (no redirect)
+    # end
+    
+    # TEMPORAIRE: Tous les utilisateurs voient le formulaire principal
+    Rails.logger.info "Showing main recommendation form for all devices (mobile redirect temporarily disabled)"
+    # Clean up any existing session data (fresh start)
+    cleanup_all_sessions
+    # Show the initial form directly (no redirect)
   end
 
   def create

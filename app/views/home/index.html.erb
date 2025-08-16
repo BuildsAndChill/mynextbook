@@ -62,24 +62,37 @@
           <!-- Mobile CTA -->
           <div id="mobile-cta" class="mobile-cta">
             <div class="text-center p-6 bg-gradient-to-r from-indigo-50 to-purple-50 rounded-2xl border border-indigo-100">
-              <div class="mb-4">
-                <div class="mx-auto h-16 w-16 flex items-center justify-center rounded-full bg-gradient-to-r from-indigo-500 to-purple-600 mb-4">
-                  <svg class="h-8 w-8 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8s9 3.582 9 8z"/>
-                  </svg>
-                </div>
-                <h3 class="text-xl font-semibold text-gray-900 mb-2">Chat with your AI Librarian</h3>
-                <p class="text-gray-600 mb-4">Simpler, natural conversation, instant recommendations</p>
-              </div>
-              
-              <a href="/recommendations/chat" 
-                  data-turbo="false"
-                  class="inline-flex items-center justify-center w-full bg-gradient-to-r from-indigo-600 to-purple-600 text-white py-3 px-6 rounded-lg font-medium text-base hover:from-indigo-700 hover:to-purple-700 transition-all duration-200 shadow-sm">
-                <svg class="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                          <!-- TEMPORAIREMENT DÉSACTIVÉ: Interface chat UX
+            <div class="mb-4">
+              <div class="mx-auto h-16 w-16 flex items-center justify-center rounded-full bg-gradient-to-r from-indigo-500 to-purple-600 mb-4">
+                <svg class="h-8 w-8 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8s9 3.582 9 8z"/>
                 </svg>
-                Start Conversation
-              </a>
+              </div>
+              <h3 class="text-xl font-semibold text-gray-900 mb-2">Chat with your AI Librarian</h3>
+              <p class="text-gray-600 mb-4">Simpler, natural conversation, instant recommendations</p>
+            </div>
+            
+            <a href="/recommendations/chat" 
+                data-turbo="false"
+                class="inline-flex items-center justify-center w-full bg-gradient-to-r from-indigo-600 to-purple-600 text-white py-3 px-6 rounded-lg font-medium text-base hover:from-indigo-700 hover:to-purple-700 transition-all duration-200 shadow-sm">
+              <svg class="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 12h.01M12 12h.01M16 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8s9 3.582 9 8z"/>
+              </svg>
+              Start Conversation
+            </a>
+            -->
+            
+            <!-- TEMPORAIRE: Section remplacée par un message informatif -->
+            <div class="mb-4">
+              <div class="mx-auto h-16 w-16 flex items-center justify-center rounded-full bg-gradient-to-r from-blue-500 to-green-600 mb-4">
+                <svg class="h-8 w-8 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"/>
+                </svg>
+              </div>
+              <h3 class="text-xl font-semibold text-gray-900 mb-2">Enhanced Form Experience</h3>
+              <p class="text-gray-600 mb-4">We're improving our recommendation form for all devices. Mobile chat coming soon!</p>
+            </div>
             </div>
           </div>
         </div>
@@ -116,8 +129,8 @@
           </div>
         </div>
         
-        <!-- Chat Interface Link -->
-        <div class="mt-8 text-center">
+        <!-- TEMPORAIREMENT DÉSACTIVÉ: Chat Interface Link -->
+        <!-- <div class="mt-8 text-center">
           <p class="text-sm text-gray-500 mb-3">Want to try our mobile chat interface?</p>
           <a href="/recommendations/chat" 
               data-turbo="false"
@@ -127,6 +140,17 @@
             </svg>
             Try Chat Interface
           </a>
+        </div> -->
+        
+        <!-- TEMPORAIRE: Message informatif -->
+        <div class="mt-8 text-center">
+          <p class="text-sm text-gray-500 mb-3">Mobile chat interface temporarily disabled</p>
+          <div class="inline-flex items-center px-4 py-2 border border-gray-300 text-sm font-medium rounded-lg text-gray-400 bg-gray-50 cursor-not-allowed">
+            <svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"/>
+            </svg>
+            Coming Soon
+          </div>
         </div>
       </div>
     </div>
@@ -326,13 +350,19 @@
 </div>
 
 <script>
-// Force correct form display based on screen size
+// TEMPORAIREMENT DÉSACTIVÉ: Logique de basculement entre formulaires
+// TODO: Réactiver après refactor du chat UX
 document.addEventListener('DOMContentLoaded', function() {
   // Function to show correct form based on screen size
   function showCorrectForm() {
     const desktopForm = document.getElementById('desktop-form');
     const mobileCTA = document.getElementById('mobile-cta');
     
+    // TEMPORAIRE: Toujours montrer le formulaire principal
+    if (desktopForm) desktopForm.style.display = 'block';
+    if (mobileCTA) mobileCTA.style.display = 'none';
+    
+    /* TODO: Réactiver cette logique après refactor
     if (window.innerWidth >= 768) { // md breakpoint
       // Desktop view
       if (desktopForm) desktopForm.style.display = 'block';
@@ -342,13 +372,14 @@ document.addEventListener('DOMContentLoaded', function() {
       if (desktopForm) desktopForm.style.display = 'none';
       if (mobileCTA) mobileCTA.style.display = 'block';
     }
+    */
   }
   
   // Show correct form on load
   showCorrectForm();
   
-  // Update on resize
-  window.addEventListener('resize', showCorrectForm);
+  // Update on resize (temporairement désactivé)
+  // window.addEventListener('resize', showCorrectForm);
   
   // Add form validation and loading states
   const form = document.querySelector('form');
@@ -487,16 +518,17 @@ document.addEventListener('DOMContentLoaded', function() {
 </script>
 
 <style>
-/* Responsive form display */
+/* Responsive form display - TEMPORAIREMENT: Formulaire principal visible sur tous les appareils */
 .desktop-form {
-  display: none; /* Hidden by default */
+  display: block !important; /* Toujours visible maintenant */
 }
 
 .mobile-cta {
-  display: block; /* Visible by default */
+  display: none !important; /* Masqué temporairement */
 }
 
-/* Desktop view (768px and above) */
+/* TODO: Réactiver la logique responsive après refactor du chat UX */
+/* 
 @media (min-width: 768px) {
   .desktop-form {
     display: block !important;
@@ -507,7 +539,6 @@ document.addEventListener('DOMContentLoaded', function() {
   }
 }
 
-/* Mobile view (below 768px) */
 @media (max-width: 767px) {
   .desktop-form {
     display: none !important;
@@ -517,4 +548,5 @@ document.addEventListener('DOMContentLoaded', function() {
     display: block !important;
   }
 }
+*/
 </style>
