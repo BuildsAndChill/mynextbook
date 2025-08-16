@@ -9,6 +9,41 @@
     <%= stylesheet_link_tag "chat_interface", "data-turbo-track": "reload" %>
     <%= stylesheet_link_tag "application", "data-turbo-track": "reload" %>
     <%= javascript_importmap_tags %>
+    
+    <style>
+      /* Global mobile overflow prevention */
+      @media (max-width: 640px) {
+        /* Force all max-w-7xl containers to respect mobile width */
+        .max-w-7xl {
+          max-width: 100vw !important;
+          overflow-x: hidden;
+        }
+        
+        /* Ensure body and html don't overflow */
+        body, html {
+          overflow-x: hidden;
+          max-width: 100vw;
+        }
+        
+        /* Force all direct children to respect width */
+        .max-w-7xl > * {
+          max-width: 100vw !important;
+          overflow-x: hidden;
+        }
+        
+        /* Ensure navigation and footer respect mobile width */
+        nav, footer {
+          max-width: 100vw !important;
+          overflow-x: hidden;
+        }
+        
+        /* Force all grid layouts to respect mobile width */
+        .grid {
+          max-width: 100vw !important;
+          overflow-x: hidden;
+        }
+      }
+    </style>
   </head>
 
   <body class="bg-gray-50">
