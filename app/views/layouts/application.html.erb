@@ -71,52 +71,24 @@
 
             <!-- User Menu -->
             <% if user_signed_in? %>
-              <div class="relative">
-                <button class="flex items-center space-x-2 text-gray-700 hover:text-gray-900 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 rounded-lg p-2" id="user-menu-button">
+              <div class="flex items-center space-x-3">
+                <!-- Temporary direct Sign Out link for testing -->
+                <%= button_to destroy_user_session_path, method: :delete, 
+                    class: "text-red-600 hover:text-red-700 px-3 py-2 text-sm font-medium transition-colors duration-200 bg-transparent border border-red-200 rounded-lg hover:bg-red-50" do %>
+                  <div class="flex items-center">
+                    <svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1"></path>
+                    </svg>
+                    Sign Out
+                  </div>
+                <% end %>
+                
+                <!-- User Avatar (dropdown disabled for now) -->
+                <div class="flex items-center space-x-2 text-gray-700">
                   <div class="h-8 w-8 bg-gradient-to-r from-indigo-400 to-purple-500 rounded-full flex items-center justify-center">
                     <span class="text-sm font-medium text-white"><%= current_user.email.first.upcase %></span>
                   </div>
-                  <svg class="h-4 w-4 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"></path>
-                  </svg>
-                </button>
-
-                <!-- Dropdown Menu -->
-                <div class="hidden absolute right-0 mt-2 w-48 bg-white rounded-lg shadow-lg border border-gray-200 py-1 z-50" id="user-menu-dropdown">
-                  <%= link_to edit_user_registration_path, class: "block px-4 py-2 text-sm text-gray-700 hover:bg-indigo-50 hover:text-indigo-700 transition-colors duration-200" do %>
-                    <div class="flex items-center">
-                      <svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z"></path>
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"></path>
-                      </svg>
-                      Account Settings
-                    </div>
-                  <% end %>
-                  <%= link_to recommendations_path, class: "block px-4 py-2 text-sm text-gray-700 hover:bg-indigo-50 hover:text-indigo-700 transition-colors duration-200" do %>
-                    <div class="flex items-center">
-                      <svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9.663 17h4.673M12 3v1m6.364 1.636l-.707.707M21 12h-1M4 12H3m3.343-5.657l-.707-.707m2.828 9.9a5 5 0 117.072 0l-.548.547A3.374 3.374 0 0014 18.469V19a2 2 0 11-4 0v-.531c0-.895-.356-1.754-.988-2.386l-.548-.547z"></path>
-                      </svg>
-                      Get Your Next Book
-                    </div>
-                  <% end %>
-                  <%= link_to books_path, class: "block px-4 py-2 text-sm text-gray-700 hover:bg-indigo-50 hover:text-indigo-700 transition-colors duration-200" do %>
-                    <div class="flex items-center">
-                      <svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 11H5m14 0a2 2 0 012 2v6a2 2 0 01-2 2H5a2 2 0 01-2-2v-6a2 2 0 012-2m14 0V9a2 2 0 00-2-2M5 11V9a2 2 0 012-2m0 0V5a2 2 0 012-2h6a2 2 0 012 2v2M7 7h10"></path>
-                      </svg>
-                      My Library
-                    </div>
-                  <% end %>
-                  <div class="border-t border-gray-100 my-1"></div>
-                  <%= button_to destroy_user_session_path, method: :delete, class: "block w-full text-left px-4 py-2 text-sm text-gray-700 hover:bg-red-50 hover:text-red-700 transition-colors duration-200 bg-transparent border-0 cursor-pointer" do %>
-                    <div class="flex items-center">
-                      <svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1"></path>
-                      </svg>
-                      Sign Out
-                    </div>
-                  <% end %>
+                  <span class="text-sm font-medium"><%= current_user.email %></span>
                 </div>
               </div>
             <% else %>
@@ -216,22 +188,51 @@
     </footer>
 
     <script>
-      // User menu dropdown functionality
+      // Simple and reliable user menu dropdown
       document.addEventListener('DOMContentLoaded', function() {
+        console.log('DOM loaded, initializing user menu...');
+        
         const userMenuButton = document.getElementById('user-menu-button');
         const userMenuDropdown = document.getElementById('user-menu-dropdown');
         
+        console.log('User menu button found:', !!userMenuButton);
+        console.log('User menu dropdown found:', !!userMenuDropdown);
+        
         if (userMenuButton && userMenuDropdown) {
-          userMenuButton.addEventListener('click', function() {
+          console.log('Setting up user menu event listeners...');
+          
+          // Simple toggle function
+          function toggleMenu() {
+            console.log('Toggle menu called');
             userMenuDropdown.classList.toggle('hidden');
+            console.log('Dropdown hidden:', userMenuDropdown.classList.contains('hidden'));
+          }
+          
+          // Add click event
+          userMenuButton.addEventListener('click', function(e) {
+            console.log('Button clicked');
+            e.preventDefault();
+            e.stopPropagation();
+            toggleMenu();
           });
           
-          // Close dropdown when clicking outside
-          document.addEventListener('click', function(event) {
-            if (!userMenuButton.contains(event.target) && !userMenuDropdown.contains(event.target)) {
+          // Close when clicking outside
+          document.addEventListener('click', function(e) {
+            if (!userMenuButton.contains(e.target) && !userMenuDropdown.contains(e.target)) {
               userMenuDropdown.classList.add('hidden');
             }
           });
+          
+          // Close when pressing escape
+          document.addEventListener('keydown', function(e) {
+            if (e.key === 'Escape') {
+              userMenuDropdown.classList.add('hidden');
+            }
+          });
+          
+          console.log('User menu event listeners set up successfully');
+        } else {
+          console.error('User menu elements not found!');
         }
       });
     </script>
