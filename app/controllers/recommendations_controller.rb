@@ -82,6 +82,9 @@ class RecommendationsController < ApplicationController
       # Enrich recommendations with metadata (non-blocking)
       enrich_recommendations_with_metadata(@parsed_response)
       
+      # NEW: Enrich with direct links to Goodreads/Amazon
+      enrich_with_direct_links(@parsed_response)
+      
       # Store results for all users using file-based storage instead of session
       # Store AI data in temporary files using the service
       Rails.logger.info "DEBUG: About to store data - @parsed_response present: #{@parsed_response.present?}"
@@ -217,6 +220,9 @@ class RecommendationsController < ApplicationController
       
       # Enrich recommendations with metadata (non-blocking)
       enrich_recommendations_with_metadata(@parsed_response)
+      
+      # NEW: Enrich with direct links to Goodreads/Amazon
+      enrich_with_direct_links(@parsed_response)
       
       # Store results for all users using file storage (avoid cookie overflow)
       session_id = TemporaryRecommendationStorage.store(
@@ -935,6 +941,37 @@ class RecommendationsController < ApplicationController
         # Continue without metadata - don't block the recommendation
       end
     end
+  end
+
+  # Enrich recommendations with direct links to Goodreads/Amazon
+  def enrich_with_direct_links(parsed_response)
+    return unless parsed_response&.dig(:picks)&.any?
+    
+    Rails.logger.info "Enriching recommendations with direct links..."
+    
+    # Enrich each book pick with direct links
+    parsed_response[:picks].each do |pick|
+      begin
+        # Generate search query for this book
+        search_query = "#{pick[:title]} #{pick[:author]} goodreads"
+        
+        # Get the first search result (direct link)
+        direct_link = GoogleCustomSearchService.get_first_search_result(search_query)
+        
+        # Add the direct link to the pick
+        pick[:direct_link] = direct_link
+        
+        Rails.logger.info "Added direct link for '#{pick[:title]}': #{direct_link}"
+      rescue => e
+        Rails.logger.error "Failed to get direct link for '#{pick[:title]}': #{e.message}"
+        # Fallback to search URL if direct link fails
+        search_url = "https://www.google.com/search?q=#{CGI.escape("#{pick[:title]} #{pick[:author]} goodreads")}"
+        pick[:direct_link] = search_url
+        Rails.logger.info "Using fallback search URL for '#{pick[:title]}': #{search_url}"
+      end
+    end
+    
+    Rails.logger.info "Direct links enrichment completed"
   end
 
   # Cleanup session data after view is rendered

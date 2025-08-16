@@ -1,0 +1,63 @@
+warning: in the working copy of 'app/controllers/recommendations_controller.rb', LF will be replaced by CRLF the next time Git touches it
+[1mdiff --git a/app/controllers/recommendations_controller.rb b/app/controllers/recommendations_controller.rb[m
+[1mindex e012980..2e96274 100644[m
+[1m--- a/app/controllers/recommendations_controller.rb[m
+[1m+++ b/app/controllers/recommendations_controller.rb[m
+[36m@@ -82,6 +82,9 @@[m [mclass RecommendationsController < ApplicationController[m
+       # Enrich recommendations with metadata (non-blocking)[m
+       enrich_recommendations_with_metadata(@parsed_response)[m
+       [m
+[32m+[m[32m      # NEW: Enrich with direct links to Goodreads/Amazon[m
+[32m+[m[32m      enrich_with_direct_links(@parsed_response)[m
+[32m+[m[41m      [m
+       # Store results for all users using file-based storage instead of session[m
+       # Store AI data in temporary files using the service[m
+       Rails.logger.info "DEBUG: About to store data - @parsed_response present: #{@parsed_response.present?}"[m
+[36m@@ -218,6 +221,9 @@[m [mclass RecommendationsController < ApplicationController[m
+       # Enrich recommendations with metadata (non-blocking)[m
+       enrich_recommendations_with_metadata(@parsed_response)[m
+       [m
+[32m+[m[32m      # NEW: Enrich with direct links to Goodreads/Amazon[m
+[32m+[m[32m      enrich_with_direct_links(@parsed_response)[m
+[32m+[m[41m      [m
+       # Store results for all users using file storage (avoid cookie overflow)[m
+       session_id = TemporaryRecommendationStorage.store([m
+         @ai_response,[m
+[36m@@ -937,6 +943,37 @@[m [mclass RecommendationsController < ApplicationController[m
+     end[m
+   end[m
+ [m
+[32m+[m[32m  # Enrich recommendations with direct links to Goodreads/Amazon[m
+[32m+[m[32m  def enrich_with_direct_links(parsed_response)[m
+[32m+[m[32m    return unless parsed_response&.dig(:picks)&.any?[m
+[32m+[m[41m    [m
+[32m+[m[32m    Rails.logger.info "Enriching recommendations with direct links..."[m
+[32m+[m[41m    [m
+[32m+[m[32m    # Enrich each book pick with direct links[m
+[32m+[m[32m    parsed_response[:picks].each do |pick|[m
+[32m+[m[32m      begin[m
+[32m+[m[32m        # Generate search query for this book[m
+[32m+[m[32m        search_query = "#{pick[:title]} #{pick[:author]} goodreads"[m
+[32m+[m[41m        [m
+[32m+[m[32m        # Get the first search result (direct link)[m
+[32m+[m[32m        direct_link = GoogleSearchService.get_first_search_result(search_query)[m
+[32m+[m[41m        [m
+[32m+[m[32m        # Add the direct link to the pick[m
+[32m+[m[32m        pick[:direct_link] = direct_link[m
+[32m+[m[41m        [m
+[32m+[m[32m        Rails.logger.info "Added direct link for '#{pick[:title]}': #{direct_link}"[m
+[32m+[m[32m      rescue => e[m
+[32m+[m[32m        Rails.logger.error "Failed to get direct link for '#{pick[:title]}': #{e.message}"[m
+[32m+[m[32m        # Fallback to search URL if direct link fails[m
+[32m+[m[32m        search_url = "https://www.google.com/search?q=#{CGI.escape("#{pick[:title]} #{pick[:author]} goodreads")}"[m
+[32m+[m[32m        pick[:direct_link] = search_url[m
+[32m+[m[32m        Rails.logger.info "Using fallback search URL for '#{pick[:title]}': #{search_url}"[m
+[32m+[m[32m      end[m
+[32m+[m[32m    end[m
+[32m+[m[41m    [m
+[32m+[m[32m    Rails.logger.info "Direct links enrichment completed"[m
+[32m+[m[32m  end[m
+[32m+[m
+   # Cleanup session data after view is rendered[m
+   def cleanup_session[m
+     session_type = params[:session_type][m
