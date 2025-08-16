@@ -1,0 +1,5 @@
+* [32mdev                         [m a8c9fc8 Mise à jour du fichier .env.example avec documentation Google Custom Search
+  feature/chat-like-interface [m d6f95c8 fix: resolve UI bugs in like/dislike system and improve feedback persistence - fix likes disappearing when refining recommendations - prevent like/dislike button icon conflicts between book sets - improve button state restoration after new suggestions - ensure userFeedback persists across refinement requests - add backend validation for mutually exclusive likes/dislikes - enhance button selector logic to prevent wrong button manipulation
+  feature/test-ci             [m 8187104 fix: change region to oregon to match database location
+  feature/unified-landing-flow[m a8c9fc8 [ahead 14] Mise à jour du fichier .env.example avec documentation Google Custom Search
+  master                      [m 3ac3493 cleanup: remove redundant render configs, switch to docker runtime
