@@ -1,15 +1,12 @@
-<div class="min-h-screen bg-gray-50 py-8">
-  <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+<div class="min-h-screen bg-gray-50 py-4 sm:py-8">
+  <div class="max-w-7xl mx-auto px-3 sm:px-6 lg:px-8">
 
-
-    <!-- Main Content: 2-Column Layout -->
-    <div class="grid lg:grid-cols-2 gap-8">
+    <!-- Main Content: Mobile-First Layout -->
+    <div class="grid lg:grid-cols-2 gap-3 sm:gap-8">
       
       <!-- Left Column: Refine Form -->
-      <div class="bg-white rounded-2xl shadow-lg p-8">
-        <h2 class="text-xl font-semibold text-gray-900 mb-6">Refine Suggestions</h2>
-        
-
+      <div class="bg-white rounded-xl sm:rounded-2xl shadow-lg p-3 sm:p-6 lg:p-8 order-1 lg:order-2 overflow-hidden">
+        <h2 class="text-base sm:text-xl font-semibold text-gray-900 mb-3 sm:mb-6">Refine Suggestions</h2>
         
         <% if debug_mode? %>
           <!-- Debug Info for Refine Form -->
@@ -28,62 +25,60 @@
           </div>
         <% end %>
         
-        <%= form_with url: refine_recommendations_path, method: :post, local: true, class: "space-y-6", data: { turbo: false, controller: "form" } do %>
+        <%= form_with url: refine_recommendations_path, method: :post, local: true, class: "space-y-4 sm:space-y-6", data: { turbo: false, controller: "form" } do %>
           <!-- Hidden fields for context -->
           <%= hidden_field_tag :context, params[:context] %>
-          
-
           
           <!-- Refinement Input -->
           <div>
             <label class="block text-sm font-medium text-gray-700 mb-2">How would you like to refine these suggestions?</label>
             
-            <!-- Quick Refinement Suggestions -->
-            <div class="mb-4">
-              <p class="text-sm text-gray-600 mb-3">Quick suggestions:</p>
-              <div class="flex flex-wrap gap-2">
-                                 <button type="button" 
-                         data-refinement="Shorter books please"
-                         class="refinement-chip inline-flex items-center px-3 py-2 rounded-full text-sm font-medium bg-blue-50 border border-blue-200 text-blue-600 cursor-pointer hover:bg-blue-100 transition-colors duration-200">
-                   Shorter books
-                 </button>
-                 <button type="button" 
-                         data-refinement="Different genre"
-                         class="refinement-chip inline-flex items-center px-3 py-2 rounded-full text-sm font-medium bg-blue-50 border border-blue-200 text-blue-600 cursor-pointer hover:bg-blue-100 transition-colors duration-200">
-                   Different genre
-                 </button>
-                 <button type="button" 
-                         data-refinement="More recent books"
-                         class="refinement-chip inline-flex items-center px-3 py-2 rounded-full text-sm font-medium bg-blue-50 border border-blue-200 text-blue-600 cursor-pointer hover:bg-blue-100 transition-colors duration-200">
-                   More recent
-                 </button>
-                 <button type="button" 
-                         data-refinement="Less challenging"
-                         class="refinement-chip inline-flex items-center px-3 py-2 rounded-full text-sm font-medium bg-blue-50 border border-blue-200 text-blue-600 cursor-pointer hover:bg-blue-100 transition-colors duration-200">
-                   Less challenging
-                 </button>
-                 <button type="button" 
-                         data-refinement="More adventurous"
-                         class="refinement-chip inline-flex items-center px-3 py-2 rounded-full text-sm font-medium bg-blue-50 border border-blue-200 text-blue-600 cursor-pointer hover:bg-blue-100 transition-colors duration-200">
-                   More adventurous
-                 </button>
-                 <button type="button" 
-                         data-refinement="Similar to what I liked"
-                         class="refinement-chip inline-flex items-center px-3 py-2 rounded-full text-sm font-medium bg-blue-50 border border-blue-200 text-blue-600 cursor-pointer hover:bg-blue-100 transition-colors duration-200">
-                   Similar to likes
-                 </button>
+            <!-- Quick Refinement Suggestions - Same look & feel as main form -->
+            <div>
+              <label class="block text-sm font-medium text-gray-700 mb-3 text-left">Quick suggestions</label>
+              <div class="flex flex-wrap gap-2 justify-center">
+                <button type="button" 
+                        data-refinement="Shorter books please"
+                        class="refinement-chip inline-flex items-center px-3 py-2 rounded-full text-sm font-medium bg-gray-50 border border-gray-200 text-gray-600 cursor-pointer hover:bg-gray-100 transition-colors duration-200">
+                  Shorter books
+                </button>
+                <button type="button" 
+                        data-refinement="Different genre"
+                        class="refinement-chip inline-flex items-center px-3 py-2 rounded-full text-sm font-medium bg-gray-50 border border-gray-200 text-gray-600 cursor-pointer hover:bg-gray-100 transition-colors duration-200">
+                  Different genre
+                </button>
+                <button type="button" 
+                        data-refinement="More recent books"
+                        class="refinement-chip inline-flex items-center px-3 py-2 rounded-full text-sm font-medium bg-gray-50 border border-gray-200 text-gray-600 cursor-pointer hover:bg-gray-100 transition-colors duration-200">
+                  More recent
+                </button>
+                <button type="button" 
+                        data-refinement="Less challenging"
+                        class="refinement-chip inline-flex items-center px-3 py-2 rounded-full text-sm font-medium bg-gray-50 border border-gray-200 text-gray-600 cursor-pointer hover:bg-gray-100 transition-colors duration-200">
+                  Less challenging
+                </button>
+                <button type="button" 
+                        data-refinement="More adventurous"
+                        class="refinement-chip inline-flex items-center px-3 py-2 rounded-full text-sm font-medium bg-gray-50 border border-gray-200 text-gray-600 cursor-pointer hover:bg-gray-100 transition-colors duration-200">
+                  More adventurous
+                </button>
+                <button type="button" 
+                        data-refinement="Similar to what I liked"
+                        class="refinement-chip inline-flex items-center px-3 py-2 rounded-full text-sm font-medium bg-gray-50 border border-gray-200 text-gray-600 cursor-pointer hover:bg-gray-100 transition-colors duration-200">
+                  Similar to likes
+                </button>
               </div>
             </div>
             
             <%= text_area_tag :refinement_text, params[:refinement], 
-                rows: 4, 
+                rows: 3, 
                 class: "block w-full border-gray-300 rounded-lg shadow-sm focus:ring-2 focus:ring-blue-500 focus:border-transparent resize-none",
                 placeholder: "e.g. 'More sci-fi, less fantasy' or 'Shorter books please'",
                 required: true %>
             <p class="mt-2 text-sm text-gray-500">Be specific about what you'd like to change or explore</p>
           </div>
           
-          <!-- Submit Button -->
+          <!-- Submit Button - Same style as main form -->
           <button type="submit" id="refine-button" class="w-full bg-gradient-to-r from-indigo-600 to-purple-600 text-white py-3 px-6 rounded-lg font-semibold hover:from-indigo-700 hover:to-purple-700 transform hover:scale-105 transition-all duration-200 flex items-center justify-center disabled:opacity-50 disabled:cursor-not-allowed">
             <!-- Spinner (hidden by default) -->
             <svg id="refine-spinner" class="hidden w-5 h-5 mr-2 animate-spin" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -93,27 +88,29 @@
             <span id="refine-text">Refine Suggestions</span>
           </button>
           
-          <!-- New Search Button -->
-          <div class="pt-6">
+                    <!-- New Search Button -->
+          <div class="pt-4 sm:pt-6">
             <div class="text-center">
-              <span class="text-sm text-gray-500 mb-3 block">Not quite what you're looking for?</span>
+              <span class="text-sm text-gray-500 mb-2 sm:mb-3 block">Not quite what you're looking for?</span>
               <a href="/recommendations" 
                  class="inline-flex items-center justify-center w-full px-6 py-3 bg-gradient-to-r from-gray-50 to-gray-100 border border-gray-200 text-gray-700 font-medium rounded-xl hover:from-gray-100 hover:to-gray-200 hover:border-gray-300 transition-all duration-200 transform hover:scale-[1.02]">
-                Start New Search
-              </a>
-            </div>
-          </div>
+                 Start New Search
+               </a>
+             </div>
+           </div>
         <% end %>
       </div>
       
       <!-- Right Column: Book Suggestions -->
-      <%= render 'suggestions', is_refined: @show_refined_message %>
+      <div class="order-2 lg:order-1">
+        <%= render 'suggestions', is_refined: @show_refined_message %>
+      </div>
     </div>
   </div>
 </div>
 
 <script>
-  // Handle refinement chip clicks
+  // Handle refinement chip clicks - Same behavior as main form
   document.addEventListener('DOMContentLoaded', function() {
     const refinementChips = document.querySelectorAll('.refinement-chip');
     
@@ -121,6 +118,21 @@
       chip.addEventListener('click', function() {
         const refinementText = this.getAttribute('data-refinement');
         console.log('Refinement chip clicked:', refinementText);
+        
+        // Toggle chip selection (same as main form)
+        const isSelected = this.classList.contains('bg-indigo-100');
+        
+        // Reset all chips to default state
+        refinementChips.forEach(c => {
+          c.classList.remove('bg-indigo-100', 'border-indigo-300', 'text-indigo-700');
+          c.classList.add('bg-gray-50', 'border-gray-200', 'text-gray-600');
+        });
+        
+        // Select clicked chip if it wasn't selected
+        if (!isSelected) {
+          this.classList.remove('bg-gray-50', 'border-gray-200', 'text-gray-600');
+          this.classList.add('bg-indigo-100', 'border-indigo-300', 'text-indigo-700');
+        }
         
         const refinementTextarea = document.querySelector('textarea[name="refinement_text"]');
         console.log('Found textarea:', refinementTextarea);
@@ -240,19 +252,17 @@
     }
   });
   
-  // Handle refine button loading state
+  // Handle refine button loading state - Same as main form
   const refineForm = document.querySelector('form[action*="refine"]');
   const refineButton = document.getElementById('refine-button');
   const refineSpinner = document.getElementById('refine-spinner');
-  const refineIcon = document.getElementById('refine-icon');
   const refineText = document.getElementById('refine-text');
   
   if (refineForm && refineButton) {
     refineForm.addEventListener('submit', function() {
-      // Show loading state
+      // Show loading state using same logic as main form
       refineButton.disabled = true;
       refineSpinner.classList.remove('hidden');
-      refineIcon.classList.add('hidden');
       refineText.textContent = 'Refining...';
       
       // Add loading styles
@@ -261,3 +271,57 @@
     });
   }
 </script>
+
+<style>
+  /* Mobile-first improvements for recommendations show page */
+  @media (max-width: 640px) {
+    /* Better touch targets for mobile */
+    .refinement-chip {
+      min-height: 44px;
+      min-width: 44px;
+    }
+    
+    /* Improved button sizing for mobile */
+    button[type="submit"] {
+      min-height: 48px;
+    }
+    
+    /* Better spacing for mobile */
+    .space-y-3 > * + * {
+      margin-top: 0.75rem;
+    }
+    
+    /* Optimize book cards for mobile */
+    .bg-gray-50 {
+      margin-bottom: 0.75rem;
+    }
+    
+    /* Ensure form doesn't overflow on mobile */
+    .bg-white.rounded-xl {
+      max-width: 100%;
+      overflow-x: hidden;
+    }
+    
+    /* Ensure buttons don't overflow */
+    button, a {
+      max-width: 100%;
+      word-wrap: break-word;
+    }
+    
+    /* Ensure textarea doesn't overflow */
+    textarea {
+      max-width: 100%;
+      box-sizing: border-box;
+    }
+  }
+  
+  /* Smooth transitions */
+  .refinement-chip, button, a {
+    transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+  }
+  
+  /* Active states for mobile */
+  .refinement-chip:active {
+    transform: scale(0.95);
+  }
+</style>
