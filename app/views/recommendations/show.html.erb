@@ -1,0 +1,265 @@
+<div class="min-h-screen bg-gray-50 py-8">
+  <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+    <!-- Flash Messages -->
+    <% if flash[:notice] %>
+      <div class="mb-6 bg-green-50 border border-green-200 rounded-lg p-4">
+        <div class="flex items-center">
+          <svg class="w-5 h-5 text-green-600 mr-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+          </svg>
+          <p class="text-sm font-medium text-green-800"><%= flash[:notice] %></p>
+        </div>
+      </div>
+    <% end %>
+    
+    <% if flash[:error] %>
+      <div class="mb-6 bg-red-50 border border-red-200 rounded-lg p-4">
+        <div class="flex items-center">
+          <svg class="w-5 h-5 text-red-600 mr-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+          </svg>
+          <p class="text-sm font-medium text-red-800"><%= flash[:error] %></p>
+        </div>
+      </div>
+    <% end %>
+    
+    <!-- Header -->
+    <div class="text-center mb-12">
+      <h1 class="text-3xl font-bold text-gray-900 mb-4">
+        <% if @show_refined_message %>
+          Refined Recommendations
+        <% else %>
+          Your Book Recommendations
+        <% end %>
+      </h1>
+      <p class="text-lg text-gray-600">
+        <% if @show_refined_message %>
+          Here are new suggestions based on your refinement
+        <% else %>
+          Based on your preferences, here are some great books for you
+        <% end %>
+      </p>
+      
+      <!-- Back to New Search -->
+      <div class="mt-6">
+        <a href="/recommendations" 
+           class="inline-flex items-center px-6 py-3 bg-gray-600 text-white text-sm font-medium rounded-lg hover:bg-gray-700 transition-all duration-200">
+          <svg class="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9.663 17h4.673M12 3v1m6.364 1.636l-.707.707M21 12h-1M4 12H3m3.343-5.657l-.707-.707m2.828 9.9a5 5 0 117.072 0l-.548.547A3.374 3.374 0 0014 18.469V19a2 2 0 11-4 0v-.531c0-.895-.356-1.754-.988-2.386l-.548-.547z"></path>
+          </svg>
+          Start New Search
+        </a>
+      </div>
+    </div>
+
+    <!-- Main Content: 2-Column Layout -->
+    <div class="grid lg:grid-cols-2 gap-8 mb-12">
+      
+      <!-- Left Column: Refine Form -->
+      <div class="bg-white rounded-2xl shadow-lg p-8">
+        <h2 class="text-xl font-semibold text-gray-900 mb-6">Refine These Suggestions</h2>
+        
+        <!-- Debug Info for Refine Form -->
+        <div class="mb-4 p-3 bg-blue-50 border border-blue-200 rounded text-xs">
+          <strong>Refine Form Debug:</strong><br>
+          @ai_response present: <%= @ai_response.present? %><br>
+          @parsed_response present: <%= @parsed_response.present? %><br>
+          @parsed_response keys: <%= @parsed_response&.keys&.inspect %><br>
+          @parsed_response[:picks] count: <%= @parsed_response&.dig(:picks)&.count || 0 %><br>
+          @parsed_response[:picks] first item: <%= @parsed_response&.dig(:picks, 0)&.inspect %><br>
+          @parsed_response[:brief] present: <%= @parsed_response&.dig(:brief).present? %><br>
+          @parsed_response[:brief] keys: <%= @parsed_response&.dig(:brief)&.keys&.inspect %><br>
+          @user_prompt present: <%= @user_prompt.present? %><br>
+          @user_prompt preview: <%= @user_prompt&.truncate(100) %><br>
+          Session refined_session_id: <%= session[:refined_session_id] %>
+        </div>
+        
+        <%= form_with url: refine_recommendations_path, method: :post, local: true, class: "space-y-6", data: { turbo: false, controller: "form" } do %>
+          <!-- Hidden fields for context -->
+          <%= hidden_field_tag :context, params[:context] %>
+          
+          <!-- Refinement Input -->
+          <div>
+            <label class="block text-sm font-medium text-gray-700 mb-2">How would you like to refine these suggestions?</label>
+            
+            <!-- Quick Refinement Suggestions -->
+            <div class="mb-4">
+              <p class="text-sm text-gray-600 mb-3">Quick suggestions:</p>
+              <div class="flex flex-wrap gap-2">
+                                 <button type="button" 
+                         data-refinement="Shorter books please"
+                         class="refinement-chip inline-flex items-center px-3 py-2 rounded-full text-sm font-medium bg-blue-50 border border-blue-200 text-blue-600 cursor-pointer hover:bg-blue-100 transition-colors duration-200">
+                   Shorter books
+                 </button>
+                 <button type="button" 
+                         data-refinement="Different genre"
+                         class="refinement-chip inline-flex items-center px-3 py-2 rounded-full text-sm font-medium bg-blue-50 border border-blue-200 text-blue-600 cursor-pointer hover:bg-blue-100 transition-colors duration-200">
+                   Different genre
+                 </button>
+                 <button type="button" 
+                         data-refinement="More recent books"
+                         class="refinement-chip inline-flex items-center px-3 py-2 rounded-full text-sm font-medium bg-blue-50 border border-blue-200 text-blue-600 cursor-pointer hover:bg-blue-100 transition-colors duration-200">
+                   More recent
+                 </button>
+                 <button type="button" 
+                         data-refinement="Less challenging"
+                         class="refinement-chip inline-flex items-center px-3 py-2 rounded-full text-sm font-medium bg-blue-50 border border-blue-200 text-blue-600 cursor-pointer hover:bg-blue-100 transition-colors duration-200">
+                   Less challenging
+                 </button>
+                 <button type="button" 
+                         data-refinement="More adventurous"
+                         class="refinement-chip inline-flex items-center px-3 py-2 rounded-full text-sm font-medium bg-blue-50 border border-blue-200 text-blue-600 cursor-pointer hover:bg-blue-100 transition-colors duration-200">
+                   More adventurous
+                 </button>
+                 <button type="button" 
+                         data-refinement="Similar to what I liked"
+                         class="refinement-chip inline-flex items-center px-3 py-2 rounded-full text-sm font-medium bg-blue-50 border border-blue-200 text-blue-600 cursor-pointer hover:bg-blue-100 transition-colors duration-200">
+                   Similar to likes
+                 </button>
+              </div>
+            </div>
+            
+            <%= text_area_tag :refinement_text, params[:refinement], 
+                rows: 4, 
+                class: "block w-full border-gray-300 rounded-lg shadow-sm focus:ring-2 focus:ring-blue-500 focus:border-transparent resize-none",
+                placeholder: "e.g. 'More sci-fi, less fantasy' or 'Shorter books please'",
+                required: true %>
+            <p class="mt-2 text-sm text-gray-500">Be specific about what you'd like to change or explore</p>
+          </div>
+          
+          <!-- Submit Button -->
+          <button type="submit" class="w-full bg-gradient-to-r from-indigo-600 to-purple-600 text-white py-3 px-6 rounded-lg font-semibold hover:from-indigo-700 hover:to-purple-700 transform hover:scale-105 transition-all duration-200 flex items-center justify-center">
+            <svg class="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z"></path>
+            </svg>
+            Refine Suggestions
+          </button>
+        <% end %>
+      </div>
+      
+      <!-- Right Column: Book Suggestions -->
+      <%= render 'suggestions', is_refined: @show_refined_message %>
+    </div>
+  </div>
+</div>
+
+<script>
+  // Handle refinement chip clicks
+  document.addEventListener('DOMContentLoaded', function() {
+    const refinementChips = document.querySelectorAll('.refinement-chip');
+    
+    refinementChips.forEach(chip => {
+      chip.addEventListener('click', function() {
+        const refinementText = this.getAttribute('data-refinement');
+        console.log('Refinement chip clicked:', refinementText);
+        
+        const refinementTextarea = document.querySelector('textarea[name="refinement_text"]');
+        console.log('Found textarea:', refinementTextarea);
+        
+        if (refinementTextarea) {
+          refinementTextarea.value = refinementText;
+          refinementTextarea.focus();
+          // Scroll to the textarea to make it visible
+          refinementTextarea.scrollIntoView({ behavior: 'smooth', block: 'center' });
+          console.log('Textarea value set to:', refinementTextarea.value);
+        } else {
+          console.error('Textarea not found!');
+        }
+      });
+    });
+  });
+  
+  // Function to show book details
+  function showBookDetails(title, author) {
+    // Search for the book on Google Books
+    const searchQuery = encodeURIComponent(`${title} ${author}`);
+    window.open(`https://www.google.com/search?tbm=bks&q=${searchQuery}`, '_blank');
+  }
+  
+  // Function to add book to library
+  function addToLibrary(title, author) {
+    <% if user_signed_in? %>
+      // User is signed in, redirect to add book form
+      window.location.href = '<%= new_book_path %>?title=' + encodeURIComponent(title) + '&author=' + encodeURIComponent(author);
+    <% else %>
+      // User is not signed in, show signup popup
+      alert('Please sign up to add books to your personal library and track your reading progress!');
+    <% end %>
+  }
+  
+  // Handle feedback button clicks
+  document.addEventListener('click', function(e) {
+    if (e.target.classList.contains('feedback-btn')) {
+      console.log('Feedback button clicked:', e.target.dataset);
+      const bookTitle = e.target.dataset.bookTitle;
+      const bookAuthor = e.target.dataset.bookAuthor;
+      const feedback = e.target.dataset.feedback;
+      
+      console.log('Feedback submitted:', { bookTitle, bookAuthor, feedback });
+      
+      // Check if user is signed in
+      const isSignedIn = <%= user_signed_in? ? 'true' : 'false' %>;
+      
+      if (!isSignedIn) {
+        // Show signup popup for unlogged users
+        alert('Please sign up to save your feedback and get better recommendations!');
+        return;
+      }
+      
+      // Visual feedback
+      e.target.classList.add('scale-110');
+      setTimeout(() => {
+        e.target.classList.remove('scale-110');
+      }, 200);
+      
+      // Submit feedback to server
+      const formData = new FormData();
+      formData.append('book_title', bookTitle);
+      formData.append('book_author', bookAuthor);
+      formData.append('feedback_type', feedback);
+      formData.append('context', document.querySelector('textarea[name="context"]')?.value || '');
+      
+      // Debug CSRF token
+      const csrfToken = document.querySelector('meta[name="csrf-token"]')?.getAttribute('content');
+      console.log('CSRF Token found for feedback:', csrfToken ? 'Yes' : 'No');
+      if (!csrfToken) {
+        console.error('CSRF token not found for feedback!');
+        alert('CSRF token missing. Please refresh the page.');
+        return;
+      }
+      
+      fetch('/recommendations/feedback', {
+        method: 'POST',
+        body: formData,
+        headers: {
+          'X-CSRF-Token': csrfToken
+        }
+      })
+      .then(response => {
+        if (response.ok) {
+          // Show appropriate message based on feedback type
+          const feedbackMessages = {
+            'like': 'Thanks! We\'ll recommend more like this.',
+            'dislike': 'Got it! We\'ll avoid similar books.',
+            'save': 'Book saved to your reading list!',
+            'more_info': 'Book details expanded!'
+          };
+          
+          alert(feedbackMessages[feedback] || 'Feedback recorded!');
+          
+          // If it's a save action, update the button to show it's saved
+          if (feedback === 'save') {
+            e.target.classList.add('text-blue-600');
+            e.target.title = 'Saved to reading list';
+          }
+        } else {
+          alert('Error saving feedback. Please try again.');
+        }
+      })
+      .catch(error => {
+        console.error('Error:', error);
+        alert('Error saving feedback. Please try again.');
+      });
+    }
+  });
+</script>

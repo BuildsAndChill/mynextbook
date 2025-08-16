@@ -11,78 +11,36 @@ class RecommendationsController < ApplicationController
       Rails.logger.info "Mobile device detected, redirecting to chat interface"
       redirect_to chat_recommendations_path
     else
-      Rails.logger.info "Desktop/Tablet detected, redirecting to normal form"
-      # Redirect desktop/tablet users to the normal form
-      redirect_to new_recommendation_path
+      Rails.logger.info "Desktop/Tablet detected, showing initial form"
+      # Clean up any existing session data (fresh start)
+      cleanup_all_sessions
+      # Show the initial form directly (no redirect)
     end
-  end
-  
-  def new
-    # Show the unified recommendation screen
-    # Check if user just signed up and has stored results
-    if user_signed_in? && session[:recommendation_session_id]
-      # Retrieve AI data from file storage
-      stored_data = TemporaryRecommendationStorage.retrieve(session[:recommendation_session_id])
-      
-      if stored_data
-        @ai_response = stored_data[:ai_response]
-        @parsed_response = stored_data[:parsed_response]
-        @user_prompt = stored_data[:user_prompt]
-        @show_welcome_message = true
-        
-        # Clean up the file after retrieving
-        TemporaryRecommendationStorage.delete(session[:recommendation_session_id])
-        session.delete(:recommendation_session_id)
-        
-        Rails.logger.info "AI recommendation data retrieved from file storage"
-      end
-    end
-    
-    # Check for refined results from refine action
-    Rails.logger.info "Checking for refined results: params[:refined] = #{params[:refined].inspect}"
-    Rails.logger.info "Session refined_session_id: #{session[:refined_session_id].inspect}"
-    
-    if params[:refined] == 'true'
-      # For all users, retrieve refined results from file storage
-      if session[:refined_session_id]
-        Rails.logger.info "Attempting to retrieve data for session ID: #{session[:refined_session_id]}"
-        stored_data = TemporaryRecommendationStorage.retrieve(session[:refined_session_id])
-        
-        if stored_data
-          @ai_response = stored_data[:ai_response]
-          @parsed_response = stored_data[:parsed_response]
-          @user_prompt = stored_data[:user_prompt]
-          
-          Rails.logger.info "Data retrieved successfully: ai_response=#{@ai_response.present?}, parsed_response=#{@parsed_response.present?}, user_prompt=#{@user_prompt.present?}"
-          
-          # Clean up file but KEEP session ID for view to use
-          TemporaryRecommendationStorage.delete(session[:refined_session_id])
-          # DO NOT delete session[:refined_session_id] here - view needs it!
-          
-          Rails.logger.info "Refined AI recommendation data retrieved from file storage"
-        else
-          Rails.logger.warn "No refined results found in file storage despite session ID"
-        end
-      else
-        Rails.logger.warn "No refined session ID found despite refined=true parameter"
-      end
-    else
-      Rails.logger.info "No refined parameter or session ID found"
-    end
-    
-    # Check for signup prompt from other pages
-    @signup_prompt = params[:signup_prompt]
-    
-    # Initialize conversation context if not present
-    session[:conversation_history] ||= []
-    session[:current_context] ||= nil
-    session[:current_suggestions] ||= []
   end
 
   def create
+    # Clean up any existing session data at the start to ensure clean state
+    if session[:recommendation_session_id]
+      Rails.logger.info "Cleaning up existing recommendation session data"
+      TemporaryRecommendationStorage.delete(session[:recommendation_session_id])
+      session.delete(:recommendation_session_id)
+    end
+    if session[:refined_session_id]
+      Rails.logger.info "Cleaning up existing refined session data"
+      TemporaryRecommendationStorage.delete(session[:refined_session_id])
+      session.delete(:refined_session_id)
+    end
+    
     # Build the prompt for AI with better structure
     context = params[:context]
-    tone_chips = params[:tone_chips] || []
+    # Ensure tone_chips is always an array
+    tone_chips = if params[:tone_chips].is_a?(Array)
+                   params[:tone_chips]
+                 elsif params[:tone_chips].present?
+                   [params[:tone_chips]]
+                 else
+                   []
+                 end
     include_history = params[:include_history] == '1'
     refinement = params[:refinement]
     
@@ -124,22 +82,25 @@ class RecommendationsController < ApplicationController
       # Enrich recommendations with metadata (non-blocking)
       enrich_recommendations_with_metadata(@parsed_response)
       
-      # Store results for unlogged users using file-based storage instead of session
-      if !user_signed_in?
-        # Store AI data in temporary files using the service
-        session_id = TemporaryRecommendationStorage.store(
-          @ai_response,
-          @parsed_response,
-          @user_prompt,
-          context,
-          tone_chips
-        )
-        
-        # Store only the session ID in the session cookie (very small)
-        session[:recommendation_session_id] = session_id
-        
-        Rails.logger.info "AI data stored using file storage. Session ID: #{session_id}"
-      end
+      # Store results for all users using file-based storage instead of session
+      # Store AI data in temporary files using the service
+      Rails.logger.info "DEBUG: About to store data - @parsed_response present: #{@parsed_response.present?}"
+      Rails.logger.info "DEBUG: @parsed_response keys: #{@parsed_response&.keys&.inspect}"
+      Rails.logger.info "DEBUG: @parsed_response[:picks] count: #{@parsed_response&.dig(:picks)&.count || 0}"
+      
+      session_id = TemporaryRecommendationStorage.store(
+        @ai_response,
+        @parsed_response,
+        @user_prompt,
+        context,
+        tone_chips
+      )
+      
+      # Store only the session ID in the session cookie (very small)
+      session[:recommendation_session_id] = session_id
+      
+      Rails.logger.info "AI data stored using file storage. Session ID: #{session_id}"
+      Rails.logger.info "DEBUG: Session ID stored in session: #{session[:recommendation_session_id]}"
       
     rescue => e
       Rails.logger.error "Error in recommendations#create: #{e.message}"
@@ -150,8 +111,8 @@ class RecommendationsController < ApplicationController
       @parsed_response = nil
     end
     
-    # Render the same page with results (unified experience)
-    render :new
+    # Display results directly in show view
+    render :show
   end
 
   def feedback
@@ -212,25 +173,24 @@ class RecommendationsController < ApplicationController
     # If refinement provided, get new recommendations
     if refinement.present?
       # Trigger refinement flow
-      redirect_to new_recommendation_path(refinement: refinement)
+      redirect_to recommendations_path(refinement: refinement)
     else
-      redirect_to new_recommendation_path, notice: flash[:notice] || "Feedback recorded! We'll use this to improve future recommendations."
+              redirect_to recommendations_path, notice: flash[:notice] || "Feedback recorded! We'll use this to improve future recommendations."
     end
   end
 
   def refine
-    # Handle refinement requests with context conservation and immediate feedback
+    # Handle refinement requests with context conservation
     refinement_text = params[:refinement_text]
     context = params[:context]
     
-
+    Rails.logger.info "Refining recommendation with: #{refinement_text}"
     
     # Build refined prompt with context conservation
     @user_prompt = build_refined_prompt(context, refinement_text)
     
     # Get new AI recommendation
     begin
-      Rails.logger.info "Refining recommendation with: #{refinement_text}"
       recommender = BookRecommender.new
       @ai_response = recommender.get_recommendation(@user_prompt)
       @ai_error = nil
@@ -238,6 +198,9 @@ class RecommendationsController < ApplicationController
       # Parse AI response into structured format
       @parsed_response = parse_ai_response(@ai_response)
       Rails.logger.info "Refined recommendation generated successfully"
+      
+      # Enrich recommendations with metadata (non-blocking)
+      enrich_recommendations_with_metadata(@parsed_response)
       
       # Store results for all users using file storage (avoid cookie overflow)
       session_id = TemporaryRecommendationStorage.store(
@@ -248,59 +211,55 @@ class RecommendationsController < ApplicationController
         [] # No tone chips for refinement
       )
       
-      # Store only the session ID in session (very small)
+      # Store only the session ID in session (very small) - CRITICAL FOR DISPLAY
       session[:refined_session_id] = session_id
+      Rails.logger.info "Stored refined_session_id: #{session_id}"
       
-          # Show success message
-    flash[:notice] = "Recommendations refined! Here are new suggestions based on: '#{refinement_text}'"
-    
-    # For signed-in users, return JSON with new data (no redirect)
-    if user_signed_in?
-      render json: {
-        success: true,
-        message: "Recommendations refined!",
-        data: {
-          ai_response: @ai_response,
-          parsed_response: @parsed_response,
-          user_prompt: @user_prompt,
-          session_id: session_id
+      # Show success message
+      flash[:notice] = "Recommendations refined! Here are new suggestions based on: '#{refinement_text}'"
+      
+      # For signed-in users, we could return JSON, but let's redirect to new for consistency
+      # This ensures the refined data is always displayed through the new action
+      
+    rescue => e
+      Rails.logger.error "Error in recommendations#refine: #{e.message}"
+      @ai_error = e.message
+      @parsed_response = nil
+      
+      if user_signed_in?
+        render json: {
+          success: false,
+          error: "Sorry, couldn't refine recommendations. Please try again."
         }
-      }
+      else
+        flash[:error] = "Sorry, couldn't refine recommendations. Please try again."
+        redirect_to recommendations_path
+      end
       return
     end
     
-  rescue => e
-    Rails.logger.error "Error in recommendations#refine: #{e.message}"
-    @ai_response = nil
-    @ai_error = e.message
-    @parsed_response = nil
-    
-    if user_signed_in?
-      render json: {
-        success: false,
-        error: "Sorry, couldn't refine recommendations. Please try again."
-      }
-    else
-      flash[:error] = "Sorry, couldn't refine recommendations. Please try again."
-      redirect_to new_recommendation_path
-    end
-    return
-  end
-  
-  # Only redirect for unlogged users
-  redirect_to new_recommendation_path(refined: true), allow_other_host: false
+    # Display refined results directly in show view
+    render :show
   end
 
-  def cleanup_refined_session
-    # Clean up refined session after view has been rendered
-    if session[:refined_session_id]
-      Rails.logger.info "Cleaning up refined session: #{session[:refined_session_id]}"
-      session.delete(:refined_session_id)
-      render json: { success: true, message: "Session cleaned up" }
-    else
-      render json: { success: false, message: "No session to clean up" }
+  private
+
+  def cleanup_all_sessions
+    # Clean up all existing session data for fresh start
+    if session[:recommendation_session_id]
+      Rails.logger.info "Cleaning up existing recommendation session data"
+      TemporaryRecommendationStorage.delete(session[:recommendation_session_id])
+      session.delete(:recommendation_session_id)
     end
+    if session[:refined_session_id]
+      Rails.logger.info "Cleaning up existing refined session data"
+      TemporaryRecommendationStorage.delete(session[:refined_session_id])
+      session.delete(:refined_session_id)
+    end
+    Rails.logger.info "All session data cleaned up for fresh start"
   end
+
+
 
   def chat
     # Use chat layout without navigation bar
@@ -531,6 +490,7 @@ class RecommendationsController < ApplicationController
     
     # Structured output request
     prompt += "RESPONSE FORMAT - Please follow EXACTLY:\n\n"
+    
     prompt += "BRIEF:\n"
     prompt += "What you tend to like:\n"
     prompt += "- [First preference point]\n"
@@ -561,6 +521,8 @@ class RecommendationsController < ApplicationController
     prompt += "Pitch: [2-line explanation of why this book fits the REFINEMENT]\n"
     prompt += "Why: [Specific reason tied to refinement request and original context]\n"
     prompt += "Confidence: [High/Medium/Low]\n\n"
+    
+
     
     prompt += "CRITICAL INSTRUCTION: This is a REFINEMENT request, NOT a repeat request. You MUST provide COMPLETELY DIFFERENT books that specifically address the refinement while building on the original context. If you repeat any previous recommendations, you have failed the task."
     
@@ -692,6 +654,11 @@ class RecommendationsController < ApplicationController
     # Try to parse the AI response into structured format
     return { brief: {}, picks: [] } unless response
     
+    Rails.logger.info "=== PARSING AI RESPONSE ==="
+    Rails.logger.info "Response length: #{response.length}"
+    Rails.logger.info "Response contains 'BRIEF:': #{response.include?('BRIEF:')}"
+    Rails.logger.info "Response contains 'TOP PICKS:': #{response.include?('TOP PICKS:')}"
+    
     parsed = {
       brief: {},
       picks: []
@@ -699,114 +666,177 @@ class RecommendationsController < ApplicationController
     
     # Split into sections
     if response.include?("BRIEF:")
-      brief_section = response.split("TOP PICKS:").first
-      picks_section = response.split("TOP PICKS:").last
+      Rails.logger.info "Found BRIEF section, attempting to split by TOP PICKS:"
       
-      # Parse brief sections with better extraction
-      parsed[:brief][:likes] = extract_bullet_points(brief_section, "What you tend to like:")
-      parsed[:brief][:explore] = extract_bullet_points(brief_section, "What to explore next:")
-      parsed[:brief][:avoid] = extract_bullet_points(brief_section, "Pitfalls to avoid:")
-      
-      # Parse picks with enhanced extraction
-      parsed[:picks] = extract_book_picks_enhanced(picks_section)
+      # More robust splitting
+      if response.include?("TOP PICKS:")
+        sections = response.split("TOP PICKS:")
+        if sections.length >= 2
+          brief_section = sections[0]
+          picks_section = sections[1]
+          
+          Rails.logger.info "Split successful:"
+          Rails.logger.info "Brief section length: #{brief_section.length}"
+          Rails.logger.info "Picks section length: #{picks_section.length}"
+          Rails.logger.info "Picks section preview: #{picks_section[0..200]}..."
+          
+          # Parse brief sections with FIXED method
+          parsed[:brief][:likes] = extract_bullet_points_fixed(brief_section, "What you tend to like:")
+          parsed[:brief][:explore] = extract_bullet_points_fixed(brief_section, "What to explore next:")
+          parsed[:brief][:avoid] = extract_bullet_points_fixed(brief_section, "Pitfalls to avoid:")
+          
+          # Parse picks with FIXED method
+          parsed[:picks] = extract_book_picks_fixed(picks_section)
+        else
+          Rails.logger.error "Split failed: expected 2 sections, got #{sections.length}"
+        end
+      else
+        Rails.logger.error "Response contains BRIEF but not TOP PICKS"
+      end
+    else
+      Rails.logger.error "Response does not contain BRIEF section"
     end
+    
+    Rails.logger.info "Final parsed result:"
+    Rails.logger.info "Brief keys: #{parsed[:brief].keys}"
+    Rails.logger.info "Picks count: #{parsed[:picks].length}"
+    Rails.logger.info "=== END PARSING ==="
     
     parsed
   end
 
-  def extract_bullet_points(text, section_name)
-    # Extract bullet points from a section
-    section_start = text.index(section_name)
-    return [] unless section_start
+  def extract_bullet_points_fixed(text, section_name)
+    # FIXED VERSION: Extract bullet points properly
+    Rails.logger.info "Extracting bullet points for: #{section_name}"
     
-    section_text = text[section_start..-1]
-    next_section = section_text.index(/What to explore next:|Pitfalls to avoid:|TOP PICKS:/)
-    section_text = next_section ? section_text[0...next_section] : section_text
-    
-    # Find bullet points with better regex
-    bullets = section_text.scan(/- (.+?)(?=\n-|\n\n|$)/m).flatten
-    bullets.map(&:strip).reject(&:blank?).first(5) # Limit to 5 points
+    if text.include?(section_name)
+      Rails.logger.info "Found section: #{section_name}"
+      
+      # Find the start of this section
+      start_index = text.index(section_name) + section_name.length
+      
+      # Find the end by looking for the next section
+      end_index = if section_name == "What you tend to like:"
+                    text.index("What to explore next:") || text.length
+                  elsif section_name == "What to explore next:"
+                    text.index("Pitfalls to avoid:") || text.length
+                  else
+                    text.length
+                  end
+      
+      section_text = text[start_index...end_index].strip
+      Rails.logger.info "Section text: '#{section_text}'"
+      
+      # FIXED: Split by " - " to get individual bullet points
+      points = section_text.split(" - ").map(&:strip).reject(&:empty?)
+      Rails.logger.info "Extracted points: #{points.inspect}"
+      
+      points
+    else
+      Rails.logger.info "Section not found: #{section_name}"
+      []
+    end
   end
 
-  def extract_book_picks_enhanced(text)
-    # Enhanced extraction of book picks with better logging
-    picks = []
+  def extract_book_picks_fixed(text)
+    # FIXED VERSION: Extract book picks properly
+    Rails.logger.info "Extracting book picks from text: #{text.length} characters"
+    Rails.logger.info "Text preview: '#{text[0..100]}...'"
     
+    picks = []
     return picks unless text
     
-    Rails.logger.info "Extracting book picks from text: #{text.length} characters"
+    # IMPROVED: More robust regex that handles the format without line breaks
+    # Look for: "1. **Title** by Author Pitch: ... Why: ... Confidence: ..."
+    # The key is to handle the case where there are no spaces between books
+    book_pattern = /(\d+)\.\s*\*\*(.+?)\*\*\s*by\s*(.+?)\s*Pitch:\s*(.+?)\s*Why:\s*(.+?)\s*Confidence:\s*(.+?)(?=\d+\.|$)/m
     
-    # Find numbered book entries with better pattern matching
-    book_entries = text.scan(/(\d+)\.\s*(.+?)\s*by\s*(.+?)(?=\n\d+\.|$)/m)
+    matches = text.scan(book_pattern)
+    Rails.logger.info "Found #{matches.length} book entries with improved pattern"
     
-    Rails.logger.info "Found #{book_entries.length} book entries: #{book_entries.inspect}"
+    if matches.empty?
+      Rails.logger.info "Improved pattern failed, trying simpler approach..."
+      # Fallback: just extract title and author with more flexible spacing
+      simple_pattern = /(\d+)\.\s*\*\*(.+?)\*\*\s*by\s*(.+?)(?=\d+\.|$)/m
+      matches = text.scan(simple_pattern)
+      Rails.logger.info "Found #{matches.length} book entries with simple pattern"
+    end
     
-    book_entries.each do |match|
-      number, title, author = match
+    matches.each_with_index do |match, index|
+      if match.length >= 6
+        # Full pattern matched
+        number, title, author, pitch, why, confidence = match
+        Rails.logger.info "Processing book #{number} (full match): '#{title}' by '#{author}'"
+      else
+        # Simple pattern matched
+        number, title, author = match
+        Rails.logger.info "Processing book #{number} (simple match): '#{title}' by '#{author}'"
+        
+        # Try to extract fields manually with improved field extraction
+        pitch = extract_field_fixed(text, number, "Pitch:")
+        why = extract_field_fixed(text, number, "Why:")
+        confidence = extract_field_fixed(text, number, "Confidence:")
+      end
       
-      Rails.logger.info "Processing book #{number}: '#{title}' by '#{author}'"
-      
-      # Extract additional information if available
-      pitch = extract_field(text, number, "Pitch:")
-      why = extract_field(text, number, "Why:")
-      confidence = extract_field(text, number, "Confidence:")
-      
-      Rails.logger.info "Extracted fields - Pitch: '#{pitch}', Why: '#{why}', Confidence: '#{confidence}'"
-      
-      picks << {
+      pick = {
         number: number.to_i,
         title: title.strip,
         author: author.strip,
-        pitch: pitch.presence || "AI-generated pitch",
-        why: why.presence || "Based on your preferences",
-        confidence: confidence.presence || "Medium"
+        pitch: pitch&.strip || "AI-generated pitch",
+        why: why&.strip || "Based on your preferences",
+        confidence: confidence&.strip || "Medium"
       }
+      
+      Rails.logger.info "Created pick: #{pick.inspect}"
+      picks << pick
     end
     
     Rails.logger.info "Final picks: #{picks.inspect}"
     picks.first(3) # Ensure we only get 3 picks
   end
 
-  def extract_field(text, book_number, field_name)
-    # Extract specific field for a book with more flexible pattern
-    # Look for the field after the book entry, handling various formats
+  def extract_field_fixed(text, book_number, field_name)
+    # IMPROVED VERSION: Extract individual fields with better handling
+    Rails.logger.info "Extracting #{field_name} for book #{book_number}"
     
-    return nil unless text
+    # Find the book section first
+    book_start = text.index("#{book_number}. **")
+    return nil unless book_start
     
-    Rails.logger.info "Extracting field '#{field_name}' for book #{book_number}"
+    # Find where this book section ends (next book or end of text)
+    next_book = text.index("#{book_number.to_i + 1}. **", book_start)
+    book_end = next_book || text.length
     
-    # First, find the book entry
-    book_pattern = /#{book_number}\.\s*(.+?)\s*by\s*(.+?)(?=\n|$)/m
-    book_match = text.match(book_pattern)
-    return nil unless book_match
+    book_section = text[book_start...book_end]
+    Rails.logger.info "Book section: '#{book_section[0..100]}...'"
     
-    book_start = book_match.begin(0)
-    book_end = book_match.end(0)
+    # Find the field in this section
+    field_start = book_section.index(field_name)
+    return nil unless field_start
     
-    Rails.logger.info "Book entry found at positions #{book_start}-#{book_end}"
+    # Find where this field ends (next field or end of book section)
+    field_start += field_name.length
     
-    # Look for the field after the book entry
-    remaining_text = text[book_end..-1]
-    Rails.logger.info "Remaining text after book: #{remaining_text[0..100]}..."
-    
-    # Try different patterns for the field
-    patterns = [
-      /#{field_name}\s*(.+?)(?=\n\d+\.|$)/m,  # Field followed by next book or end
-      /#{field_name}\s*(.+?)(?=\n[A-Z][a-z]+:|$)/m,  # Field followed by next section or end
-      /#{field_name}\s*(.+?)(?=\n\n|$)/m  # Field followed by double newline or end
-    ]
-    
-    patterns.each_with_index do |pattern, index|
-      Rails.logger.info "Trying pattern #{index + 1}: #{pattern}"
-      match = remaining_text.match(pattern)
-      if match && match[1].strip.present?
-        Rails.logger.info "Pattern #{index + 1} succeeded: '#{match[1].strip}'"
-        return match[1].strip
+    # Look for the next field - handle the case where fields might be adjacent
+    next_field = nil
+    ['Why:', 'Confidence:'].each do |next_field_name|
+      pos = book_section.index(next_field_name, field_start)
+      if pos && (next_field.nil? || pos < next_field)
+        next_field = pos
       end
     end
     
-    Rails.logger.warn "No field '#{field_name}' found for book #{book_number}"
-    nil
+    # Also look for the next book number
+    next_book_in_section = book_section.index(/\d+\.\s*\*\*/, field_start)
+    if next_book_in_section && (next_field.nil? || next_book_in_section < next_field)
+      next_field = next_book_in_section
+    end
+    
+    field_end = next_field || book_section.length
+    value = book_section[field_start...field_end].strip
+    
+    Rails.logger.info "Found #{field_name}: '#{value}'"
+    value
   end
 
   # Enrich recommendations with metadata from Google Books API
@@ -832,5 +862,31 @@ class RecommendationsController < ApplicationController
         # Continue without metadata - don't block the recommendation
       end
     end
+  end
+
+  # Cleanup session data after view is rendered
+  def cleanup_session
+    session_type = params[:session_type]
+    session_id = params[:session_id]
+    
+    Rails.logger.info "Cleaning up session: #{session_type}, ID: #{session_id}"
+    
+    if session_type == 'recommendation' && session[:recommendation_session_id] == session_id
+      # Clean up the temporary file
+      TemporaryRecommendationStorage.delete(session_id)
+      # Clear the session
+      session.delete(:recommendation_session_id)
+      Rails.logger.info "Recommendation session cleaned up successfully"
+    elsif session_type == 'refined' && session[:refined_session_id] == session_id
+      # Clean up the temporary file
+      TemporaryRecommendationStorage.delete(session_id)
+      # Clear the session
+      session.delete(:refined_session_id)
+      Rails.logger.info "Refined session cleaned up successfully"
+    else
+      Rails.logger.warn "Session cleanup failed: type=#{session_type}, session_id=#{session_id}"
+    end
+    
+    render json: { success: true, message: 'Session cleaned up' }
   end
 end

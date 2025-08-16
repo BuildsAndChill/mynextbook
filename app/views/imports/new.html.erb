@@ -167,7 +167,7 @@ function showSignupModal(message, data = {}) {
     }, 10);
   } else {
     // We're on import page, redirect to recommendations with signup prompt
-    window.location.href = '<%= new_recommendation_path %>?signup_prompt=' + encodeURIComponent(message);
+            window.location.href = '<%= recommendations_path %>?signup_prompt=' + encodeURIComponent(message);
   }
 }
 </script>
