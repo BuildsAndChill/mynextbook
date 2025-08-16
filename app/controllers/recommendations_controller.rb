@@ -626,6 +626,8 @@ class RecommendationsController < ApplicationController
     prompt += "- [First pitfall to avoid]\n"
     prompt += "- [Second pitfall to avoid]\n\n"
     
+    prompt += "CRITICAL: Each preference must be on a separate line with its own dash (-). Do NOT combine multiple preferences on the same line with dashes.\n\n"
+    
     prompt += "TOP PICKS:\n"
     prompt += "1. [EXACT BOOK TITLE] by [EXACT AUTHOR NAME]\n"
     prompt += "Pitch: [2-line explanation of why this book fits]\n"
@@ -727,11 +729,27 @@ class RecommendationsController < ApplicationController
       section_text = text[start_index...end_index].strip
       Rails.logger.info "Section text: '#{section_text}'"
       
-      # FIXED: Split by " - " to get individual bullet points
-      points = section_text.split(" - ").map(&:strip).reject(&:empty?)
-      Rails.logger.info "Extracted points: #{points.inspect}"
+      # IMPROVED: First try to extract by line breaks (proper format)
+      # Look for lines starting with "- " or "-"
+      lines = section_text.split("\n").map(&:strip).reject(&:empty?)
+      bullet_points = []
       
-      points
+      lines.each do |line|
+        if line.start_with?("- ") || line.start_with?("-")
+          # Clean up the bullet point
+          point = line.sub(/^-\s*/, "").strip
+          bullet_points << point unless point.empty?
+        end
+      end
+      
+      # If no bullet points found by line breaks, fall back to dash splitting
+      if bullet_points.empty?
+        Rails.logger.info "No bullet points found by line breaks, falling back to dash splitting"
+        bullet_points = section_text.split(" - ").map(&:strip).reject(&:empty?)
+      end
+      
+      Rails.logger.info "Extracted points: #{bullet_points.inspect}"
+      bullet_points
     else
       Rails.logger.info "Section not found: #{section_name}"
       []
@@ -746,10 +764,10 @@ class RecommendationsController < ApplicationController
     picks = []
     return picks unless text
     
-    # IMPROVED: More robust regex that handles the format without line breaks
-    # Look for: "1. **Title** by Author Pitch: ... Why: ... Confidence: ..."
-    # The key is to handle the case where there are no spaces between books
-    book_pattern = /(\d+)\.\s*\*\*(.+?)\*\*\s*by\s*(.+?)\s*Pitch:\s*(.+?)\s*Why:\s*(.+?)\s*Confidence:\s*(.+?)(?=\d+\.|$)/m
+    # IMPROVED: More robust regex that handles BOTH formats
+    # Look for: "1. *Title* by Author" OR "1. **Title** by Author"
+    # The key is to handle both single and double asterisks
+    book_pattern = /(\d+)\.\s*\*{1,2}(.+?)\*{1,2}\s*by\s*(.+?)\s*Pitch:\s*(.+?)\s*Why:\s*(.+?)\s*Confidence:\s*(.+?)(?=\d+\.|$)/m
     
     matches = text.scan(book_pattern)
     Rails.logger.info "Found #{matches.length} book entries with improved pattern"
@@ -757,7 +775,7 @@ class RecommendationsController < ApplicationController
     if matches.empty?
       Rails.logger.info "Improved pattern failed, trying simpler approach..."
       # Fallback: just extract title and author with more flexible spacing
-      simple_pattern = /(\d+)\.\s*\*\*(.+?)\*\*\s*by\s*(.+?)(?=\d+\.|$)/m
+      simple_pattern = /(\d+)\.\s*\*{1,2}(.+?)\*{1,2}\s*by\s*(.+?)(?=\d+\.|$)/m
       matches = text.scan(simple_pattern)
       Rails.logger.info "Found #{matches.length} book entries with simple pattern"
     end
@@ -799,12 +817,14 @@ class RecommendationsController < ApplicationController
     # IMPROVED VERSION: Extract individual fields with better handling
     Rails.logger.info "Extracting #{field_name} for book #{book_number}"
     
-    # Find the book section first
-    book_start = text.index("#{book_number}. **")
+    # Find the book section first - handle both * and ** formats
+    book_start = text.index("#{book_number}. *")
+    book_start = text.index("#{book_number}. **") if book_start.nil?
     return nil unless book_start
     
-    # Find where this book section ends (next book or end of text)
-    next_book = text.index("#{book_number.to_i + 1}. **", book_start)
+    # Find where this book section ends (next book or end of text) - handle both formats
+    next_book = text.index("#{book_number.to_i + 1}. *", book_start)
+    next_book = text.index("#{book_number.to_i + 1}. **", book_start) if next_book.nil?
     book_end = next_book || text.length
     
     book_section = text[book_start...book_end]
@@ -826,8 +846,8 @@ class RecommendationsController < ApplicationController
       end
     end
     
-    # Also look for the next book number
-    next_book_in_section = book_section.index(/\d+\.\s*\*\*/, field_start)
+    # Also look for the next book number - handle both * and ** formats
+    next_book_in_section = book_section.index(/\d+\.\s*\*{1,2}/, field_start)
     if next_book_in_section && (next_field.nil? || next_book_in_section < next_field)
       next_field = next_book_in_section
     end

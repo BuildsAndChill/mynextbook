@@ -1,68 +1,23 @@
 <!-- AI Response Display - Exact same layout as new.html.erb -->
 <% if @ai_response %>
   <div id="ai-response-display" class="space-y-6">
-    <!-- Brief Section -->
-    <% if @parsed_response&.dig(:brief) %>
-      <div class="space-y-4">
-        <!-- What you tend to like -->
-        <% if @parsed_response[:brief][:likes]&.any? %>
-          <div>
-            <h4 class="text-sm font-medium text-green-700 mb-2 flex items-center">
-              <svg class="w-4 h-4 mr-2" fill="currentColor" viewBox="0 0 20 20">
-                <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clip-rule="evenodd"></path>
-              </svg>
-              What you tend to like
-            </h4>
-            <ul class="space-y-1">
-              <% @parsed_response[:brief][:likes].each do |point| %>
-                <li class="text-sm text-gray-700 flex items-start">
-                  <span class="w-1.5 h-1.5 bg-green-500 rounded-full mt-2 mr-2 flex-shrink-0"></span>
-                  <%= point %>
-                </li>
-              <% end %>
-            </ul>
-          </div>
-        <% end %>
-
-        <!-- What to explore next -->
-        <% if @parsed_response[:brief][:explore]&.any? %>
-          <div>
-            <h4 class="text-sm font-medium text-blue-700 mb-2 flex items-center">
-              <svg class="w-4 h-4 mr-2" fill="currentColor" viewBox="0 0 20 20">
-                <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clip-rule="evenodd"></path>
-              </svg>
-              What to explore next
-            </h4>
-            <ul class="space-y-1">
-              <% @parsed_response[:brief][:explore].each do |point| %>
-                <li class="text-sm text-gray-700 flex items-start">
-                  <span class="w-1.5 h-1.5 bg-blue-500 rounded-full mt-2 mr-2 flex-shrink-0"></span>
-                  <%= point %>
-                </li>
-              <% end %>
-            </ul>
-          </div>
-        <% end %>
-
-        <!-- Pitfalls to avoid -->
-        <% if @parsed_response[:brief][:avoid]&.any? %>
-          <div>
-            <h4 class="text-sm font-medium text-amber-700 mb-2 flex items-center">
-              <svg class="w-4 h-4 mr-2" fill="currentColor" viewBox="0 0 20 20">
-                <path fill-rule="evenodd" d="M8.257 3.099c.765-1.36 2.722-1.36 3.486 0l5.58 9.92c.75 1.334-.213 2.98-1.742 2.98H4.42c-1.53 0-2.493-1.667-1.743-2.98l5.58-9.92zM11 13a1 1 0 11-2 0 1 1 0 012 0zm-1-8a1 1 0 00-1 1v3a1 1 0 002 0V6a1 1 0 00-1-1z" clip-rule="evenodd"></path>
-              </svg>
-              Pitfalls to avoid
-            </h4>
-            <ul class="space-y-1">
-              <% @parsed_response[:brief][:avoid].each do |point| %>
-                <li class="text-sm text-gray-700 flex items-start">
-                  <span class="w-1.5 h-1.5 bg-amber-500 rounded-full mt-2 mr-2 flex-shrink-0"></span>
-                  <%= point %>
-                </li>
-              <% end %>
-            </ul>
-          </div>
-        <% end %>
+    <!-- Brief Section - Simplified: Only "What you tend to like" -->
+    <% if @parsed_response&.dig(:brief) && @parsed_response[:brief][:likes]&.any? %>
+      <div>
+        <h4 class="text-sm font-medium text-green-700 mb-2 flex items-center">
+          <svg class="w-4 h-4 mr-2" fill="currentColor" viewBox="0 0 20 20">
+            <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clip-rule="evenodd"></path>
+          </svg>
+          What you tend to like
+        </h4>
+        <ul class="space-y-1">
+          <% @parsed_response[:brief][:likes].each do |point| %>
+            <li class="text-sm text-gray-700 flex items-start">
+              <span class="w-1.5 h-1.5 bg-green-500 rounded-full mt-2 mr-2 flex-shrink-0"></span>
+              <%= point %>
+            </li>
+          <% end %>
+        </ul>
       </div>
     <% end %>
 
