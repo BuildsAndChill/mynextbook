@@ -135,6 +135,33 @@ class RecommendationsController < ApplicationController
     Rails.logger.info "Refining recommendation with: #{refinement_text}"
     Rails.logger.info "Context: #{context}"
     
+    # SIGNUP WALL: Check if user is signed in for refinement
+    unless user_signed_in?
+      Rails.logger.info "Signup wall triggered: unauthenticated user attempting to refine"
+      
+      # Track signup wall shown
+      track_user_action('signup_wall_shown', {
+        action: 'refine_attempted',
+        refinement_text: refinement_text,
+        context: context
+      })
+      
+      # Return JSON response to trigger signup modal
+      render json: {
+        action: 'show_signup_wall',
+        message: 'Crée ton compte pour affiner tes recommandations avec tes données personnelles',
+        title: 'Affiner mes recommandations',
+        benefits: [
+          'Affiner tes recommandations',
+          'Importer tes lectures Goodreads',
+          'Recevoir tes recos par email'
+        ],
+        cta_text: 'Créer mon compte',
+        redirect_url: new_user_registration_path
+      }
+      return
+    end
+    
     # Try to get previous recommendations from session storage
     previous_recommendations = nil
     if session[:recommendation_session_id]
@@ -223,6 +250,26 @@ class RecommendationsController < ApplicationController
       session.delete(:refined_session_id)
     end
     Rails.logger.info "All session data cleaned up for fresh start"
+  end
+
+  def track_user_action(action, data = {})
+    # Simple tracking for MVP - log to console and session
+    tracking_data = {
+      action: action,
+      timestamp: Time.current,
+      user_id: user_signed_in? ? current_user.id : nil,
+      session_id: session.id,
+      data: data
+    }
+    
+    Rails.logger.info "USER ACTION TRACKED: #{tracking_data.inspect}"
+    
+    # Store in session for funnel analysis
+    session[:user_actions] ||= []
+    session[:user_actions] << tracking_data
+    
+    # Keep only last 50 actions to avoid session bloat
+    session[:user_actions] = session[:user_actions].last(50)
   end
 
 

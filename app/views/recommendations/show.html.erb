@@ -184,7 +184,9 @@
   const refineText = document.getElementById('refine-text');
   
   if (refineForm && refineButton) {
-    refineForm.addEventListener('submit', function() {
+    refineForm.addEventListener('submit', function(e) {
+      e.preventDefault();
+      
       // Show loading state using same logic as main form
       refineButton.disabled = true;
       refineSpinner.classList.remove('hidden');
@@ -193,7 +195,84 @@
       // Add loading styles
       refineButton.classList.add('opacity-50', 'cursor-not-allowed');
       refineButton.classList.remove('hover:from-indigo-700', 'hover:to-purple-700', 'hover:scale-105');
+      
+      // Submit form via AJAX to handle signup wall
+      const formData = new FormData(refineForm);
+      
+      fetch(refineForm.action, {
+        method: 'POST',
+        body: formData,
+        headers: {
+          'X-CSRF-Token': document.querySelector('meta[name="csrf-token"]').getAttribute('content')
+        }
+      })
+      .then(response => response.json())
+      .then(data => {
+        if (data.action === 'show_signup_wall') {
+          showSignupWallModal(data);
+        } else {
+          // Normal refine response - reload page to show results
+          window.location.reload();
+        }
+      })
+      .catch(error => {
+        console.error('Error:', error);
+        // Reset button state
+        refineButton.disabled = false;
+        refineSpinner.classList.add('hidden');
+        refineText.textContent = 'Refine Suggestions';
+        refineButton.classList.remove('opacity-50', 'cursor-not-allowed');
+        refineButton.classList.add('hover:from-indigo-700', 'hover:to-purple-700', 'hover:scale-105');
+      });
     });
+  }
+  
+  // Signup Wall Modal Functions
+  function showSignupWallModal(data) {
+    // Update modal content with data from server
+    document.getElementById('signup-wall-title').textContent = data.title;
+    document.getElementById('signup-wall-message').textContent = data.message;
+    document.getElementById('signup-wall-cta').href = data.redirect_url;
+    
+    // Update benefits list
+    const benefitsList = document.getElementById('signup-wall-benefits');
+    benefitsList.innerHTML = '';
+    data.benefits.forEach(benefit => {
+      const li = document.createElement('li');
+      li.className = 'flex items-center text-sm text-gray-600';
+      li.innerHTML = `
+        <svg class="h-4 w-4 text-green-500 mr-2 flex-shrink-0" fill="currentColor" viewBox="0 0 20 20">
+          <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clip-rule="evenodd"></path>
+        </svg>
+        ${benefit}
+      `;
+      benefitsList.appendChild(li);
+    });
+    
+    // Show modal
+    document.getElementById('signup-wall-modal').classList.remove('hidden');
+    
+    // Track signup wall shown
+    trackUserAction('signup_wall_shown', {
+      action: 'refine_attempted',
+      modal_data: data
+    });
+  }
+  
+  function closeSignupWallModal() {
+    document.getElementById('signup-wall-modal').classList.add('hidden');
+    
+    // Reset refine button state
+    refineButton.disabled = false;
+    refineSpinner.classList.add('hidden');
+    refineText.textContent = 'Refine Suggestions';
+    refineButton.classList.remove('opacity-50', 'cursor-not-allowed');
+    refineButton.classList.add('hover:from-indigo-700', 'hover:to-purple-700', 'hover:scale-105');
+  }
+  
+  function trackUserAction(action, data = {}) {
+    // Simple client-side tracking for MVP
+    console.log('USER ACTION TRACKED:', { action, data, timestamp: new Date().toISOString() });
   }
 </script>
 
@@ -319,3 +398,62 @@
      }
    }
 </style>
+
+<!-- Signup Wall Modal -->
+<div id="signup-wall-modal" class="fixed inset-0 bg-gray-600 bg-opacity-50 overflow-y-auto h-full w-full hidden z-50">
+  <div class="relative top-20 mx-auto p-5 border w-96 shadow-lg rounded-md bg-white">
+    <div class="mt-3 text-center">
+      <!-- Header -->
+      <div class="mx-auto flex items-center justify-center h-12 w-12 rounded-full bg-indigo-100 mb-4">
+        <svg class="h-6 w-6 text-indigo-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z"></path>
+        </svg>
+      </div>
+      
+      <h3 id="signup-wall-title" class="text-lg font-medium text-gray-900 mb-2">
+        Affiner mes recommandations
+      </h3>
+      
+      <p id="signup-wall-message" class="text-sm text-gray-500 mb-6">
+        Crée ton compte pour affiner tes recommandations avec tes données personnelles
+      </p>
+      
+      <!-- Benefits List -->
+      <div class="text-left mb-6">
+        <ul id="signup-wall-benefits" class="space-y-2">
+          <li class="flex items-center text-sm text-gray-600">
+            <svg class="h-4 w-4 text-green-500 mr-2 flex-shrink-0" fill="currentColor" viewBox="0 0 20 20">
+              <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clip-rule="evenodd"></path>
+            </svg>
+            Affiner tes recommandations
+          </li>
+          <li class="flex items-center text-sm text-gray-600">
+            <svg class="h-4 w-4 text-green-500 mr-2 flex-shrink-0" fill="currentColor" viewBox="0 0 20 20">
+              <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clip-rule="evenodd"></path>
+            </svg>
+            Importer tes lectures Goodreads
+          </li>
+          <li class="flex items-center text-sm text-gray-600">
+            <svg class="h-4 w-4 text-green-500 mr-2 flex-shrink-0" fill="currentColor" viewBox="0 0 20 20">
+              <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clip-rule="evenodd"></path>
+            </svg>
+            Recevoir tes recos par email
+          </li>
+        </ul>
+      </div>
+      
+      <!-- Action Buttons -->
+      <div class="flex flex-col space-y-3">
+        <a id="signup-wall-cta" href="#" 
+           class="w-full bg-gradient-to-r from-indigo-600 to-purple-600 text-white py-3 px-6 rounded-lg font-semibold hover:from-indigo-700 hover:to-purple-700 transition-all duration-200 transform hover:scale-105">
+          Créer mon compte
+        </a>
+        
+        <button onclick="closeSignupWallModal()" 
+                class="w-full bg-gray-100 text-gray-700 py-3 px-6 rounded-lg font-medium hover:bg-gray-200 transition-all duration-200">
+          Continuer sans compte
+        </button>
+      </div>
+    </div>
+  </div>
+</div>
