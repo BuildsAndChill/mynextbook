@@ -1,43 +1,88 @@
 /*
- * This is a manifest file that'll be compiled into application.css.
+ * This is a manifest file that'll be compiled into application.css, which will include all the files
+ * listed below.
  *
- * With Propshaft, assets are served efficiently without preprocessing steps. You can still include
- * application-wide styles in this file, but keep in mind that CSS precedence will follow the standard
- * cascading order, meaning styles declared later in the document or manifest will override earlier ones,
- * depending on specificity.
+ * Any CSS (and SCSS, if configured) file within this directory, lib/assets/stylesheets, or any plugin's
+ * vendor/assets/stylesheets directory can be referenced here using a relative path.
  *
- * Consider organizing styles into maintainability.
+ * You're free to add application-wide styles to this file and they'll appear at the bottom of the
+ * compiled file so the styles you add here take precedence over styles defined in any other CSS/SCSS
+ * files in this directory. Styles in this file should be added after the last require_* statement.
+ * It is generally better to create a new file per style scope.
+ *
+ *= require_tree .
+ *= require_self
  */
 
-@import "tailwindcss";
-
-/* Fix SVG sizing issues */
-svg {
-  display: inline-block !important;
-  max-width: none !important;
-  width: auto !important;
-  height: auto !important;
+/* Enhanced button styles for loading states */
+button[type="submit"], 
+input[type="submit"] {
+  position: relative;
+  overflow: hidden;
 }
 
-/* Ensure SVG icons respect their container dimensions */
-svg[class*="w-"] {
-  width: var(--tw-w) !important;
-  height: var(--tw-h) !important;
+button[type="submit"]:disabled,
+input[type="submit"]:disabled {
+  cursor: not-allowed;
+  opacity: 0.8;
 }
 
-/* Specific fixes for common icon sizes */
-svg.w-3 { width: 0.75rem !important; height: 0.75rem !important; }
-svg.w-4 { width: 1rem !important; height: 1rem !important; }
-svg.w-5 { width: 1.25rem !important; height: 1.25rem !important; }
-svg.w-8 { width: 2rem !important; height: 2rem !important; }
-svg.w-10 { width: 2.5rem !important; height: 2.5rem !important; }
-svg.w-12 { width: 3rem !important; height: 3rem !important; }
-svg.w-16 { width: 4rem !important; height: 4rem !important; }
+/* Loading spinner animation */
+.animate-spin {
+  animation: spin 1s linear infinite;
+}
 
-svg.h-3 { height: 0.75rem !important; }
-svg.h-4 { height: 1rem !important; }
-svg.h-5 { height: 1.25rem !important; }
-svg.h-8 { height: 2rem !important; }
-svg.h-10 { height: 2.5rem !important; }
-svg.h-12 { height: 3rem !important; }
-svg.h-16 { height: 4rem !important; }
+@keyframes spin {
+  from {
+    transform: rotate(0deg);
+  }
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+/* Button hover effects */
+button[type="submit"]:not(:disabled):hover,
+input[type="submit"]:not(:disabled):hover {
+  transform: translateY(-1px);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+}
+
+/* Focus states for accessibility */
+button[type="submit"]:focus,
+input[type="submit"]:focus {
+  outline: none;
+  ring: 2px;
+  ring-offset: 2px;
+  ring-color: rgb(99, 102, 241);
+}
+
+/* Smooth transitions for all interactive elements */
+button, input, a {
+  transition: all 0.2s ease-in-out;
+}
+
+/* Enhanced form styling */
+form {
+  transition: opacity 0.3s ease-in-out;
+}
+
+form.loading {
+  opacity: 0.7;
+  pointer-events: none;
+}
+
+/* Loading overlay for forms */
+.form-loading-overlay {
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: rgba(255, 255, 255, 0.8);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 10;
+  border-radius: inherit;
+}

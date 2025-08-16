@@ -24,7 +24,7 @@
         <!-- Mood Input Form - Sleek Design -->
         <div class="max-w-xl mx-auto mb-12">
           <!-- Desktop Form -->
-          <div id="desktop-form" class="hidden md:block">
+          <div id="desktop-form" class="desktop-form">
             <%= form_with url: recommendations_path, method: :post, local: true, class: "space-y-6", data: { turbo: false } do %>
               <!-- Context Textarea -->
               <div>
@@ -63,12 +63,12 @@
           </div>
 
           <!-- Mobile CTA -->
-          <div id="mobile-cta" class="md:hidden">
+          <div id="mobile-cta" class="mobile-cta">
             <div class="text-center p-6 bg-gradient-to-r from-indigo-50 to-purple-50 rounded-2xl border border-indigo-100">
               <div class="mb-4">
                 <div class="mx-auto h-16 w-16 flex items-center justify-center rounded-full bg-gradient-to-r from-indigo-500 to-purple-600 mb-4">
                   <svg class="h-8 w-8 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z"/>
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8s9 3.582 9 8z"/>
                   </svg>
                 </div>
                 <h3 class="text-xl font-semibold text-gray-900 mb-2">Chat with your AI Librarian</h3>
@@ -79,7 +79,7 @@
                   data-turbo="false"
                   class="inline-flex items-center justify-center w-full bg-gradient-to-r from-indigo-600 to-purple-600 text-white py-3 px-6 rounded-lg font-medium text-base hover:from-indigo-700 hover:to-purple-700 transition-all duration-200 shadow-sm">
                 <svg class="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z"/>
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8s9 3.582 9 8z"/>
                 </svg>
                 Start Conversation
               </a>
@@ -331,18 +331,19 @@
 <script>
 // Force correct form display based on screen size
 document.addEventListener('DOMContentLoaded', function() {
-  const desktopForm = document.getElementById('desktop-form');
-  const mobileCTA = document.getElementById('mobile-cta');
-  
+  // Function to show correct form based on screen size
   function showCorrectForm() {
-    const isMobile = window.innerWidth < 768; // md breakpoint
+    const desktopForm = document.getElementById('desktop-form');
+    const mobileCTA = document.getElementById('mobile-cta');
     
-    if (isMobile) {
-      if (desktopForm) desktopForm.style.display = 'none';
-      if (mobileCTA) mobileCTA.style.display = 'block';
-    } else {
+    if (window.innerWidth >= 768) { // md breakpoint
+      // Desktop view
       if (desktopForm) desktopForm.style.display = 'block';
       if (mobileCTA) mobileCTA.style.display = 'none';
+    } else {
+      // Mobile view
+      if (desktopForm) desktopForm.style.display = 'none';
+      if (mobileCTA) mobileCTA.style.display = 'block';
     }
   }
   
@@ -351,6 +352,31 @@ document.addEventListener('DOMContentLoaded', function() {
   
   // Update on resize
   window.addEventListener('resize', showCorrectForm);
+  
+  // Add form validation and loading states
+  const form = document.querySelector('form');
+  if (form) {
+    form.addEventListener('submit', function(e) {
+      // Validate context is not empty
+      const context = document.querySelector('textarea[name="context"]').value.trim();
+      if (!context) {
+        e.preventDefault();
+        alert('Please describe what you\'re in the mood for reading.');
+        return;
+      }
+      
+      // Show loading state
+      const submitBtn = form.querySelector('button[type="submit"]');
+      showButtonLoading(submitBtn, 'Getting recommendations...');
+      
+      // Re-enable button after a delay (in case of errors)
+      setTimeout(() => {
+        if (submitBtn.disabled) {
+          hideButtonLoading(submitBtn);
+        }
+      }, 10000);
+    });
+  }
 });
 
 // Handle tone chip selection on home page
@@ -370,120 +396,127 @@ document.addEventListener('DOMContentLoaded', function() {
     });
   });
 
-  // Handle form submission
-  const form = document.querySelector('form');
-  if (form) {
-    form.addEventListener('submit', function(e) {
-      // Validate context is not empty
-      const context = document.querySelector('textarea[name="context"]').value.trim();
-      if (!context) {
-        e.preventDefault();
-        alert('Please describe what you\'re in the mood for reading.');
-        return;
-      }
+  // Function to show a signup popup
+  function showSignupPopup(message) {
+    const popup = document.createElement('div');
+    popup.className = 'fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50';
+    
+    const popupContent = document.createElement('div');
+    popupContent.className = 'bg-white p-6 rounded-lg shadow-xl max-w-md w-full mx-4';
+    
+    const title = document.createElement('h3');
+    title.className = 'text-lg font-medium text-gray-900 mb-2';
+    title.textContent = 'Sign Up Required';
+    
+    const content = document.createElement('p');
+    content.className = 'text-sm text-gray-700 mb-4';
+    content.textContent = message;
+    
+    const signupLink = document.createElement('a');
+    signupLink.href = '<%= new_user_registration_path %>';
+    signupLink.className = 'inline-flex items-center px-6 py-2 bg-gradient-to-r from-indigo-600 to-purple-600 text-white text-sm font-medium rounded-lg hover:from-indigo-700 hover:to-purple-700 transition-all duration-200';
+    signupLink.textContent = 'Sign Up Now';
+    
+    const closeBtn = document.createElement('button');
+    closeBtn.className = 'mt-4 px-4 py-2 bg-gray-200 text-gray-800 rounded-lg font-medium hover:bg-gray-300 transition-colors duration-200';
+    closeBtn.textContent = 'Close';
+    closeBtn.onclick = () => {
+      document.body.removeChild(popup);
+    };
+    
+    popupContent.appendChild(title);
+    popupContent.appendChild(content);
+    popupContent.appendChild(signupLink);
+    popupContent.appendChild(closeBtn);
+    popup.appendChild(popupContent);
+    
+    document.body.appendChild(popup);
+  }
+
+  // Function to scroll to top of the page
+  function scrollToTop() {
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+  }
+
+  // Function to suggest a new genre
+  function suggestNewGenre() {
+    const genres = [
+      'Science Fiction', 'Fantasy', 'Mystery', 'Thriller', 'Romance', 
+      'Historical Fiction', 'Biography', 'Memoir', 'Self-Help', 'Philosophy',
+      'Economics', 'Psychology', 'Travel', 'Cooking', 'Art', 'Music',
+      'Poetry', 'Drama', 'Horror', 'Western', 'Young Adult', 'Children'
+    ];
+    
+    const randomGenre = genres[Math.floor(Math.random() * genres.length)];
+    const context = document.querySelector('textarea[name="context"]');
+    
+    if (context) {
+      context.value = `I want to explore ${randomGenre} books. Something engaging and well-written that will introduce me to this genre.`;
+      context.focus();
       
-      // Show loading state
-      const submitBtn = form.querySelector('button[type="submit"]');
-      const originalText = submitBtn.innerHTML;
-      submitBtn.innerHTML = '<svg class="animate-spin -ml-1 mr-3 h-5 w-5 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24"><circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle><path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path></svg>Getting recommendations...';
-      submitBtn.disabled = true;
-      
-      // Re-enable button after a delay (in case of errors)
+      // Show toast notification
+      showToast(`Try exploring ${randomGenre}! I've updated your request.`, 'success');
+    }
+  }
+
+  // Toast notification function
+  function showToast(message, type = 'info') {
+    // Create toast element
+    const toast = document.createElement('div');
+    toast.className = `fixed top-4 right-4 z-50 px-6 py-3 rounded-lg text-white font-medium transform transition-all duration-300 translate-x-full ${
+      type === 'success' ? 'bg-green-500' : 
+      type === 'error' ? 'bg-red-500' : 
+      'bg-blue-500'
+    }`;
+    toast.textContent = message;
+    
+    document.body.appendChild(toast);
+    
+    // Animate in
+    setTimeout(() => {
+      toast.classList.remove('translate-x-full');
+    }, 100);
+    
+    // Animate out and remove
+    setTimeout(() => {
+      toast.classList.add('translate-x-full');
       setTimeout(() => {
-        submitBtn.innerHTML = originalText;
-        submitBtn.disabled = false;
-      }, 10000);
-    });
+        document.body.removeChild(toast);
+      }, 300);
+    }, 3000);
   }
 });
+</script>
 
-// Function to show a signup popup
-function showSignupPopup(message) {
-  const popup = document.createElement('div');
-  popup.className = 'fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50';
-  
-  const popupContent = document.createElement('div');
-  popupContent.className = 'bg-white p-6 rounded-lg shadow-xl max-w-md w-full mx-4';
-  
-  const title = document.createElement('h3');
-  title.className = 'text-lg font-medium text-gray-900 mb-2';
-  title.textContent = 'Sign Up Required';
-  
-  const content = document.createElement('p');
-  content.className = 'text-sm text-gray-700 mb-4';
-  content.textContent = message;
-  
-  const signupLink = document.createElement('a');
-  signupLink.href = '<%= new_user_registration_path %>';
-  signupLink.className = 'inline-flex items-center px-6 py-2 bg-gradient-to-r from-indigo-600 to-purple-600 text-white text-sm font-medium rounded-lg hover:from-indigo-700 hover:to-purple-700 transition-all duration-200';
-  signupLink.textContent = 'Sign Up Now';
-  
-  const closeBtn = document.createElement('button');
-  closeBtn.className = 'mt-4 px-4 py-2 bg-gray-200 text-gray-800 rounded-lg font-medium hover:bg-gray-300 transition-colors duration-200';
-  closeBtn.textContent = 'Close';
-  closeBtn.onclick = () => {
-    document.body.removeChild(popup);
-  };
-  
-  popupContent.appendChild(title);
-  popupContent.appendChild(content);
-  popupContent.appendChild(signupLink);
-  popupContent.appendChild(closeBtn);
-  popup.appendChild(popupContent);
-  
-  document.body.appendChild(popup);
+<style>
+/* Responsive form display */
+.desktop-form {
+  display: none; /* Hidden by default */
 }
 
-// Function to scroll to top of the page
-function scrollToTop() {
-  window.scrollTo({ top: 0, behavior: 'smooth' });
+.mobile-cta {
+  display: block; /* Visible by default */
 }
 
-// Function to suggest a new genre
-function suggestNewGenre() {
-  const genres = [
-    'Science Fiction', 'Fantasy', 'Mystery', 'Thriller', 'Romance', 
-    'Historical Fiction', 'Biography', 'Memoir', 'Self-Help', 'Philosophy',
-    'Economics', 'Psychology', 'Travel', 'Cooking', 'Art', 'Music',
-    'Poetry', 'Drama', 'Horror', 'Western', 'Young Adult', 'Children'
-  ];
+/* Desktop view (768px and above) */
+@media (min-width: 768px) {
+  .desktop-form {
+    display: block !important;
+  }
   
-  const randomGenre = genres[Math.floor(Math.random() * genres.length)];
-  const context = document.querySelector('textarea[name="context"]');
-  
-  if (context) {
-    context.value = `I want to explore ${randomGenre} books. Something engaging and well-written that will introduce me to this genre.`;
-    context.focus();
-    
-    // Show toast notification
-    showToast(`Try exploring ${randomGenre}! I've updated your request.`, 'success');
+  .mobile-cta {
+    display: none !important;
   }
 }
 
-// Toast notification function
-function showToast(message, type = 'info') {
-  // Create toast element
-  const toast = document.createElement('div');
-  toast.className = `fixed top-4 right-4 z-50 px-6 py-3 rounded-lg text-white font-medium transform transition-all duration-300 translate-x-full ${
-    type === 'success' ? 'bg-green-500' : 
-    type === 'error' ? 'bg-red-500' : 
-    'bg-blue-500'
-  }`;
-  toast.textContent = message;
+/* Mobile view (below 768px) */
+@media (max-width: 767px) {
+  .desktop-form {
+    display: none !important;
+  }
   
-  document.body.appendChild(toast);
-  
-  // Animate in
-  setTimeout(() => {
-    toast.classList.remove('translate-x-full');
-  }, 100);
-  
-  // Animate out and remove
-  setTimeout(() => {
-    toast.classList.add('translate-x-full');
-    setTimeout(() => {
-      document.body.removeChild(toast);
-    }, 300);
-  }, 3000);
+  .mobile-cta {
+    display: block !important;
+  }
 }
-</script>
+</style>
