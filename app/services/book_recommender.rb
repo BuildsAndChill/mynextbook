@@ -14,10 +14,7 @@ class BookRecommender
   private
 
   def call_with_prompt(prompt)
-    # Feature flag IA (garde-fou)
-    return "IA désactivée momentanément." if ENV["AI_DISABLED"] == "1"
-    
-    # Check if AI is disabled (for testing/mock mode)
+    # Feature flag IA (garde-fou) - utiliser la réponse mock
     if ENV["AI_DISABLED"] == "1"
       Rails.logger.info "AI_DISABLED=1, returning mock response"
       return generate_mock_response(prompt)
@@ -59,38 +56,41 @@ class BookRecommender
   end
 
   def generate_mock_response(prompt)
-    # Generate a mock response that follows the expected format
+    # Generate a mock response that follows the expected format for parsing
     mock_response = <<~MOCK
       BRIEF:
-      What you tend to like:
+      LIKES:
       - Engaging narratives that blend multiple disciplines
       - Books that challenge conventional thinking
       - Authors who can make complex topics accessible
 
-      What to explore next:
+      EXPLORE:
       - Interdisciplinary approaches to big questions
       - Books that bridge science and humanities
       - Authors from diverse backgrounds and perspectives
 
-      Pitfalls to avoid:
+      AVOID:
       - Overly technical books without narrative structure
       - Books that oversimplify complex topics
 
-      TOP PICKS:
-      1. The Gene: An Intimate History by Siddhartha Mukherjee
-      Pitch: A masterful blend of science, history, and personal narrative that makes genetics accessible and compelling.
-      Why: Combines your interest in science with engaging storytelling, similar to Sapiens
-      Confidence: High
+      BOOKS:
+      1. TITLE: The Gene: An Intimate History
+      AUTHOR: Siddhartha Mukherjee
+      PITCH: A masterful blend of science, history, and personal narrative that makes genetics accessible and compelling.
+      WHY: Combines your interest in science with engaging storytelling, similar to Sapiens
+      CONFIDENCE: High
 
-      2. The Sixth Extinction: An Unnatural History by Elizabeth Kolbert
-      Pitch: A compelling exploration of human impact on the natural world, written with journalistic clarity.
-      Why: Addresses big questions about humanity's role, matching your preference for thought-provoking content
-      Confidence: High
+      2. TITLE: The Sixth Extinction: An Unnatural History
+      AUTHOR: Elizabeth Kolbert
+      PITCH: A compelling exploration of human impact on the natural world, written with journalistic clarity.
+      WHY: Addresses big questions about humanity's role, matching your preference for thought-provoking content
+      CONFIDENCE: High
 
-      3. The Hidden Life of Trees by Peter Wohlleben
-      Pitch: A fascinating look at forest ecology that reads like a nature documentary in book form.
-      Why: Offers a different perspective on familiar topics, expanding your reading horizons
-      Confidence: Medium
+      3. TITLE: The Hidden Life of Trees
+      AUTHOR: Peter Wohlleben
+      PITCH: A fascinating look at forest ecology that reads like a nature documentary in book form.
+      WHY: Offers a different perspective on familiar topics, expanding your reading horizons
+      CONFIDENCE: Medium
     MOCK
 
     Rails.logger.info "Generated mock response for testing"

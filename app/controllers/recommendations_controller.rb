@@ -125,69 +125,7 @@ class RecommendationsController < ApplicationController
     render :show
   end
 
-  def feedback
-    # Handle user feedback on recommendations
-    book_title = params[:book_title]
-    book_author = params[:book_author]
-    feedback_type = params[:feedback_type] # like, dislike, save, more_info
-    refinement = params[:refinement]
-    
-    # Store feedback in session for current recommendation context (no database for refinements)
-    session[:current_feedback] ||= []
-    session[:current_feedback] << {
-      type: feedback_type,
-      book_title: book_title,
-      book_author: book_author,
-      timestamp: Time.current
-    }
-    
-    if user_signed_in? && book_title.present? && book_author.present?
-      # Store feedback for future improvements (only for user preferences, not refinements)
-      feedback = current_user.user_book_feedbacks.create!(
-        book_title: book_title,
-        book_author: book_author,
-        feedback_type: feedback_type,
-        recommendation_context: params[:context] || "General recommendation"
-      )
-      
-      # Handle specific feedback types
-      case feedback_type
-      when 'save'
-        # Save book to user's reading list
-        UserReading.save_from_recommendation(current_user, book_title, book_author)
-        flash[:notice] = "Book saved to your reading list!"
-      when 'like'
-        flash[:notice] = "Thanks! We'll recommend more like this."
-      when 'dislike'
-        flash[:notice] = "Got it! We'll avoid similar books."
-      when 'more_info'
-        flash[:notice] = "Book details expanded!"
-      end
-      
-      Rails.logger.info "Feedback stored: #{feedback.inspect}"
-    else
-      # For unlogged users, show signup prompt
-      if !user_signed_in?
-        # Return JSON response to trigger signup modal
-        render json: { 
-          action: 'show_signup',
-          message: 'Sign up to save your feedback and get better recommendations!',
-          book_title: book_title,
-          book_author: book_author,
-          feedback_type: feedback_type
-        }
-        return
-      end
-    end
-    
-    # If refinement provided, get new recommendations
-    if refinement.present?
-      # Trigger refinement flow
-      redirect_to recommendations_path(refinement: refinement)
-    else
-              redirect_to recommendations_path, notice: flash[:notice] || "Feedback recorded! We'll use this to improve future recommendations."
-    end
-  end
+
 
   def refine
     # Handle refinement requests with context conservation

@@ -1,11 +1,16 @@
 <div class="min-h-screen bg-gray-50 py-4 sm:py-8">
   <div class="max-w-7xl mx-auto px-3 sm:px-6 lg:px-8">
 
-    <!-- Main Content: Mobile-First Layout -->
-    <div class="grid lg:grid-cols-2 gap-3 sm:gap-8">
-      
-      <!-- Left Column: Refine Form -->
-      <div class="bg-white rounded-xl sm:rounded-2xl shadow-lg p-3 sm:p-6 lg:p-8 order-1 lg:order-2 overflow-hidden">
+         <!-- Main Content: Mobile-First Layout -->
+     <div class="grid lg:grid-cols-2 gap-3 sm:gap-8">
+       
+       <!-- Book Suggestions - First on mobile, right on desktop -->
+       <div class="order-1 lg:order-2">
+         <%= render 'suggestions', is_refined: @show_refined_message %>
+       </div>
+       
+       <!-- Refine Form - Second on mobile, left on desktop -->
+       <div class="bg-white rounded-xl sm:rounded-2xl shadow-lg p-3 sm:p-6 lg:p-8 order-2 lg:order-1 overflow-hidden">
         <h2 class="text-base sm:text-xl font-semibold text-gray-900 mb-3 sm:mb-6">Refine Suggestions</h2>
         
         <% if debug_mode? %>
@@ -98,14 +103,9 @@
                </a>
              </div>
            </div>
-        <% end %>
-      </div>
-      
-      <!-- Right Column: Book Suggestions -->
-      <div class="order-2 lg:order-1">
-        <%= render 'suggestions', is_refined: @show_refined_message %>
-      </div>
-    </div>
+                 <% end %>
+       </div>
+     </div>
   </div>
 </div>
 
@@ -176,81 +176,7 @@
     }
   }
   
-  // Handle feedback button clicks
-  document.addEventListener('click', function(e) {
-    if (e.target.classList.contains('feedback-btn')) {
-      console.log('Feedback button clicked:', e.target.dataset);
-      const bookTitle = e.target.dataset.bookTitle;
-      const bookAuthor = e.target.dataset.bookAuthor;
-      const feedback = e.target.dataset.feedback;
-      
-      console.log('Feedback submitted:', { bookTitle, bookAuthor, feedback });
-      
-      // Check if user is signed in
-      const isSignedIn = <%= user_signed_in? ? 'true' : 'false' %>;
-      
-      if (!isSignedIn) {
-        // Show signup popup for unlogged users
-        alert('Please sign up to save your feedback and get better recommendations!');
-        return;
-      }
-      
-      // Visual feedback
-      e.target.classList.add('scale-110');
-      setTimeout(() => {
-        e.target.classList.remove('scale-110');
-      }, 200);
-      
-      // Submit feedback to server
-      const formData = new FormData();
-      formData.append('book_title', bookTitle);
-      formData.append('book_author', bookAuthor);
-      formData.append('feedback_type', feedback);
-      formData.append('context', document.querySelector('textarea[name="context"]')?.value || '');
-      
-      // Debug CSRF token
-      const csrfToken = document.querySelector('meta[name="csrf-token"]')?.getAttribute('content');
-      console.log('CSRF Token found for feedback:', csrfToken ? 'Yes' : 'No');
-      if (!csrfToken) {
-        console.error('CSRF token not found for feedback!');
-        alert('CSRF token missing. Please refresh the page.');
-        return;
-      }
-      
-      fetch('/recommendations/feedback', {
-        method: 'POST',
-        body: formData,
-        headers: {
-          'X-CSRF-Token': csrfToken
-        }
-      })
-      .then(response => {
-        if (response.ok) {
-          // Show appropriate message based on feedback type
-          const feedbackMessages = {
-            'like': 'Thanks! We\'ll recommend more like this.',
-            'dislike': 'Got it! We\'ll avoid similar books.',
-            'save': 'Book saved to your reading list!',
-            'more_info': 'Book details expanded!'
-          };
-          
-          alert(feedbackMessages[feedback] || 'Feedback recorded!');
-          
-          // If it's a save action, update the button to show it's saved
-          if (feedback === 'save') {
-            e.target.classList.add('text-blue-600');
-            e.target.title = 'Saved to reading list';
-          }
-        } else {
-          alert('Error saving feedback. Please try again.');
-        }
-      })
-      .catch(error => {
-        console.error('Error:', error);
-        alert('Error saving feedback. Please try again.');
-      });
-    }
-  });
+
   
   // Handle refine button loading state - Same as main form
   const refineForm = document.querySelector('form[action*="refine"]');
@@ -296,23 +222,41 @@
       margin-bottom: 0.75rem;
     }
     
-    /* Ensure form doesn't overflow on mobile */
-    .bg-white.rounded-xl {
-      max-width: 100%;
-      overflow-x: hidden;
-    }
-    
-    /* Ensure buttons don't overflow */
-    button, a {
-      max-width: 100%;
-      word-wrap: break-word;
-    }
-    
-    /* Ensure textarea doesn't overflow */
-    textarea {
-      max-width: 100%;
-      box-sizing: border-box;
-    }
+         /* Ensure form doesn't overflow on mobile */
+     .bg-white.rounded-xl {
+       max-width: 100%;
+       overflow-x: hidden;
+     }
+     
+     /* Ensure buttons don't overflow */
+     button, a {
+       max-width: 100%;
+       word-wrap: break-word;
+     }
+     
+     /* Ensure textarea doesn't overflow */
+     textarea {
+       max-width: 100%;
+       box-sizing: border-box;
+     }
+     
+     /* Ensure suggestions don't overflow on mobile */
+     .order-1.lg\\:order-2 {
+       max-width: 100%;
+       overflow-x: hidden;
+     }
+     
+     /* Ensure book cards don't overflow */
+     .bg-gray-50, .bg-white.rounded-lg {
+       max-width: 100%;
+       overflow-x: hidden;
+     }
+     
+     /* Ensure all content respects container width */
+     .max-w-7xl {
+       max-width: 100%;
+       overflow-x: hidden;
+     }
   }
   
   /* Smooth transitions */
@@ -320,8 +264,55 @@
     transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
   }
   
-  /* Active states for mobile */
-  .refinement-chip:active {
-    transform: scale(0.95);
-  }
+     /* Active states for mobile */
+   .refinement-chip:active {
+     transform: scale(0.95);
+   }
+   
+   /* Global overflow prevention */
+   * {
+     box-sizing: border-box;
+   }
+   
+   /* Ensure all content fits within container */
+   .min-h-screen > * {
+     max-width: 100%;
+   }
+   
+   /* Force all elements to respect viewport width on mobile */
+   @media (max-width: 640px) {
+     body, html {
+       overflow-x: hidden;
+       max-width: 100vw;
+     }
+     
+     .min-h-screen {
+       max-width: 100vw;
+       overflow-x: hidden;
+     }
+     
+     .max-w-7xl {
+       max-width: 100vw !important;
+       overflow-x: hidden;
+       padding-left: 0.75rem !important;
+       padding-right: 0.75rem !important;
+     }
+     
+     .grid {
+       max-width: 100vw;
+       overflow-x: hidden;
+     }
+     
+     /* Force all direct children to respect width */
+     .grid > * {
+       max-width: 100vw !important;
+       overflow-x: hidden;
+     }
+     
+     /* Ensure no element can overflow */
+     div, section, article, aside, header, footer, main {
+       max-width: 100vw !important;
+       overflow-x: hidden;
+     }
+   }
 </style>

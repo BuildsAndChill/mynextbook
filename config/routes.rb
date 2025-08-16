@@ -11,7 +11,6 @@ Rails.application.routes.draw do
   resources :books do
     collection do
       get :next_book   # Page de suggestion
-      post :feedback   # Réception du feedback
     end
   end
 
