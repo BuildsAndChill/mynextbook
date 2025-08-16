@@ -1,7 +1,7 @@
-<div class="min-h-screen bg-gradient-to-br from-indigo-50 via-white to-purple-50">
+    <div class="min-h-screen bg-gradient-to-br from-indigo-50 via-white to-purple-50">
   <!-- Hero Section -->
   <div class="relative overflow-hidden">
-    <div class="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-24">
+      <div class="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-16 sm:py-20 md:py-24">
       <div class="text-center">
         <!-- Hero Icon -->
         <div class="mx-auto h-20 w-20 mb-8 flex items-center justify-center rounded-full bg-gradient-to-r from-indigo-500 to-purple-600">
@@ -11,24 +11,24 @@
         </div>
 
         <!-- Hero Headline -->
-        <h1 class="text-4xl md:text-5xl font-bold text-gray-900 mb-6">
+        <h1 class="text-3xl sm:text-4xl md:text-5xl font-bold text-gray-900 mb-4 sm:mb-6 leading-tight">
           What should you read next?
         </h1>
         
         <!-- Hero Subtitle -->
-        <p class="text-lg md:text-xl text-gray-600 mb-12 max-w-2xl mx-auto">
+        <p class="text-base sm:text-lg md:text-xl text-gray-600 mb-8 sm:mb-12 max-w-2xl mx-auto px-2">
           Tell us your mood, we'll find your next book in 30 seconds. 
           <span class="font-semibold text-indigo-600">No account required.</span>
         </p>
 
         <!-- Mood Input Form - Sleek Design -->
         <div class="max-w-xl mx-auto mb-8 sm:mb-12">
-          <!-- Desktop Form -->
-          <div id="desktop-form" class="desktop-form">
-            <%= form_with url: recommendations_path, method: :post, local: true, class: "space-y-5 sm:space-y-6", data: { turbo: false } do %>
+          <!-- Enhanced Form for All Devices -->
+          <div id="main-form" class="main-form">
+            <%= form_with url: recommendations_path, method: :post, local: true, class: "space-y-6", data: { turbo: false } do %>
               <!-- Context Textarea -->
               <div>
-                <label class="block text-sm font-medium text-gray-700 mb-2 text-left">Describe your reading mood</label>
+                <label class="block text-sm font-medium text-gray-700 mb-3 text-left">Describe your reading mood</label>
                 <%= text_area_tag :context, nil, 
                     rows: 4, 
                     class: "block w-full border-gray-300 rounded-xl shadow-sm focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 text-base resize-none transition-all duration-200",
@@ -37,14 +37,14 @@
                 <p class="mt-2 text-sm text-gray-500 text-left">Be specific about genre, tone, length, or what you want to explore next</p>
               </div>
 
-              <!-- Tone Chips -->
+              <!-- Compact Tone Chips -->
               <div>
-                <label class="block text-sm font-medium text-gray-700 mb-3 text-left">Tone & Style</label>
-                <div class="grid grid-cols-2 sm:flex sm:flex-wrap gap-3 justify-center">
+                <label class="block text-sm font-medium text-gray-700 mb-2 text-left">Tone & Style</label>
+                <div class="flex flex-wrap gap-2 justify-center">
                   <% ['Deep dive', 'Fast-paced', 'Optimistic', 'Thoughtful', 'Adventure', 'Cozy', 'Challenging', 'Light'].each do |tone| %>
                     <label class="relative">
                       <%= check_box_tag 'tone_chips[]', tone, false, class: 'sr-only' %>
-                      <span class="inline-flex items-center justify-center w-full px-4 py-3 rounded-xl text-sm font-medium bg-gray-50 border-2 border-gray-200 text-gray-600 cursor-pointer hover:bg-indigo-50 hover:border-indigo-300 hover:text-indigo-700 transition-all duration-200 active:scale-95">
+                      <span class="inline-flex items-center justify-center px-3 py-2 rounded-lg text-sm font-medium bg-gray-50 border border-gray-200 text-gray-600 cursor-pointer hover:bg-indigo-50 hover:border-indigo-300 hover:text-indigo-700 transition-all duration-200 active:scale-95">
                         <%= tone %>
                       </span>
                     </label>
@@ -52,8 +52,8 @@
                 </div>
               </div>
 
-              <!-- Submit Button - Sleek Design -->
-              <button type="submit" id="home-submit-button" class="w-full bg-gradient-to-r from-indigo-600 to-purple-600 text-white py-4 px-6 rounded-xl font-semibold text-lg hover:from-indigo-700 hover:to-purple-700 transition-all duration-200 flex items-center justify-center shadow-lg hover:shadow-xl active:scale-95">
+              <!-- Submit Button - Enhanced Design -->
+              <button type="submit" id="home-submit-button" class="w-full bg-gradient-to-r from-indigo-600 to-purple-600 text-white py-4 px-6 rounded-xl font-semibold text-lg hover:from-indigo-700 hover:to-purple-700 transition-all duration-200 flex items-center justify-center shadow-lg hover:shadow-xl active:scale-95 transform hover:-translate-y-0.5">
                 <svg class="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6v6m0 0v6m0-6h6m-6 0H6"></path>
                 </svg>
@@ -62,42 +62,7 @@
             <% end %>
           </div>
 
-          <!-- Mobile CTA -->
-          <div id="mobile-cta" class="mobile-cta">
-            <div class="text-center p-6 bg-gradient-to-r from-indigo-50 to-purple-50 rounded-2xl border border-indigo-100">
-                          <!-- TEMPORAIREMENT DÉSACTIVÉ: Interface chat UX
-            <div class="mb-4">
-              <div class="mx-auto h-16 w-16 flex items-center justify-center rounded-full bg-gradient-to-r from-indigo-500 to-purple-600 mb-4">
-                <svg class="h-8 w-8 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8s9 3.582 9 8z"/>
-                </svg>
-              </div>
-              <h3 class="text-xl font-semibold text-gray-900 mb-2">Chat with your AI Librarian</h3>
-              <p class="text-gray-600 mb-4">Simpler, natural conversation, instant recommendations</p>
-            </div>
-            
-            <a href="/recommendations/chat" 
-                data-turbo="false"
-                class="inline-flex items-center justify-center w-full bg-gradient-to-r from-indigo-600 to-purple-600 text-white py-3 px-6 rounded-lg font-medium text-base hover:from-indigo-700 hover:to-purple-700 transition-all duration-200 shadow-sm">
-              <svg class="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 12h.01M12 12h.01M16 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8s9 3.582 9 8z"/>
-              </svg>
-              Start Conversation
-            </a>
-            -->
-            
-            <!-- TEMPORAIRE: Section remplacée par un message informatif -->
-            <div class="mb-4">
-              <div class="mx-auto h-16 w-16 flex items-center justify-center rounded-full bg-gradient-to-r from-blue-500 to-green-600 mb-4">
-                <svg class="h-8 w-8 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"/>
-                </svg>
-              </div>
-              <h3 class="text-xl font-semibold text-gray-900 mb-2">Enhanced Form Experience</h3>
-              <p class="text-gray-600 mb-4">We're improving our recommendation form for all devices. Mobile chat coming soon!</p>
-            </div>
-            </div>
-          </div>
+
         </div>
 
         <!-- Quick Tips - Sleek Design -->
@@ -500,7 +465,7 @@ document.addEventListener('DOMContentLoaded', function() {
     }
   }
 
-  // Toast notification function
+    // Toast notification function
   function showToast(message, type = 'info') {
     // Create toast element
     const toast = document.createElement('div');
@@ -526,34 +491,48 @@ document.addEventListener('DOMContentLoaded', function() {
       }, 300);
     }, 3000);
   }
+
+  // Simple tone chip toggle functionality
+  document.addEventListener('DOMContentLoaded', function() {
+    const toneChips = document.querySelectorAll('input[name="tone_chips[]"]');
+    
+    toneChips.forEach(checkbox => {
+      const chipSpan = checkbox.nextElementSibling;
+      
+      chipSpan.addEventListener('click', function() {
+        checkbox.checked = !checkbox.checked;
+        
+        // Visual feedback
+        if (checkbox.checked) {
+          this.classList.add('bg-indigo-100', 'border-indigo-400', 'text-indigo-700');
+        } else {
+          this.classList.remove('bg-indigo-100', 'border-indigo-400', 'text-indigo-700');
+        }
+      });
+    });
+  });
 });
 </script>
 
 <style>
-/* Responsive form display - TEMPORAIREMENT: Formulaire principal visible sur tous les appareils */
-.desktop-form {
-  display: block !important; /* Toujours visible maintenant */
+/* Enhanced form display - Main form visible on all devices */
+.main-form {
+  display: block !important; /* Always visible now */
 }
 
 .mobile-cta {
-  display: none !important; /* Masqué temporairement */
+  display: none !important; /* Hidden temporarily */
 }
 
-/* Mobile-specific improvements */
+/* Enhanced mobile improvements */
 @media (max-width: 640px) {
-  .desktop-form {
+  .main-form {
     padding: 0 0.5rem;
-  }
-  
-  /* Better touch targets for mobile */
-  input[type="checkbox"] + span {
-    min-height: 44px;
-    min-width: 44px;
   }
   
   /* Improved button sizing for mobile */
   button[type="submit"] {
-    min-height: 48px;
+    min-height: 52px;
     font-size: 1.1rem;
   }
   
@@ -562,6 +541,11 @@ document.addEventListener('DOMContentLoaded', function() {
     min-height: 120px;
     font-size: 1rem;
   }
+}
+
+/* Smooth transitions for interactive elements */
+button, textarea, input[type="checkbox"] {
+  transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
 }
 
 /* TODO: Réactiver la logique responsive après refactor du chat UX */
