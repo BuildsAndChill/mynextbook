@@ -185,9 +185,25 @@ class RecommendationsController < ApplicationController
     context = params[:context]
     
     Rails.logger.info "Refining recommendation with: #{refinement_text}"
+    Rails.logger.info "Context: #{context}"
     
-    # Build refined prompt with context conservation
-    @user_prompt = build_refined_prompt(context, refinement_text)
+    # Try to get previous recommendations from session storage
+    previous_recommendations = nil
+    if session[:recommendation_session_id]
+      Rails.logger.info "Found recommendation_session_id: #{session[:recommendation_session_id]}"
+      stored_data = TemporaryRecommendationStorage.retrieve(session[:recommendation_session_id])
+      if stored_data && stored_data[:parsed_response]
+        previous_recommendations = stored_data[:parsed_response]
+        Rails.logger.info "Retrieved previous recommendations from storage: #{previous_recommendations.inspect}"
+      else
+        Rails.logger.info "No stored data found for session_id: #{session[:recommendation_session_id]}"
+      end
+    else
+      Rails.logger.info "No recommendation_session_id found in session"
+    end
+    
+    # Build refined prompt with context conservation and previous recommendations
+    @user_prompt = build_refined_prompt(context, refinement_text, {}, previous_recommendations)
     
     # Get new AI recommendation
     begin
@@ -417,8 +433,16 @@ class RecommendationsController < ApplicationController
 
 
 
-  def build_refined_prompt(original_context, refinement_text, user_feedback = {})
+  def build_refined_prompt(original_context, refinement_text, user_feedback = {}, previous_recommendations = {})
     # Build a refined prompt that conserves context and adds refinement
+    Rails.logger.info "=== build_refined_prompt DEBUG ==="
+    Rails.logger.info "original_context: #{original_context.inspect}"
+    Rails.logger.info "refinement_text: #{refinement_text.inspect}"
+    Rails.logger.info "user_feedback: #{user_feedback.inspect}"
+    Rails.logger.info "previous_recommendations: #{previous_recommendations.inspect}"
+    Rails.logger.info "previous_recommendations[:picks]: #{previous_recommendations&.dig(:picks)&.inspect}"
+    Rails.logger.info "=== END DEBUG ==="
+    
     prompt = "You are a knowledgeable book recommendation expert. The user wants to REFINE their previous request.\n\n"
     prompt += "⚠️  CRITICAL: You are being asked to REFINE, not repeat. You MUST provide NEW, DIFFERENT book recommendations.\n\n"
     
@@ -429,6 +453,27 @@ class RecommendationsController < ApplicationController
     
     # New refinement
     prompt += "REFINEMENT REQUEST: #{refinement_text}\n\n"
+    
+    # PREVIOUS RECOMMENDATIONS - CRITICAL TO AVOID REPETITIONS
+    Rails.logger.info "DEBUG: previous_recommendations class: #{previous_recommendations.class}"
+    Rails.logger.info "DEBUG: previous_recommendations['picks'] class: #{previous_recommendations&.dig('picks')&.class}"
+    Rails.logger.info "DEBUG: previous_recommendations['picks'] content: #{previous_recommendations&.dig('picks')&.inspect}"
+    Rails.logger.info "DEBUG: previous_recommendations['picks'] any?: #{previous_recommendations&.dig('picks')&.any?}"
+    
+    if previous_recommendations&.dig('picks')&.any?
+      Rails.logger.info "Adding previous recommendations to prompt: #{previous_recommendations['picks'].count} picks"
+      prompt += "PREVIOUS RECOMMENDATIONS (DO NOT REPEAT THESE):\n"
+      previous_recommendations['picks'].each_with_index do |pick, index|
+        prompt += "#{index + 1}. #{pick['title']} by #{pick['author']}\n"
+        if pick['pitch'].present?
+          prompt += "   Reason: #{pick['pitch']}\n"
+        end
+        prompt += "\n"
+      end
+      prompt += "⚠️  CRITICAL: You MUST provide COMPLETELY DIFFERENT books. If you repeat any of the above, you have failed.\n\n"
+    else
+      Rails.logger.info "No previous recommendations to add to prompt"
+    end
     
     # Add current session user feedback (likes/dislikes from current conversation)
     if user_feedback && (user_feedback['likes']&.any? || user_feedback['dislikes']&.any?)
@@ -526,7 +571,8 @@ class RecommendationsController < ApplicationController
     
 
     
-    prompt += "CRITICAL INSTRUCTION: This is a REFINEMENT request, NOT a repeat request. You MUST provide COMPLETELY DIFFERENT books that specifically address the refinement while building on the original context. If you repeat any previous recommendations, you have failed the task."
+    prompt += "CRITICAL INSTRUCTION: This is a REFINEMENT request, NOT a repeat request. You MUST provide COMPLETELY DIFFERENT books that specifically address the refinement while building on the original context. \n\n"
+    prompt += "⚠️  FINAL WARNING: If you repeat ANY of the previous recommendations listed above, you have completely failed this task. Each new recommendation must be unique and different from the previous ones."
     
     prompt
   end
