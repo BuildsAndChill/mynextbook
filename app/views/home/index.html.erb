@@ -31,7 +31,7 @@
                 <label class="block text-sm font-medium text-gray-700 mb-2 text-left">Describe your reading mood</label>
                 <%= text_area_tag :context, nil, 
                     rows: 3, 
-                    class: "block w-full border-gray-300 rounded-lg shadow-sm focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm resize-none",
+                    class: "block w-full border-gray-300 rounded-lg shadow-sm focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm resize-none",
                     placeholder: "e.g. 'After Sapiens, I want tech & society, optimistic tone, 250–350 pages'",
                     required: true %>
                 <p class="mt-2 text-sm text-gray-500 text-left">Be specific about genre, tone, length, or what you want to explore next</p>
@@ -53,10 +53,7 @@
               </div>
 
               <!-- Submit Button - Sleek Design -->
-              <button type="submit" class="w-full bg-gradient-to-r from-indigo-600 to-purple-600 text-white py-3 px-6 rounded-lg font-medium text-base hover:from-indigo-700 hover:to-purple-700 transition-all duration-200 flex items-center justify-center shadow-sm">
-                <svg class="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9.663 17h4.673M12 3v1m6.364 1.636l-.707.707M21 12h-1M4 12H3m3.343-5.657l-.707-.707m2.828 9.9a5 5 0 117.072 0l-.548.547A3.374 3.374 0 0014 18.469V19a2 2 0 11-4 0v-.531c0-.895-.356-1.754-.988-2.386l-.548-.547z"></path>
-                </svg>
+              <button type="submit" id="home-submit-button" class="w-full bg-gradient-to-r from-indigo-600 to-purple-600 text-white py-3 px-6 rounded-lg font-medium text-base hover:from-indigo-700 hover:to-purple-700 transition-all duration-200 flex items-center justify-center shadow-sm">
                 Get My Next Book
               </button>
             <% end %>
@@ -126,7 +123,7 @@
               data-turbo="false"
               class="inline-flex items-center px-4 py-2 border border-gray-300 text-sm font-medium rounded-lg text-gray-700 bg-white hover:bg-gray-50 transition-colors duration-200">
             <svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z"/>
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8s9 3.582 9 8z"/>
             </svg>
             Try Chat Interface
           </a>
@@ -367,13 +364,14 @@ document.addEventListener('DOMContentLoaded', function() {
       
       // Show loading state
       const submitBtn = form.querySelector('button[type="submit"]');
-      showButtonLoading(submitBtn, 'Getting recommendations...');
+      const originalText = submitBtn.innerHTML;
+      submitBtn.innerHTML = '<svg class="animate-spin -ml-1 mr-3 h-5 w-5 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24"><circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle><path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path></svg>Getting recommendations...';
+      submitBtn.disabled = true;
       
       // Re-enable button after a delay (in case of errors)
       setTimeout(() => {
-        if (submitBtn.disabled) {
-          hideButtonLoading(submitBtn);
-        }
+        submitBtn.innerHTML = originalText;
+        submitBtn.disabled = false;
       }, 10000);
     });
   }
