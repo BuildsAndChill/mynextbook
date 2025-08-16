@@ -51,33 +51,7 @@ class RecommendationsController < ApplicationController
     include_history = params[:include_history] == '1'
     refinement = params[:refinement]
     
-    # SIGNUP WALL: Check if user wants to include reading history
-    if include_history && !user_signed_in?
-      Rails.logger.info "Signup wall triggered: unauthenticated user wants to include reading history in new search"
-      
-      # Track signup wall shown
-      track_user_action('signup_wall_shown', {
-        action: 'new_search_with_history_attempted',
-        context: context,
-        tone_chips: tone_chips,
-        include_history: true
-      })
-      
-      # Return JSON response to trigger signup modal
-      render json: {
-        action: 'show_signup_wall',
-        message: 'Crée ton compte pour utiliser ton historique de lecture et obtenir des recommandations personnalisées',
-        title: 'Personnaliser avec ton historique',
-        benefits: [
-          'Importer tes lectures Goodreads',
-          'Ajouter tes livres manuellement',
-          'Recommandations basées sur tes goûts réels'
-        ],
-        cta_text: 'Créer mon compte',
-        redirect_url: new_user_registration_path
-      }
-      return
-    end
+
     
     # Clear previous session feedback for new recommendation context
     session.delete(:current_feedback) if context.present? && context != session[:last_context]
