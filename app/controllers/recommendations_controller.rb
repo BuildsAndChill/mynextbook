@@ -215,8 +215,7 @@ class RecommendationsController < ApplicationController
       session[:refined_session_id] = session_id
       Rails.logger.info "Stored refined_session_id: #{session_id}"
       
-      # Show success message
-      flash[:notice] = "Recommendations refined! Here are new suggestions based on: '#{refinement_text}'"
+      # No need for flash message - the new suggestions speak for themselves
       
       # For signed-in users, we could return JSON, but let's redirect to new for consistency
       # This ensures the refined data is always displayed through the new action
@@ -488,39 +487,42 @@ class RecommendationsController < ApplicationController
 
     end
     
-    # Structured output request
-    prompt += "RESPONSE FORMAT - Please follow EXACTLY:\n\n"
+    # ULTRA-STRICT FORMAT - Impossible to misinterpret
+    prompt += "RESPONSE FORMAT - Follow EXACTLY, no variations allowed:\n\n"
     
     prompt += "BRIEF:\n"
-    prompt += "What you tend to like:\n"
+    prompt += "LIKES:\n"
     prompt += "- [First preference point]\n"
     prompt += "- [Second preference point]\n"
     prompt += "- [Third preference point]\n\n"
     
-    prompt += "What to explore next:\n"
+    prompt += "EXPLORE:\n"
     prompt += "- [First exploration suggestion]\n"
     prompt += "- [Second exploration suggestion]\n"
     prompt += "- [Third exploration suggestion]\n\n"
     
-    prompt += "Pitfalls to avoid:\n"
+    prompt += "AVOID:\n"
     prompt += "- [First pitfall to avoid]\n"
     prompt += "- [Second pitfall to avoid]\n\n"
     
-    prompt += "TOP PICKS:\n"
-    prompt += "1. [EXACT BOOK TITLE] by [EXACT AUTHOR NAME]\n"
-    prompt += "Pitch: [2-line explanation of why this book fits the REFINEMENT]\n"
-    prompt += "Why: [Specific reason tied to refinement request and original context]\n"
-    prompt += "Confidence: [High/Medium/Low]\n\n"
+    prompt += "BOOKS:\n"
+    prompt += "1. TITLE: [Exact book title]\n"
+    prompt += "   AUTHOR: [Exact author name]\n"
+    prompt += "   PITCH: [2-line explanation of why this book fits the REFINEMENT]\n"
+    prompt += "   WHY: [Specific reason tied to refinement request and original context]\n"
+    prompt += "   CONFIDENCE: [High/Medium/Low]\n\n"
     
-    prompt += "2. [EXACT BOOK TITLE] by [EXACT AUTHOR NAME]\n"
-    prompt += "Pitch: [2-line explanation of why this book fits the REFINEMENT]\n"
-    prompt += "Why: [Specific reason tied to refinement request and original context]\n"
-    prompt += "Confidence: [High/Medium/Low]\n\n"
+    prompt += "2. TITLE: [Exact book title]\n"
+    prompt += "   AUTHOR: [Exact author name]\n"
+    prompt += "   PITCH: [2-line explanation of why this book fits the REFINEMENT]\n"
+    prompt += "   WHY: [Specific reason tied to refinement request and original context]\n"
+    prompt += "   CONFIDENCE: [High/Medium/Low]\n\n"
     
-    prompt += "3. [EXACT BOOK TITLE] by [EXACT AUTHOR NAME]\n"
-    prompt += "Pitch: [2-line explanation of why this book fits the REFINEMENT]\n"
-    prompt += "Why: [Specific reason tied to refinement request and original context]\n"
-    prompt += "Confidence: [High/Medium/Low]\n\n"
+    prompt += "3. TITLE: [Exact book title]\n"
+    prompt += "   AUTHOR: [Exact author name]\n"
+    prompt += "   PITCH: [2-line explanation of why this book fits the REFINEMENT]\n"
+    prompt += "   WHY: [Specific reason tied to refinement request and original context]\n"
+    prompt += "   CONFIDENCE: [High/Medium/Low]\n\n"
     
 
     
@@ -609,42 +611,43 @@ class RecommendationsController < ApplicationController
     # This ensures new requests are clean and independent
     # Refinement history is handled separately in build_refined_prompt
     
-    # Structured output request with strict formatting
-    prompt += "RESPONSE FORMAT - Please follow EXACTLY:\n\n"
+    # ULTRA-STRICT FORMAT - Impossible to misinterpret
+    prompt += "RESPONSE FORMAT - Follow EXACTLY, no variations allowed:\n\n"
     prompt += "BRIEF:\n"
-    prompt += "What you tend to like:\n"
+    prompt += "LIKES:\n"
     prompt += "- [First preference point]\n"
     prompt += "- [Second preference point]\n"
     prompt += "- [Third preference point]\n\n"
     
-    prompt += "What to explore next:\n"
+    prompt += "EXPLORE:\n"
     prompt += "- [First exploration suggestion]\n"
     prompt += "- [Second exploration suggestion]\n"
     prompt += "- [Third exploration suggestion]\n\n"
     
-    prompt += "Pitfalls to avoid:\n"
+    prompt += "AVOID:\n"
     prompt += "- [First pitfall to avoid]\n"
     prompt += "- [Second pitfall to avoid]\n\n"
     
-    prompt += "CRITICAL: Each preference must be on a separate line with its own dash (-). Do NOT combine multiple preferences on the same line with dashes.\n\n"
+    prompt += "BOOKS:\n"
+    prompt += "1. TITLE: [Exact book title]\n"
+    prompt += "   AUTHOR: [Exact author name]\n"
+    prompt += "   PITCH: [2-line explanation of why this book fits]\n"
+    prompt += "   WHY: [Specific reason tied to preferences]\n"
+    prompt += "   CONFIDENCE: [High/Medium/Low]\n\n"
     
-    prompt += "TOP PICKS:\n"
-    prompt += "1. [EXACT BOOK TITLE] by [EXACT AUTHOR NAME]\n"
-    prompt += "Pitch: [2-line explanation of why this book fits]\n"
-    prompt += "Why: [Specific reason tied to reading history or context]\n"
-    prompt += "Confidence: [High/Medium/Low]\n\n"
+    prompt += "2. TITLE: [Exact book title]\n"
+    prompt += "   AUTHOR: [Exact author name]\n"
+    prompt += "   PITCH: [2-line explanation of why this book fits]\n"
+    prompt += "   WHY: [Specific reason tied to preferences]\n"
+    prompt += "   CONFIDENCE: [High/Medium/Low]\n\n"
     
-    prompt += "2. [EXACT BOOK TITLE] by [EXACT AUTHOR NAME]\n"
-    prompt += "Pitch: [2-line explanation of why this book fits]\n"
-    prompt += "Why: [Specific reason tied to reading history or context]\n"
-    prompt += "Confidence: [High/Medium/Low]\n\n"
+    prompt += "3. TITLE: [Exact book title]\n"
+    prompt += "   AUTHOR: [Exact author name]\n"
+    prompt += "   PITCH: [2-line explanation of why this book fits]\n"
+    prompt += "   WHY: [Specific reason tied to preferences]\n"
+    prompt += "   CONFIDENCE: [High/Medium/Low]\n\n"
     
-    prompt += "3. [EXACT BOOK TITLE] by [EXACT AUTHOR NAME]\n"
-    prompt += "Pitch: [2-line explanation of why this book fits]\n"
-    prompt += "Why: [Specific reason tied to reading history or context]\n"
-    prompt += "Confidence: [High/Medium/Low]\n\n"
-    
-    prompt += "IMPORTANT: Follow this exact format. Use real book titles and authors. Make confidence assessments based on how well the book matches the user's stated preferences and reading history."
+    prompt += "CRITICAL: Use EXACTLY this format. Each field must be on its own line. Use real book titles and authors."
     
     Rails.logger.info "Final prompt length: #{prompt.length}"
     Rails.logger.info "Final prompt preview: #{prompt.first(200)}..."
@@ -653,47 +656,47 @@ class RecommendationsController < ApplicationController
   end
 
   def parse_ai_response(response)
-    # Try to parse the AI response into structured format
+    # ULTRA-ROBUST PARSING using new strict format
     return { brief: {}, picks: [] } unless response
     
-    Rails.logger.info "=== PARSING AI RESPONSE ==="
+    Rails.logger.info "=== ULTRA-ROBUST PARSING ==="
     Rails.logger.info "Response length: #{response.length}"
     Rails.logger.info "Response contains 'BRIEF:': #{response.include?('BRIEF:')}"
-    Rails.logger.info "Response contains 'TOP PICKS:': #{response.include?('TOP PICKS:')}"
+    Rails.logger.info "Response contains 'BOOKS:': #{response.include?('BOOKS:')}"
     
     parsed = {
       brief: {},
       picks: []
     }
     
-    # Split into sections
+    # Split into sections using new format
     if response.include?("BRIEF:")
-      Rails.logger.info "Found BRIEF section, attempting to split by TOP PICKS:"
+      Rails.logger.info "Found BRIEF section, attempting to split by BOOKS:"
       
-      # More robust splitting
-      if response.include?("TOP PICKS:")
-        sections = response.split("TOP PICKS:")
+      # Split by new BOOKS keyword
+      if response.include?("BOOKS:")
+        sections = response.split("BOOKS:")
         if sections.length >= 2
           brief_section = sections[0]
-          picks_section = sections[1]
+          books_section = sections[1]
           
           Rails.logger.info "Split successful:"
           Rails.logger.info "Brief section length: #{brief_section.length}"
-          Rails.logger.info "Picks section length: #{picks_section.length}"
-          Rails.logger.info "Picks section preview: #{picks_section[0..200]}..."
+          Rails.logger.info "Books section length: #{books_section.length}"
+          Rails.logger.info "Books section preview: #{books_section[0..200]}..."
           
-          # Parse brief sections with FIXED method
-          parsed[:brief][:likes] = extract_bullet_points_fixed(brief_section, "What you tend to like:")
-          parsed[:brief][:explore] = extract_bullet_points_fixed(brief_section, "What to explore next:")
-          parsed[:brief][:avoid] = extract_bullet_points_fixed(brief_section, "Pitfalls to avoid:")
+          # Parse brief sections using new keywords
+          parsed[:brief][:likes] = extract_bullet_points_ultra_robust(brief_section, "LIKES:")
+          parsed[:brief][:explore] = extract_bullet_points_ultra_robust(brief_section, "EXPLORE:")
+          parsed[:brief][:avoid] = extract_bullet_points_ultra_robust(brief_section, "AVOID:")
           
-          # Parse picks with FIXED method
-          parsed[:picks] = extract_book_picks_fixed(picks_section)
+          # Parse books using new ultra-robust method
+          parsed[:picks] = extract_books_ultra_robust(books_section)
         else
           Rails.logger.error "Split failed: expected 2 sections, got #{sections.length}"
         end
       else
-        Rails.logger.error "Response contains BRIEF but not TOP PICKS"
+        Rails.logger.error "Response contains BRIEF but not BOOKS"
       end
     else
       Rails.logger.error "Response does not contain BRIEF section"
@@ -707,8 +710,8 @@ class RecommendationsController < ApplicationController
     parsed
   end
 
-  def extract_bullet_points_fixed(text, section_name)
-    # FIXED VERSION: Extract bullet points properly
+  def extract_bullet_points_ultra_robust(text, section_name)
+    # ULTRA-ROBUST: Extract bullet points using new strict format
     Rails.logger.info "Extracting bullet points for: #{section_name}"
     
     if text.include?(section_name)
@@ -718,10 +721,10 @@ class RecommendationsController < ApplicationController
       start_index = text.index(section_name) + section_name.length
       
       # Find the end by looking for the next section
-      end_index = if section_name == "What you tend to like:"
-                    text.index("What to explore next:") || text.length
-                  elsif section_name == "What to explore next:"
-                    text.index("Pitfalls to avoid:") || text.length
+      end_index = if section_name == "LIKES:"
+                    text.index("EXPLORE:") || text.length
+                  elsif section_name == "EXPLORE:"
+                    text.index("AVOID:") || text.length
                   else
                     text.length
                   end
@@ -729,8 +732,7 @@ class RecommendationsController < ApplicationController
       section_text = text[start_index...end_index].strip
       Rails.logger.info "Section text: '#{section_text}'"
       
-      # IMPROVED: First try to extract by line breaks (proper format)
-      # Look for lines starting with "- " or "-"
+      # ULTRA-ROBUST: Extract by line breaks with strict format
       lines = section_text.split("\n").map(&:strip).reject(&:empty?)
       bullet_points = []
       
@@ -742,12 +744,6 @@ class RecommendationsController < ApplicationController
         end
       end
       
-      # If no bullet points found by line breaks, fall back to dash splitting
-      if bullet_points.empty?
-        Rails.logger.info "No bullet points found by line breaks, falling back to dash splitting"
-        bullet_points = section_text.split(" - ").map(&:strip).reject(&:empty?)
-      end
-      
       Rails.logger.info "Extracted points: #{bullet_points.inspect}"
       bullet_points
     else
@@ -756,68 +752,79 @@ class RecommendationsController < ApplicationController
     end
   end
 
-  def extract_book_picks_fixed(text)
-    # FIXED VERSION: Extract book picks properly
-    Rails.logger.info "Extracting book picks from text: #{text.length} characters"
+  def extract_books_ultra_robust(text)
+    # ULTRA-ROBUST: Extract books using new strict format with keywords
+    Rails.logger.info "Extracting books from text: #{text.length} characters"
     Rails.logger.info "Text preview: '#{text[0..100]}...'"
     
     picks = []
     return picks unless text
     
-    # IMPROVED: More robust regex that handles BOTH formats
-    # Look for: "1. *Title* by Author" OR "1. **Title** by Author"
-    # The key is to handle both single and double asterisks
-    book_pattern = /(\d+)\.\s*\*{1,2}(.+?)\*{1,2}\s*by\s*(.+?)\s*Pitch:\s*(.+?)\s*Why:\s*(.+?)\s*Confidence:\s*(.+?)(?=\d+\.|$)/m
+    # ULTRA-ROBUST: Split by book numbers and extract by keywords
+    book_blocks = text.split(/(?=\d+\.)/)
+    Rails.logger.info "Found #{book_blocks.length} book blocks"
     
-    matches = text.scan(book_pattern)
-    Rails.logger.info "Found #{matches.length} book entries with improved pattern"
-    
-    if matches.empty?
-      Rails.logger.info "Improved pattern failed, trying simpler approach..."
-      # Fallback: just extract title and author with more flexible spacing
-      simple_pattern = /(\d+)\.\s*\*{1,2}(.+?)\*{1,2}\s*by\s*(.+?)(?=\d+\.|$)/m
-      matches = text.scan(simple_pattern)
-      Rails.logger.info "Found #{matches.length} book entries with simple pattern"
-    end
-    
-    matches.each_with_index do |match, index|
-      if match.length >= 6
-        # Full pattern matched
-        number, title, author, pitch, why, confidence = match
-        Rails.logger.info "Processing book #{number} (full match): '#{title}' by '#{author}'"
-      else
-        # Simple pattern matched
-        number, title, author = match
-        Rails.logger.info "Processing book #{number} (simple match): '#{title}' by '#{author}'"
+    book_blocks.each_with_index do |block, index|
+      next if index == 0 # Skip first empty block
+      
+      Rails.logger.info "Processing book block #{index}: '#{block[0..100]}...'"
+      
+      # Extract fields using new keywords
+      title = extract_field_by_keyword(block, "TITLE:")
+      author = extract_field_by_keyword(block, "AUTHOR:")
+      pitch = extract_field_by_keyword(block, "PITCH:")
+      why = extract_field_by_keyword(block, "WHY:")
+      confidence = extract_field_by_keyword(block, "CONFIDENCE:")
+      
+      if title && author
+        pick = {
+          number: index,
+          title: title.strip,
+          author: author.strip,
+          pitch: pitch&.strip || "AI-generated pitch",
+          why: why&.strip || "Based on your preferences",
+          confidence: confidence&.strip || "Medium"
+        }
         
-        # Try to extract fields manually with improved field extraction
-        pitch = extract_field_fixed(text, number, "Pitch:")
-        why = extract_field_fixed(text, number, "Why:")
-        confidence = extract_field_fixed(text, number, "Confidence:")
+        Rails.logger.info "Created pick: #{pick.inspect}"
+        picks << pick
+      else
+        Rails.logger.warn "Book block #{index} missing title or author: title=#{title.inspect}, author=#{author.inspect}"
       end
-      
-      pick = {
-        number: number.to_i,
-        title: title.strip,
-        author: author.strip,
-        pitch: pitch&.strip || "AI-generated pitch",
-        why: why&.strip || "Based on your preferences",
-        confidence: confidence&.strip || "Medium"
-      }
-      
-      Rails.logger.info "Created pick: #{pick.inspect}"
-      picks << pick
     end
     
     Rails.logger.info "Final picks: #{picks.inspect}"
     picks.first(3) # Ensure we only get 3 picks
+  end
+  
+  def extract_field_by_keyword(text, keyword)
+    # ULTRA-ROBUST: Extract field value by keyword
+    return nil unless text.include?(keyword)
+    
+    start_index = text.index(keyword) + keyword.length
+    end_index = text.length
+    
+    # Look for next keyword or end of text
+    next_keywords = ["TITLE:", "AUTHOR:", "PITCH:", "WHY:", "CONFIDENCE:"]
+    next_keywords.each do |next_keyword|
+      if next_keyword != keyword
+        pos = text.index(next_keyword, start_index)
+        if pos && pos < end_index
+          end_index = pos
+        end
+      end
+    end
+    
+    value = text[start_index...end_index].strip
+    Rails.logger.info "Extracted #{keyword}: '#{value}'"
+    value
   end
 
   def extract_field_fixed(text, book_number, field_name)
     # IMPROVED VERSION: Extract individual fields with better handling
     Rails.logger.info "Extracting #{field_name} for book #{book_number}"
     
-    # Find the book section first - handle both * and ** formats
+    # Find the book section first - handle * and ** formats with optional quotes
     book_start = text.index("#{book_number}. *")
     book_start = text.index("#{book_number}. **") if book_start.nil?
     return nil unless book_start
@@ -846,7 +853,7 @@ class RecommendationsController < ApplicationController
       end
     end
     
-    # Also look for the next book number - handle both * and ** formats
+    # Also look for the next book number - handle * and ** formats with optional quotes
     next_book_in_section = book_section.index(/\d+\.\s*\*{1,2}/, field_start)
     if next_book_in_section && (next_field.nil? || next_book_in_section < next_field)
       next_field = next_book_in_section
