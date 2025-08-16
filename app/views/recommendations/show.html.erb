@@ -59,20 +59,22 @@
       <div class="bg-white rounded-2xl shadow-lg p-8">
         <h2 class="text-xl font-semibold text-gray-900 mb-6">Refine These Suggestions</h2>
         
-        <!-- Debug Info for Refine Form -->
-        <div class="mb-4 p-3 bg-blue-50 border border-blue-200 rounded text-xs">
-          <strong>Refine Form Debug:</strong><br>
-          @ai_response present: <%= @ai_response.present? %><br>
-          @parsed_response present: <%= @parsed_response.present? %><br>
-          @parsed_response keys: <%= @parsed_response&.keys&.inspect %><br>
-          @parsed_response[:picks] count: <%= @parsed_response&.dig(:picks)&.count || 0 %><br>
-          @parsed_response[:picks] first item: <%= @parsed_response&.dig(:picks, 0)&.inspect %><br>
-          @parsed_response[:brief] present: <%= @parsed_response&.dig(:brief).present? %><br>
-          @parsed_response[:brief] keys: <%= @parsed_response&.dig(:brief)&.keys&.inspect %><br>
-          @user_prompt present: <%= @user_prompt.present? %><br>
-          @user_prompt preview: <%= @user_prompt&.truncate(100) %><br>
-          Session refined_session_id: <%= session[:refined_session_id] %>
-        </div>
+        <% if debug_mode? %>
+          <!-- Debug Info for Refine Form -->
+          <div class="mb-4 p-3 bg-blue-50 border border-blue-200 rounded text-xs">
+            <strong>Refine Form Debug:</strong><br>
+            @ai_response present: <%= @ai_response.present? %><br>
+            @parsed_response present: <%= @parsed_response.present? %><br>
+            @parsed_response keys: <%= @parsed_response&.keys&.inspect %><br>
+            @parsed_response[:picks] count: <%= @parsed_response&.dig(:picks)&.count || 0 %><br>
+            @parsed_response[:picks] first item: <%= @parsed_response&.dig(:picks, 0)&.inspect %><br>
+            @parsed_response[:brief] present: <%= @parsed_response&.dig(:brief).present? %><br>
+            @parsed_response[:brief] keys: <%= @parsed_response&.dig(:brief)&.keys&.inspect %><br>
+            @user_prompt present: <%= @user_prompt.present? %><br>
+            @user_prompt preview: <%= @user_prompt&.truncate(100) %><br>
+            Session refined_session_id: <%= session[:refined_session_id] %>
+          </div>
+        <% end %>
         
         <%= form_with url: refine_recommendations_path, method: :post, local: true, class: "space-y-6", data: { turbo: false, controller: "form" } do %>
           <!-- Hidden fields for context -->
