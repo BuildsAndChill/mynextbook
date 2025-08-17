@@ -1,11 +1,11 @@
-<div class="min-h-screen bg-gray-50 py-8">
+<div class="min-h-screen bg-gradient-to-br from-gray-50 via-white to-gray-100 py-8">
   <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
     <!-- Main Content: 2-Column Layout -->
     <div class="grid lg:grid-cols-2 gap-8">
       
       <!-- Left Column: Initial Context Input -->
-      <div class="bg-white rounded-2xl shadow-lg p-8">
-        <h2 class="text-xl font-semibold text-gray-900 mb-6">What are you in the mood for?</h2>
+      <div class="bg-white/90 backdrop-blur-sm rounded-3xl shadow-xl border border-white/20 p-8">
+        <h2 class="text-2xl font-bold text-gray-900 mb-6 text-center lg:text-left">What are you in the mood for?</h2>
         
         <%= form_with url: recommendations_path, method: :post, local: true, class: "space-y-6", data: { turbo: false, controller: "form" } do %>
           <!-- Context Textarea -->
@@ -13,7 +13,7 @@
             <label class="block text-sm font-medium text-gray-700 mb-2">Describe your reading mood</label>
             <%= text_area_tag :context, params[:context], 
                 rows: 4, 
-                class: "block w-full border-gray-300 rounded-lg shadow-sm focus:ring-2 focus:ring-blue-500 focus:border-transparent resize-none",
+                class: "block w-full border-2 border-gray-300 rounded-xl shadow-sm focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 resize-none bg-white",
                 placeholder: "e.g. 'After Sapiens, I want tech & society, optimistic tone, 250–350 pages'",
                 required: true %>
             <p class="mt-2 text-sm text-gray-500">Be specific about genre, tone, length, or what you want to explore next</p>
@@ -26,7 +26,7 @@
               <% ['Deep dive', 'Fast-paced', 'Optimistic', 'Thoughtful', 'Adventure', 'Cozy', 'Challenging', 'Light'].each do |tone| %>
                 <label class="relative">
                   <%= check_box_tag 'tone_chips[]', tone, false, class: 'sr-only' %>
-                  <span class="inline-flex items-center px-3 py-2 rounded-full text-sm font-medium bg-gray-50 border border-gray-200 text-gray-600 cursor-pointer hover:bg-gray-100 transition-colors duration-200">
+                  <span class="inline-flex items-center px-3 py-2 rounded-lg text-sm font-medium bg-white border-2 border-gray-200 text-gray-700 cursor-pointer hover:bg-indigo-50 hover:border-indigo-300 hover:text-indigo-700 transition-all duration-200 shadow-sm">
                     <%= tone %>
                   </span>
                 </label>
@@ -139,8 +139,8 @@
             </div>
           <% end %>
           
-          <!-- Submit Button -->
-          <button type="submit" id="recommendations-button" class="w-full bg-gradient-to-r from-indigo-600 to-purple-600 text-white py-3 px-6 rounded-lg font-semibold hover:from-indigo-700 hover:to-purple-700 transform hover:scale-105 transition-all duration-200 flex items-center justify-center disabled:opacity-50 disabled:cursor-not-allowed">
+          <!-- Submit Button - Harmonized with Landing -->
+          <button type="submit" id="recommendations-button" class="w-full bg-gradient-to-r from-indigo-600 to-purple-600 text-white py-4 px-6 rounded-xl font-semibold text-lg hover:from-indigo-700 hover:to-purple-700 transition-all duration-200 flex items-center justify-center shadow-lg hover:shadow-xl transform hover:scale-105 active:scale-95 disabled:opacity-50 disabled:cursor-not-allowed relative z-10 border-2 border-indigo-700">
             <!-- Spinner (hidden by default) -->
             <svg id="recommendations-spinner" class="hidden w-5 h-5 mr-2 animate-spin" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
