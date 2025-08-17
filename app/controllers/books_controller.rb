@@ -138,37 +138,59 @@ class BooksController < ApplicationController
 
   private
 
-  # Enrich library books with Goodreads data (temporary, no persistence)
+  # Enrich library books with search modifier data (temporary, no persistence)
   def enrich_library_with_goodreads_data(books)
     return unless books.any?
     
-    Rails.logger.info "Enriching library books with Goodreads data (temporary)"
+    search_modifier = ENV.fetch('SEARCH_MODIFIER', 'goodreads')
+    Rails.logger.info "Enriching library books with #{search_modifier} data (temporary)"
     
-    # Enrich each book temporarily with Goodreads data
+    # Enrich each book temporarily with search modifier data
     books.each do |book|
       begin
-        # Add Goodreads data as instance variables (temporary)
+        # Add search modifier data as instance variables (temporary)
         if book.book_metadata&.goodreads_book_id.present?
-          # Goodreads cover URL (if available)
+          # Cover URL (if available)
           book.instance_variable_set(:@goodreads_cover_url, "https://images-na.ssl-images-amazon.com/images/P/#{book.book_metadata.goodreads_book_id}.L.jpg")
           
-          # Goodreads rating (from average_rating)
+          # Rating (from average_rating)
           if book.book_metadata.average_rating.present?
             book.instance_variable_set(:@goodreads_rating, book.book_metadata.average_rating)
           end
           
-          # Goodreads link
-          book.instance_variable_set(:@goodreads_link, "https://www.goodreads.com/book/show/#{book.book_metadata.goodreads_book_id}")
+          # Generate link based on search modifier
+          link = generate_search_link(book, search_modifier)
+          book.instance_variable_set(:@goodreads_link, link)
           
-          Rails.logger.info "Temporarily enriched library book '#{book.book_metadata.title}' with Goodreads data"
+          Rails.logger.info "Temporarily enriched library book '#{book.book_metadata.title}' with #{search_modifier} data"
         end
       rescue => e
-        Rails.logger.error "Failed to enrich Goodreads data for library book '#{book.book_metadata.title}': #{e.message}"
+        Rails.logger.error "Failed to enrich #{search_modifier} data for library book '#{book.book_metadata.title}': #{e.message}"
         # Continue without enrichment - don't block the library display
       end
     end
     
-    Rails.logger.info "Goodreads enrichment completed for library"
+    Rails.logger.info "#{search_modifier} enrichment completed for library"
+  end
+
+  # Generate search link based on modifier
+  def generate_search_link(book, modifier)
+    title = CGI.escape(book.book_metadata.title)
+    author = CGI.escape(book.book_metadata.author)
+    
+    case modifier.downcase
+    when 'amazon'
+      "https://www.amazon.com/s?k=#{title}+#{author}&i=stripbooks"
+    when 'bookdepository'
+      "https://www.bookdepository.com/search?searchTerm=#{title}+#{author}"
+    when 'librairie'
+      "https://www.google.com/search?q=#{title}+#{author}+librairie+paris"
+    when 'goodreads'
+      "https://www.goodreads.com/book/show/#{book.book_metadata.goodreads_book_id}"
+    else
+      # Fallback to Google search with modifier
+      "https://www.google.com/search?q=#{title}+#{author}+#{modifier}"
+    end
   end
 
   def set_book

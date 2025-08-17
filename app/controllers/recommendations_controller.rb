@@ -1016,17 +1016,18 @@ class RecommendationsController < ApplicationController
     end
   end
 
-  # Enrich recommendations with direct links to Goodreads/Amazon
+  # Enrich recommendations with direct links based on SEARCH_MODIFIER
   def enrich_with_direct_links(parsed_response)
     return unless parsed_response&.dig(:picks)&.any?
     
-    Rails.logger.info "Enriching recommendations with direct links..."
+    search_modifier = ENV.fetch('SEARCH_MODIFIER', 'goodreads')
+    Rails.logger.info "Enriching recommendations with direct links using #{search_modifier}..."
     
     # Enrich each book pick with direct links
     parsed_response[:picks].each do |pick|
       begin
-        # Generate search query for this book
-        search_query = "#{pick[:title]} #{pick[:author]} goodreads"
+        # Generate search query for this book using the search modifier
+        search_query = "#{pick[:title]} #{pick[:author]} #{search_modifier}"
         
         # Get the first search result (direct link)
         direct_link = GoogleCustomSearchService.get_first_search_result(search_query)
@@ -1038,13 +1039,13 @@ class RecommendationsController < ApplicationController
       rescue => e
         Rails.logger.error "Failed to get direct link for '#{pick[:title]}': #{e.message}"
         # Fallback to search URL if direct link fails
-        search_url = "https://www.google.com/search?q=#{CGI.escape("#{pick[:title]} #{pick[:author]} goodreads")}"
+        search_url = "https://www.google.com/search?q=#{CGI.escape("#{pick[:title]} #{pick[:author]} #{search_modifier}")}"
         pick[:direct_link] = search_url
         Rails.logger.info "Using fallback search URL for '#{pick[:title]}': #{search_url}"
       end
     end
     
-    Rails.logger.info "Direct links enrichment completed"
+    Rails.logger.info "Direct links enrichment completed using #{search_modifier}"
   end
 
   # Cleanup session data after view is rendered
