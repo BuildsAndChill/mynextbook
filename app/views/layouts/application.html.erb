@@ -43,6 +43,29 @@
           overflow-x: hidden;
         }
       }
+
+      /* Custom styles for user dropdown */
+      #userDropdown {
+        position: absolute !important;
+        z-index: 9999 !important;
+        background: white !important;
+        box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04) !important;
+        border: 1px solid #e5e7eb !important;
+        border-radius: 0.5rem !important;
+      }
+      
+      /* Ensure dropdown is above everything on mobile */
+      @media (max-width: 768px) {
+        #userDropdown {
+          z-index: 99999 !important;
+          position: fixed !important;
+          top: auto !important;
+          right: 1rem !important;
+          left: 1rem !important;
+          width: auto !important;
+          max-width: calc(100vw - 2rem) !important;
+        }
+      }
     </style>
   </head>
 
@@ -71,35 +94,63 @@
 
             <!-- User Menu -->
             <% if user_signed_in? %>
-              <div class="flex items-center space-x-3">
-                <!-- My Library Link -->
-                <%= link_to books_path, 
-                    class: "text-indigo-600 hover:text-indigo-700 px-3 py-2 text-sm font-medium transition-colors duration-200 bg-transparent border border-indigo-200 rounded-lg hover:bg-indigo-50" do %>
-                  <div class="flex items-center">
-                    <svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.747 0 3.332.477 4.5 1.253v13C19.832 18.477 18.246 18 16.5 18c-1.746 0-3.332.477-4.5 1.253"></path>
-                    </svg>
-                    My Library
-                  </div>
-                <% end %>
-                
-                <!-- Temporary direct Sign Out link for testing -->
-                <%= button_to destroy_user_session_path, method: :delete, 
-                    class: "text-red-600 hover:text-red-700 px-3 py-2 text-sm font-medium transition-colors duration-200 bg-transparent border border-red-200 rounded-lg hover:bg-red-50" do %>
-                  <div class="flex items-center">
-                    <svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1"></path>
-                    </svg>
-                    Sign Out
-                  </div>
-                <% end %>
-                
-                <!-- User Avatar (dropdown disabled for now) -->
-                <div class="flex items-center space-x-2 text-gray-700">
+              <div class="relative">
+                <!-- User Avatar Dropdown Trigger -->
+                <button id="userDropdownButton"
+                        class="flex items-center space-x-2 text-gray-700 hover:text-gray-900 transition-colors duration-200 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 rounded-lg p-1">
                   <div class="h-8 w-8 bg-gradient-to-r from-indigo-400 to-purple-500 rounded-full flex items-center justify-center">
                     <span class="text-sm font-medium text-white"><%= current_user.email.first.upcase %></span>
                   </div>
-                  <span class="text-sm font-medium"><%= current_user.email %></span>
+                  <span class="text-sm font-medium hidden sm:block"><%= current_user.email %></span>
+                  <svg class="w-4 h-4 text-gray-400 transition-transform duration-200" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"></path>
+                  </svg>
+                </button>
+                
+                <!-- Dropdown Menu -->
+                <div id="userDropdown" class="absolute right-0 top-full mt-1 w-48 bg-white rounded-lg shadow-lg border border-gray-200 py-1 z-[9999] hidden">
+                  <!-- User Info Header -->
+                  <div class="px-4 py-3 border-b border-gray-100">
+                    <p class="text-sm font-medium text-gray-900"><%= current_user.email %></p>
+                    <p class="text-xs text-gray-500">Signed in</p>
+                  </div>
+                  
+                  <!-- Menu Items -->
+                  <%= link_to books_path, 
+                      class: "flex items-center px-4 py-2 text-sm text-gray-700 hover:bg-gray-50 transition-colors duration-200" do %>
+                    <svg class="w-4 h-4 mr-3 text-indigo-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.747 0 3.332.477 4.5 1.253v13C19.832 18.477 18.246 18 16.5 18c-1.746 0-3.332.477-4.5 1.253"></path>
+                    </svg>
+                    My Library
+                  <% end %>
+                  
+                  <%= link_to new_import_path, 
+                      class: "flex items-center px-4 py-2 text-sm text-gray-700 hover:bg-gray-50 transition-colors duration-200" do %>
+                    <svg class="w-4 h-4 mr-3 text-green-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 16a4 4 0 01-.88-7.903A5 5 0 1115.9 6L16 6a5 5 0 011 9.9M9 19l3 3m0 0l3-3m-3 3V10"></path>
+                    </svg>
+                    Import Books
+                  <% end %>
+                  
+                  <%= link_to recommendations_path, 
+                      class: "flex items-center px-4 py-2 text-sm text-gray-700 hover:bg-gray-50 transition-colors duration-200" do %>
+                    <svg class="w-4 h-4 mr-3 text-purple-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9.663 17h4.673M12 3v1m6.364 1.636l-.707.707M21 12h-1M4 12H3m3.343-5.657l-.707-.707m2.828 9.9a5 5 0 117.072 0l-.548.547A3.374 3.374 0 0014 18.469V19a2 2 0 11-4 0v-.531c0-.895-.356-1.754-.988-2.386l-.548-.547z"></path>
+                    </svg>
+                    Get Recommendations
+                  <% end %>
+                  
+                  <!-- Divider -->
+                  <div class="border-t border-gray-100 my-1"></div>
+                  
+                  <!-- Sign Out -->
+                  <%= button_to destroy_user_session_path, method: :delete, 
+                      class: "w-full text-left flex items-center px-4 py-2 text-sm text-red-600 hover:bg-red-50 transition-colors duration-200" do %>
+                    <svg class="w-4 h-4 mr-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1"></path>
+                    </svg>
+                    Sign Out
+                  <% end %>
                 </div>
               </div>
             <% else %>
@@ -199,52 +250,86 @@
     </footer>
 
     <script>
-      // Simple and reliable user menu dropdown
+      // User dropdown menu functionality
       document.addEventListener('DOMContentLoaded', function() {
-        console.log('DOM loaded, initializing user menu...');
+        console.log('🔍 Initializing user dropdown...');
         
-        const userMenuButton = document.getElementById('user-menu-button');
-        const userMenuDropdown = document.getElementById('user-menu-dropdown');
+        const dropdownButton = document.getElementById('userDropdownButton');
+        const dropdown = document.getElementById('userDropdown');
         
-        console.log('User menu button found:', !!userMenuButton);
-        console.log('User menu dropdown found:', !!userMenuDropdown);
+        console.log('Dropdown button found:', !!dropdownButton);
+        console.log('Dropdown menu found:', !!dropdown);
         
-        if (userMenuButton && userMenuDropdown) {
-          console.log('Setting up user menu event listeners...');
-          
-          // Simple toggle function
-          function toggleMenu() {
-            console.log('Toggle menu called');
-            userMenuDropdown.classList.toggle('hidden');
-            console.log('Dropdown hidden:', userMenuDropdown.classList.contains('hidden'));
-          }
-          
-          // Add click event
-          userMenuButton.addEventListener('click', function(e) {
-            console.log('Button clicked');
-            e.preventDefault();
-            e.stopPropagation();
-            toggleMenu();
-          });
-          
-          // Close when clicking outside
-          document.addEventListener('click', function(e) {
-            if (!userMenuButton.contains(e.target) && !userMenuDropdown.contains(e.target)) {
-              userMenuDropdown.classList.add('hidden');
-            }
-          });
-          
-          // Close when pressing escape
-          document.addEventListener('keydown', function(e) {
-            if (e.key === 'Escape') {
-              userMenuDropdown.classList.add('hidden');
-            }
-          });
-          
-          console.log('User menu event listeners set up successfully');
-        } else {
-          console.error('User menu elements not found!');
+        if (!dropdownButton || !dropdown) {
+          console.error('❌ Missing elements:', { button: !!dropdownButton, dropdown: !!dropdown });
+          return;
         }
+        
+        const arrow = dropdownButton.querySelector('svg');
+        console.log('Arrow found:', !!arrow);
+
+        function toggleDropdown() {
+          console.log('🔄 Toggle dropdown called');
+          console.log('Current hidden state:', dropdown.classList.contains('hidden'));
+          
+          if (dropdown.classList.contains('hidden')) {
+            dropdown.classList.remove('hidden');
+            arrow.style.transform = 'rotate(180deg)';
+            
+            // On mobile, position the dropdown better
+            if (window.innerWidth <= 768) {
+              const buttonRect = dropdownButton.getBoundingClientRect();
+              const dropdownHeight = dropdown.offsetHeight;
+              const viewportHeight = window.innerHeight;
+              
+              // Check if dropdown would go below viewport
+              if (buttonRect.bottom + dropdownHeight > viewportHeight) {
+                // Position above the button
+                dropdown.style.top = 'auto';
+                dropdown.style.bottom = '100%';
+                dropdown.style.marginBottom = '0.5rem';
+              } else {
+                // Position below the button
+                dropdown.style.top = '100%';
+                dropdown.style.bottom = 'auto';
+                dropdown.style.marginTop = '0.5rem';
+              }
+            }
+            
+            console.log('✅ Dropdown opened');
+          } else {
+            dropdown.classList.add('hidden');
+            arrow.style.transform = 'rotate(0deg)';
+            console.log('✅ Dropdown closed');
+          }
+        }
+
+        dropdownButton.addEventListener('click', function(e) {
+          console.log('🎯 Button clicked!');
+          e.preventDefault();
+          e.stopPropagation();
+          toggleDropdown();
+        });
+
+        // Close dropdown when clicking outside
+        document.addEventListener('click', function(e) {
+          if (!dropdownButton.contains(e.target) && !dropdown.contains(e.target)) {
+            console.log('🔄 Click outside, closing dropdown');
+            dropdown.classList.add('hidden');
+            arrow.style.transform = 'rotate(0deg)';
+          }
+        });
+
+        // Close dropdown when pressing escape
+        document.addEventListener('keydown', function(e) {
+          if (e.key === 'Escape') {
+            console.log('🔄 Escape pressed, closing dropdown');
+            dropdown.classList.add('hidden');
+            arrow.style.transform = 'rotate(0deg)';
+          }
+        });
+        
+        console.log('✅ User dropdown initialized successfully');
       });
     </script>
   </body>
