@@ -91,9 +91,10 @@
             <!-- Include Reading History Toggle - Only for unauthenticated users -->
             <% unless user_signed_in? %>
               <div class="mt-4 p-4 bg-blue-50 border border-blue-200 rounded-lg">
-                <label class="flex items-center space-x-3 cursor-pointer">
+                <label class="flex items-center space-x-3 cursor-pointer" onclick="handleHistoryToggle()">
                   <%= check_box_tag :include_history, '1', false, 
-                      class: 'h-4 w-4 text-indigo-600 focus:ring-indigo-500 border-gray-300 rounded' %>
+                      class: 'h-5 w-5 text-indigo-600 focus:ring-indigo-500 border-gray-300 rounded', 
+                      onclick: 'event.preventDefault(); handleHistoryToggle();' %>
                   <div class="flex-1">
                     <span class="text-sm font-medium text-blue-900">Utiliser mon historique de lecture</span>
                     <p class="text-xs text-blue-700 mt-1">
@@ -170,6 +171,26 @@
     // Search for the book on Google Books
     const searchQuery = encodeURIComponent(`${title} ${author}`);
     window.open(`https://www.google.com/search?tbm=bks&q=${searchQuery}`, '_blank');
+  }
+  
+  // Function to handle history toggle click - Show signup wall immediately
+  function handleHistoryToggle() {
+    // Prevent the checkbox from being checked
+    event.preventDefault();
+    
+    // Show signup wall modal immediately
+    showSignupWallModal({
+      action: 'show_signup_wall',
+      message: 'Crée ton compte pour utiliser ton historique de lecture et affiner tes recommandations',
+      title: 'Personnaliser avec ton historique',
+      benefits: [
+        'Importer tes lectures Goodreads',
+        'Ajouter tes livres manuellement',
+        'Recommandations basées sur tes goûts réels'
+      ],
+      cta_text: 'Créer mon compte',
+      redirect_url: '<%= new_user_registration_path %>'
+    });
   }
   
   // Function to add book to library
@@ -463,6 +484,11 @@
         <a id="signup-wall-cta" href="#" 
            class="w-full bg-gradient-to-r from-indigo-600 to-purple-600 text-white py-3 px-6 rounded-lg font-semibold hover:from-indigo-700 hover:to-purple-700 transition-all duration-200 transform hover:scale-105">
           Créer mon compte
+        </a>
+        
+        <a href="<%= new_user_session_path %>" 
+           class="w-full bg-white border-2 border-indigo-600 text-indigo-600 py-3 px-6 rounded-lg font-semibold hover:bg-indigo-50 transition-all duration-200 transform hover:scale-105">
+          Se connecter
         </a>
         
         <button onclick="closeSignupWallModal()" 
