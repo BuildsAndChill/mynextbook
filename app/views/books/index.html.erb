@@ -257,22 +257,41 @@
     <% if @books.any? %>
       <div class="grid gap-4 sm:gap-6 grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
         <% @books.each do |book| %>
-          <div class="bg-white overflow-hidden shadow-sm rounded-xl sm:rounded-2xl border border-gray-100 hover:shadow-lg transition-all duration-300 transform hover:-translate-y-1">
+          <div class="bg-white overflow-hidden shadow-sm rounded-xl sm:rounded-2xl border border-gray-100 hover:shadow-xl transition-all duration-300 transform hover:-translate-y-1 hover:scale-[1.02]">
             <div class="p-4 sm:p-6">
-              <div class="flex items-center justify-between mb-3">
-                <h3 class="text-base sm:text-lg font-semibold text-gray-900 truncate flex-1 mr-3"><%= book.title %></h3>
-                <span class="inline-flex items-center px-2 sm:px-3 py-1 rounded-full text-xs font-medium 
-                  <%= case book.status
-                      when 'to_read' then 'bg-blue-100 text-blue-800'
-                      when 'reading' then 'bg-yellow-100 text-yellow-800'
-                      when 'read' then 'bg-green-100 text-green-800'
-                      else 'bg-gray-100 text-gray-800'
-                      end %>">
-                  <%= book.status.humanize %>
-                </span>
+              <!-- Book Cover and Metadata -->
+              <div class="flex items-start space-x-3 sm:space-x-4 mb-3">
+                <!-- Book Cover - Use Goodreads cover if available, fallback to initials -->
+                <% if book.instance_variable_get(:@goodreads_cover_url).present? %>
+                  <img src="<%= book.instance_variable_get(:@goodreads_cover_url) %>" 
+                       alt="<%= book.title %>" 
+                       class="w-14 h-18 sm:w-16 sm:h-20 object-cover rounded-lg shadow-sm flex-shrink-0"
+                       onerror="this.style.display='none'; this.nextElementSibling.style.display='flex';">
+                <% end %>
+                
+                <!-- Fallback to initials if no cover -->
+                <div class="w-14 h-18 sm:w-16 sm:h-20 bg-gradient-to-br from-indigo-400 to-purple-500 rounded-lg flex items-center justify-center text-white font-bold text-base sm:text-lg flex-shrink-0"
+                     style="display: <%= book.instance_variable_get(:@goodreads_cover_url).present? ? 'none' : 'flex' %>;">
+                  <%= book.title.split(' ').map(&:first).join('').upcase[0..1] %>
+                </div>
+                
+                <div class="flex-1 min-w-0">
+                  <div class="flex items-center justify-between mb-2">
+                    <h3 class="text-base sm:text-lg font-semibold text-gray-900 truncate flex-1 mr-3"><%= book.title %></h3>
+                    <span class="inline-flex items-center px-2 py-1 rounded-full text-xs font-medium
+                      <%= case book.status
+                          when 'to_read' then 'bg-blue-100 text-blue-800'
+                          when 'reading' then 'bg-yellow-100 text-yellow-800'
+                          when 'read' then 'bg-green-100 text-green-800'
+                          else 'bg-gray-100 text-gray-800'
+                          end %>">
+                      <%= book.status.humanize %>
+                    </span>
+                  </div>
+                  
+                  <p class="text-sm text-gray-600 mb-2">By <%= book.author %></p>
+                </div>
               </div>
-              
-              <p class="text-sm text-gray-600 mb-3 sm:mb-4">By <%= book.author %></p>
               
               <div class="space-y-2 sm:space-y-3">
                 <!-- Rating -->
@@ -295,49 +314,57 @@
                   <!-- Action buttons removed - not implemented yet -->
                 </div>
                 
-                <!-- Additional info for imported books -->
-                <% if book.imported? && book.exclusive_shelf.present? %>
-                  <div class="flex items-center text-xs text-gray-500">
-                    <svg class="w-4 h-4 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 11H5m14 0a2 2 0 012 2v6a2 2 0 01-2 2H5a2 2 0 01-2-2v-6a2 2 0 012-2m14 0V9a2 2 0 00-2-2M5 11V9a2 2 0 012-2m0 0V5a2 2 0 012-2h6a2 2 0 012 2v2M7 7h10"></path>
-                    </svg>
-                    Original shelf: <%= book.exclusive_shelf.humanize %>
-                  </div>
-                <% end %>
+                <!-- Additional Metadata from Goodreads - Clean Text + Icons -->
+                <div class="space-y-1.5 mb-3">
+                  <% if book.pages.present? %>
+                    <div class="flex items-center text-xs text-gray-500">
+                      <svg class="w-3 h-3 mr-2 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.747 0 3.332.477 4.5 1.253v13C19.832 18.477 18.246 18 16.5 18c-1.746 0-3.332.477-4.5 1.253"></path>
+                      </svg>
+                      <%= book.pages %> pages
+                    </div>
+                  <% end %>
+                  
+                  <% if book.date_added.present? %>
+                    <div class="flex items-center text-xs text-gray-500">
+                      <svg class="w-3 h-3 mr-2 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+                      </svg>
+                      Added <%= book.date_added.strftime("%b %Y") %>
+                    </div>
+                  <% end %>
+                  
+                  <% if book.date_read.present? %>
+                    <div class="flex items-center text-xs text-gray-500">
+                      <svg class="w-3 h-3 mr-2 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"></path>
+                      </svg>
+                      Finished <%= book.date_read.strftime("%b %Y") %>
+                    </div>
+                  <% end %>
+                  
+                  <% if book.exclusive_shelf.present? %>
+                    <div class="flex items-center text-xs text-gray-500">
+                      <svg class="w-3 h-3 mr-2 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 11H5m14 0a2 2 0 012 2v6a2 2 0 01-2 2H5a2 2 0 01-2-2v-6a2 2 0 012-2m14 0V9a2 2 0 00-2-2M5 11V9a2 2 0 012-2m0 0V5a2 2 0 012-2h6a2 2 0 012 2v2M7 7h10"></path>
+                      </svg>
+                      <%= book.exclusive_shelf.humanize %>
+                    </div>
+                  <% end %>
+                </div>
                 
-                <% if book.imported? %>
-                  <div class="flex items-center text-xs text-gray-500">
-                    <svg class="w-4 h-4 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.747 0 3.332.477 4.5 1.253v13C19.832 18.477 18.246 18 16.5 18c-1.746 0-3.332.477-4.5 1.253"></path>
-                    </svg>
-                    Imported from Goodreads
-                  </div>
-                <% end %>
                 
-                <% if book.pages.present? %>
-                  <div class="flex items-center text-xs text-gray-500">
-                    <svg class="w-4 h-4 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.747 0 3.332.477 4.5 1.253v13C19.832 18.477 18.246 18 16.5 18c-1.746 0-3.332.477-4.5 1.253"></path>
-                    </svg>
-                    <%= book.pages %> pages
-                  </div>
-                <% end %>
                 
-                <% if book.date_read.present? %>
-                  <div class="flex items-center text-xs text-gray-500">
-                    <svg class="w-4 h-4 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"></path>
-                    </svg>
-                    Finished: <%= book.date_read.strftime("%b %Y") %>
-                  </div>
-                <% end %>
-                
-                <% if book.date_added.present? %>
-                  <div class="flex items-center text-xs text-gray-500">
-                    <svg class="w-4 h-4 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"></path>
-                    </svg>
-                    Added: <%= book.date_added.strftime("%b %Y") %>
+                <!-- Goodreads Link if available -->
+                <% if book.instance_variable_get(:@goodreads_link).present? %>
+                  <div class="flex items-center justify-between">
+                    <a href="<%= book.instance_variable_get(:@goodreads_link) %>" target="_blank" 
+                       class="inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-lg text-white bg-gradient-to-r from-indigo-600 to-purple-600 hover:from-indigo-700 hover:to-purple-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 transition-all duration-200 transform hover:scale-105 shadow-lg hover:shadow-xl">
+                      <svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14"></path>
+                      </svg>
+                      Voir sur Goodreads
+                    </a>
                   </div>
                 <% end %>
               </div>

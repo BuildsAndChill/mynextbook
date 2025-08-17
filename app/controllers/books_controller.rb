@@ -21,6 +21,9 @@ class BooksController < ApplicationController
     
     # Get library summary
     @library_summary = UserReading.reading_list_summary(current_user)
+    
+    # Enrich books with Goodreads data (temporary, no persistence)
+    enrich_library_with_goodreads_data(@books)
   end
 
   def show
@@ -134,6 +137,39 @@ class BooksController < ApplicationController
   end
 
   private
+
+  # Enrich library books with Goodreads data (temporary, no persistence)
+  def enrich_library_with_goodreads_data(books)
+    return unless books.any?
+    
+    Rails.logger.info "Enriching library books with Goodreads data (temporary)"
+    
+    # Enrich each book temporarily with Goodreads data
+    books.each do |book|
+      begin
+        # Add Goodreads data as instance variables (temporary)
+        if book.book_metadata&.goodreads_book_id.present?
+          # Goodreads cover URL (if available)
+          book.instance_variable_set(:@goodreads_cover_url, "https://images-na.ssl-images-amazon.com/images/P/#{book.book_metadata.goodreads_book_id}.L.jpg")
+          
+          # Goodreads rating (from average_rating)
+          if book.book_metadata.average_rating.present?
+            book.instance_variable_set(:@goodreads_rating, book.book_metadata.average_rating)
+          end
+          
+          # Goodreads link
+          book.instance_variable_set(:@goodreads_link, "https://www.goodreads.com/book/show/#{book.book_metadata.goodreads_book_id}")
+          
+          Rails.logger.info "Temporarily enriched library book '#{book.book_metadata.title}' with Goodreads data"
+        end
+      rescue => e
+        Rails.logger.error "Failed to enrich Goodreads data for library book '#{book.book_metadata.title}': #{e.message}"
+        # Continue without enrichment - don't block the library display
+      end
+    end
+    
+    Rails.logger.info "Goodreads enrichment completed for library"
+  end
 
   def set_book
     @book = current_user.user_readings.includes(:book_metadata).find(params[:id])
