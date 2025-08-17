@@ -44,7 +44,8 @@ class ImportsController < ApplicationController
         
         if result[:success]
           # Redirect to library with imported books filter and success message
-          redirect_to books_path(imported: true), notice: "Successfully imported #{result[:count]} books from Goodreads! Here are your imported books:"
+          redirect_to books_path(imported: true, import_success: true, import_count: result[:count]), 
+                      notice: "Successfully imported #{result[:count]} books from Goodreads!"
         else
           redirect_to new_import_path, alert: "Import failed: #{result[:error]}"
         end

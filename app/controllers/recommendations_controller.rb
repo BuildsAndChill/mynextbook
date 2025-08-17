@@ -499,14 +499,52 @@ class RecommendationsController < ApplicationController
     
     # Add reading history if user is signed in
     if user_signed_in?
-      books = current_user.user_readings.includes(:book_metadata).limit(15)
-      if books.any?
-        prompt += "READING HISTORY (last 15 books):\n"
-        books.each do |book|
-          rating = book.rating || 'unrated'
-          prompt += "- #{book.book_metadata.title} by #{book.book_metadata.author} (#{rating}/5 stars) - #{book.status}\n"
+      # Récupérer TOUT l'historique pertinent sans limite arbitraire
+      all_books = current_user.user_readings.includes(:book_metadata)
+        .where.not(status: 'abandoned')  # Exclure les abandonnés
+        .order(created_at: :desc)       # Plus récents d'abord
+      
+      if all_books.any?
+        prompt += "READING HISTORY:\n"
+        
+        # Livres déjà lus (à éviter absolument)
+        read_books = all_books.where(status: 'read')
+        if read_books.any?
+          prompt += "ALREADY READ (DO NOT RECOMMEND):\n"
+          read_books.each do |book|
+            rating = book.rating || 'unrated'
+            prompt += "- #{book.book_metadata.title} by #{book.book_metadata.author} (#{rating}/5 stars)\n"
+          end
+          prompt += "\n"
         end
-        prompt += "\n"
+        
+        # Livres dans "to read" (déjà dans la liste)
+        to_read_books = all_books.where(status: 'to_read')
+        if to_read_books.any?
+          prompt += "ALREADY IN TO-READ LIST:\n"
+          to_read_books.each do |book|
+            prompt += "- #{book.book_metadata.title} by #{book.book_metadata.author}\n"
+          end
+          prompt += "\n"
+        end
+        
+        # Livres en cours de lecture (contexte actuel)
+        reading_books = all_books.where(status: 'reading')
+        if reading_books.any?
+          prompt += "CURRENTLY READING:\n"
+          reading_books.each do |book|
+            prompt += "- #{book.book_metadata.title} by #{book.book_metadata.author}\n"
+          end
+          prompt += "\n"
+        end
+        
+        # Instructions claires pour l'IA
+        prompt += "IMPORTANT RULES FOR READING HISTORY:\n"
+        prompt += "1. NEVER recommend books marked as 'ALREADY READ'\n"
+        prompt += "2. If suggesting a book in 'ALREADY IN TO-READ LIST', mention it clearly\n"
+        prompt += "3. Use reading patterns to suggest similar but different books\n"
+        prompt += "4. Consider current reading status for context\n"
+        prompt += "5. Focus on NEW discoveries based on user preferences\n\n"
       end
       
       # Add user feedback history for better personalization
@@ -614,16 +652,54 @@ class RecommendationsController < ApplicationController
       prompt += "IMPORTANT: Use this current session feedback to avoid recommending books similar to disliked ones and prioritize books similar to liked ones.\n\n"
     end
     
-          # Add reading history if requested and user is signed in
-      if include_history && user_signed_in?
-        books = current_user.user_readings.includes(:book_metadata).limit(15)
-        if books.any?
-          prompt += "READING HISTORY (last 15 books):\n"
-          books.each do |book|
-            rating = book.rating || 'unrated'
-            prompt += "- #{book.book_metadata.title} by #{book.book_metadata.author} (#{rating}/5 stars) - #{book.status}\n"
+      # Add reading history if user is signed in
+      if user_signed_in?
+        # Récupérer TOUT l'historique pertinent sans limite arbitraire
+        all_books = current_user.user_readings.includes(:book_metadata)
+          .where.not(status: 'abandoned')  # Exclure les abandonnés
+          .order(created_at: :desc)       # Plus récents d'abord
+        
+        if all_books.any?
+          prompt += "READING HISTORY:\n"
+          
+          # Livres déjà lus (à éviter absolument)
+          read_books = all_books.where(status: 'read')
+          if read_books.any?
+            prompt += "ALREADY READ (DO NOT RECOMMEND):\n"
+            read_books.each do |book|
+              rating = book.rating || 'unrated'
+              prompt += "- #{book.book_metadata.title} by #{book.book_metadata.author} (#{rating}/5 stars)\n"
+            end
+            prompt += "\n"
           end
-          prompt += "\n"
+          
+          # Livres dans "to read" (déjà dans la liste)
+          to_read_books = all_books.where(status: 'to_read')
+          if to_read_books.any?
+            prompt += "ALREADY IN TO-READ LIST:\n"
+            to_read_books.each do |book|
+              prompt += "- #{book.book_metadata.title} by #{book.book_metadata.author}\n"
+            end
+            prompt += "\n"
+          end
+          
+          # Livres en cours de lecture (contexte actuel)
+          reading_books = all_books.where(status: 'reading')
+          if reading_books.any?
+            prompt += "CURRENTLY READING:\n"
+            reading_books.each do |book|
+              prompt += "- #{book.book_metadata.title} by #{book.book_metadata.author}\n"
+            end
+            prompt += "\n"
+          end
+          
+          # Instructions claires pour l'IA
+          prompt += "IMPORTANT RULES FOR READING HISTORY:\n"
+          prompt += "1. NEVER recommend books marked as 'ALREADY READ'\n"
+          prompt += "2. If suggesting a book in 'ALREADY IN TO-READ LIST', mention it clearly\n"
+          prompt += "3. Use reading patterns to suggest similar but different books\n"
+          prompt += "4. Consider current reading status for context\n"
+          prompt += "5. Focus on NEW discoveries based on user preferences\n\n"
         end
       end
     
