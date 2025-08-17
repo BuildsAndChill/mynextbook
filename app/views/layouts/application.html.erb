@@ -250,89 +250,158 @@
     </footer>
 
     <script>
-      // User dropdown menu functionality
-      document.addEventListener('DOMContentLoaded', function() {
-        console.log('🔍 Initializing user dropdown...');
-        
+            // User dropdown menu functionality - Turbo-compatible
+      function initializeUserDropdown() {
         const dropdownButton = document.getElementById('userDropdownButton');
         const dropdown = document.getElementById('userDropdown');
         
-        console.log('Dropdown button found:', !!dropdownButton);
-        console.log('Dropdown menu found:', !!dropdown);
-        
         if (!dropdownButton || !dropdown) {
-          console.error('❌ Missing elements:', { button: !!dropdownButton, dropdown: !!dropdown });
           return;
         }
         
         const arrow = dropdownButton.querySelector('svg');
-        console.log('Arrow found:', !!arrow);
-
+        
         function toggleDropdown() {
-          console.log('🔄 Toggle dropdown called');
-          console.log('Current hidden state:', dropdown.classList.contains('hidden'));
+          console.log('🔄 toggleDropdown called');
+          const isHidden = freshDropdown.classList.contains('hidden');
+          console.log('🔍 Current hidden state:', isHidden);
           
-          if (dropdown.classList.contains('hidden')) {
-            dropdown.classList.remove('hidden');
-            arrow.style.transform = 'rotate(180deg)';
-            
-            // On mobile, position the dropdown better
-            if (window.innerWidth <= 768) {
-              const buttonRect = dropdownButton.getBoundingClientRect();
-              const dropdownHeight = dropdown.offsetHeight;
-              const viewportHeight = window.innerHeight;
-              
-              // Check if dropdown would go below viewport
-              if (buttonRect.bottom + dropdownHeight > viewportHeight) {
-                // Position above the button
-                dropdown.style.top = 'auto';
-                dropdown.style.bottom = '100%';
-                dropdown.style.marginBottom = '0.5rem';
-              } else {
-                // Position below the button
-                dropdown.style.top = '100%';
-                dropdown.style.bottom = 'auto';
-                dropdown.style.marginTop = '0.5rem';
-              }
-            }
-            
+          if (isHidden) {
+            freshDropdown.classList.remove('hidden');
+            if (freshArrow) freshArrow.style.transform = 'rotate(180deg)';
             console.log('✅ Dropdown opened');
           } else {
-            dropdown.classList.add('hidden');
-            arrow.style.transform = 'rotate(0deg)';
+            freshDropdown.classList.add('hidden');
+            if (freshArrow) freshArrow.style.transform = 'rotate(0deg)';
             console.log('✅ Dropdown closed');
           }
         }
 
-        dropdownButton.addEventListener('click', function(e) {
-          console.log('🎯 Button clicked!');
-            e.preventDefault();
-            e.stopPropagation();
+        // Remove existing event listeners to prevent duplicates
+        const newButton = dropdownButton.cloneNode(true);
+        const newDropdown = dropdown.cloneNode(true);
+        dropdownButton.parentNode.replaceChild(newButton, dropdownButton);
+        dropdown.parentNode.replaceChild(newDropdown, dropdown);
+        
+        // Get fresh references
+        const freshButton = document.getElementById('userDropdownButton');
+        const freshDropdown = document.getElementById('userDropdown');
+        const freshArrow = freshButton.querySelector('svg');
+        
+        freshButton.addEventListener('click', function(e) {
+          console.log('🎯 CLICK DETECTED on dropdown button!');
+          e.preventDefault();
           toggleDropdown();
-          });
+        });
+        
+        // Mark as properly initialized
+        freshButton._hasClickEvent = true;
+        console.log('✅ Dropdown properly initialized with click event');
+        
+        // Test if the button is actually clickable
+        console.log('🔍 Button element:', freshButton);
+        console.log('🔍 Button HTML:', freshButton.outerHTML);
+        console.log('🔍 Button disabled:', freshButton.disabled);
+        console.log('🔍 Button style pointer-events:', getComputedStyle(freshButton).pointerEvents);
           
         // Close dropdown when clicking outside
         document.addEventListener('click', function(e) {
-          // Only handle click outside if dropdown is actually open
-          if (!dropdown.classList.contains('hidden')) {
-            if (!dropdownButton.contains(e.target) && !dropdown.contains(e.target)) {
-              console.log('🔄 Click outside, closing dropdown');
-              dropdown.classList.add('hidden');
-              arrow.style.transform = 'rotate(0deg)';
+          if (!freshDropdown.classList.contains('hidden')) {
+            if (!freshButton.contains(e.target) && !freshDropdown.contains(e.target)) {
+              freshDropdown.classList.add('hidden');
+              if (freshArrow) freshArrow.style.transform = 'rotate(0deg)';
             }
           }
         });
 
         // Close dropdown when pressing escape
-          document.addEventListener('keydown', function(e) {
-            if (e.key === 'Escape') {
-            console.log('🔄 Escape pressed, closing dropdown');
-            dropdown.classList.add('hidden');
-            arrow.style.transform = 'rotate(0deg)';
-            }
-          });
+        document.addEventListener('keydown', function(e) {
+          if (e.key === 'Escape' && !freshDropdown.classList.contains('hidden')) {
+            freshDropdown.classList.add('hidden');
+            if (freshArrow) freshArrow.style.transform = 'rotate(0deg)';
+          }
+        });
+      }
+
+      // Initialize on DOM ready
+      document.addEventListener('DOMContentLoaded', function() {
+        console.log('🚀 DOM ready - initializing dropdown');
+        initializeUserDropdown();
+      });
+      
+      // Re-initialize on Turbo navigation
+      document.addEventListener('turbo:load', function() {
+        console.log('🔄 turbo:load - reinitializing dropdown');
+        initializeUserDropdown();
+      });
+      
+      document.addEventListener('turbo:render', function() {
+        console.log('🔄 turbo:render - reinitializing dropdown');
+        initializeUserDropdown();
+      });
+      
+      document.addEventListener('turbo:frame-load', function() {
+        console.log('🔄 turbo:frame-load - reinitializing dropdown');
+        initializeUserDropdown();
+      });
+      
+      // Fallback: listen to all Turbo events
+      document.addEventListener('turbo:before-visit', function() {
+        console.log('🔄 turbo:before-visit');
+      });
+      
+      document.addEventListener('turbo:visit', function() {
+        console.log('🔄 turbo:visit');
+      });
+      
+      document.addEventListener('turbo:before-cache', function() {
+        console.log('🔄 turbo:before-cache');
+      });
+      
+      document.addEventListener('turbo:before-render', function() {
+        console.log('🔄 turbo:before-render');
+      });
+      
+      document.addEventListener('turbo:render', function() {
+        console.log('🔄 turbo:render');
+      });
+      
+      document.addEventListener('turbo:load', function() {
+        console.log('🔄 turbo:load');
+      });
+      
+      // Fallback: aggressive polling for dropdown
+      setInterval(function() {
+        const dropdownButton = document.getElementById('userDropdownButton');
+        const dropdown = document.getElementById('userDropdown');
+        
+        if (dropdownButton && dropdown) {
+          // Check if dropdown has click event by testing actual click
+          const hasClickEvent = dropdownButton._hasClickEvent === true;
           
-        console.log('✅ User dropdown initialized successfully');
+          if (!hasClickEvent) {
+            console.log('🔧 Dropdown missing click event - reinitializing');
+            initializeUserDropdown();
+          }
+        }
+      }, 500); // Check every 500ms for faster response
+      
+      // Also reinitialize on any DOM mutation (Ultra-aggressive approach)
+      const observer = new MutationObserver(function(mutations) {
+        mutations.forEach(function(mutation) {
+          if (mutation.type === 'childList') {
+            const dropdownButton = document.getElementById('userDropdownButton');
+            if (dropdownButton && !dropdownButton._hasClickEvent) {
+              console.log('🔧 DOM mutation detected - reinitializing dropdown');
+              setTimeout(initializeUserDropdown, 100); // Small delay to ensure DOM is ready
+            }
+          }
+        });
+      });
+      
+      observer.observe(document.body, {
+        childList: true,
+        subtree: true
       });
     </script>
   </body>

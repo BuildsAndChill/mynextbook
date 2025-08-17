@@ -195,75 +195,7 @@
       });
     }
 
-    // COMPLETE dropdown cleanup and reinitialization for this page
-    setTimeout(() => {
-      console.log('🧹 Starting complete dropdown cleanup on recommendations page...');
-      
-      const dropdownButton = document.getElementById('userDropdownButton');
-      const dropdown = document.getElementById('userDropdown');
-      
-      if (!dropdownButton || !dropdown) {
-        console.log('❌ Dropdown elements not found');
-        return;
-      }
-      
-      // 1. Remove ALL existing event listeners by cloning
-      const newButton = dropdownButton.cloneNode(true);
-      const newDropdown = dropdown.cloneNode(true);
-      
-      // 2. Replace both elements
-      dropdownButton.parentNode.replaceChild(newButton, dropdownButton);
-      dropdown.parentNode.replaceChild(newDropdown, dropdown);
-      
-      // 3. Get fresh references
-      const freshButton = document.getElementById('userDropdownButton');
-      const freshDropdown = document.getElementById('userDropdown');
-      
-      console.log('✅ Elements cloned and replaced');
-      
-      // 4. Add ONLY the click event to the button
-      freshButton.addEventListener('click', function(e) {
-        console.log('🎯 PROFILE BUTTON CLICKED!');
-        e.preventDefault();
-        e.stopPropagation();
-        
-        const isHidden = freshDropdown.classList.contains('hidden');
-        console.log('Current hidden state:', isHidden);
-        
-        if (isHidden) {
-          freshDropdown.classList.remove('hidden');
-          const arrow = this.querySelector('svg');
-          if (arrow) arrow.style.transform = 'rotate(180deg)';
-          console.log('✅ Dropdown OPENED');
-        } else {
-          freshDropdown.classList.add('hidden');
-          const arrow = this.querySelector('svg');
-          if (arrow) arrow.style.transform = 'rotate(0deg)';
-          console.log('✅ Dropdown CLOSED');
-        }
-      });
-      
-      // 5. Add click outside handler
-      document.addEventListener('click', function(e) {
-        if (!freshButton.contains(e.target) && !freshDropdown.contains(e.target)) {
-          console.log('🔄 Click outside detected, closing dropdown');
-          freshDropdown.classList.add('hidden');
-          const arrow = freshButton.querySelector('svg');
-          if (arrow) arrow.style.transform = 'rotate(0deg)';
-        }
-      });
-      
-      // 6. Add escape key handler
-      document.addEventListener('keydown', function(e) {
-        if (e.key === 'Escape') {
-          console.log('🔄 Escape pressed, closing dropdown');
-          freshDropdown.classList.add('hidden');
-          const arrow = freshButton.querySelector('svg');
-          if (arrow) arrow.style.transform = 'rotate(0deg)';
-        }
-      });
-      
-      console.log('✅ Dropdown completely reinitialized on recommendations page');
-    }, 200);
+
+
   });
 </script>
