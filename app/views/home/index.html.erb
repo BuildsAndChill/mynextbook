@@ -441,30 +441,28 @@ document.addEventListener('DOMContentLoaded', function() {
   } else {
     console.error('Recommendation form not found!');
   }
-});
 
-// Handle tone chip selection on home page
-document.addEventListener('DOMContentLoaded', function() {
-  const toneChips = document.querySelectorAll('input[name="tone_chips[]"]');
-  
-  toneChips.forEach(chip => {
-    chip.addEventListener('change', function() {
-      const span = this.nextElementSibling;
-      if (this.checked) {
-        span.classList.remove('bg-gray-50', 'border-gray-200', 'text-gray-600');
-        span.classList.add('bg-indigo-100', 'border-indigo-300', 'text-indigo-700');
-      } else {
-        span.classList.remove('bg-indigo-100', 'border-indigo-300', 'text-indigo-700');
-        span.classList.add('bg-gray-50', 'border-gray-200', 'text-gray-600');
-      }
+  // Handle tone chip selection on home page - Turbo compatible
+  function initializeHomeToneChips() {
+    const toneChips = document.querySelectorAll('input[name="tone_chips[]"]');
+    
+    toneChips.forEach(chip => {
+      // Remove existing event listeners to prevent duplicates
+      const newChip = chip.cloneNode(true);
+      chip.parentNode.replaceChild(newChip, chip);
+      
+      newChip.addEventListener('change', function() {
+        const span = this.nextElementSibling;
+        if (this.checked) {
+          span.classList.remove('bg-gray-50', 'border-gray-200', 'text-gray-600');
+          span.classList.add('bg-indigo-100', 'border-indigo-300', 'text-indigo-700');
+        } else {
+          span.classList.remove('bg-indigo-100', 'border-indigo-300', 'text-indigo-700');
+          span.classList.add('bg-gray-50', 'border-gray-200', 'text-gray-600');
+        }
+      });
     });
-  });
-
-
-
-
-
-
+  }
 
   // Function to scroll to top of the page
   function scrollToTop() {
@@ -492,7 +490,7 @@ document.addEventListener('DOMContentLoaded', function() {
     }
   }
 
-    // Toast notification function
+  // Toast notification function
   function showToast(message, type = 'info') {
     // Create toast element
     const toast = document.createElement('div');
@@ -519,25 +517,31 @@ document.addEventListener('DOMContentLoaded', function() {
     }, 3000);
   }
 
-  // Simple tone chip toggle functionality
-  document.addEventListener('DOMContentLoaded', function() {
+  // Simple tone chip toggle functionality - Turbo compatible
+  function initializeHomeToneChipToggles() {
     const toneChips = document.querySelectorAll('input[name="tone_chips[]"]');
     
     toneChips.forEach(checkbox => {
-      const chipSpan = checkbox.nextElementSibling;
+      // Remove existing event listeners to prevent duplicates
+      const newCheckbox = checkbox.cloneNode(true);
+      const newSpan = checkbox.nextElementSibling.cloneNode(true);
+      checkbox.parentNode.replaceChild(newCheckbox, checkbox);
+      newCheckbox.parentNode.replaceChild(newSpan, newCheckbox.nextElementSibling);
+      
+      const chipSpan = newCheckbox.nextElementSibling;
       
       chipSpan.addEventListener('click', function() {
-        checkbox.checked = !checkbox.checked;
+        newCheckbox.checked = !newCheckbox.checked;
         
         // Visual feedback
-        if (checkbox.checked) {
+        if (newCheckbox.checked) {
           this.classList.add('bg-indigo-100', 'border-indigo-400', 'text-indigo-700');
         } else {
           this.classList.remove('bg-indigo-100', 'border-indigo-400', 'text-indigo-700');
         }
       });
     });
-  });
+  }
 
   // Function to toggle history actions visibility
   function toggleHistoryActions(checkbox) {
@@ -548,6 +552,117 @@ document.addEventListener('DOMContentLoaded', function() {
       historyActions.classList.add('hidden');
     }
   }
+  
+  // Initialize tone chips
+  initializeHomeToneChips();
+  initializeHomeToneChipToggles();
+});
+
+// Re-initialize on Turbo navigation
+document.addEventListener('turbo:load', function() {
+  // Handle tone chip selection on home page - Turbo compatible
+  function initializeHomeToneChips() {
+    const toneChips = document.querySelectorAll('input[name="tone_chips[]"]');
+    
+    toneChips.forEach(chip => {
+      // Remove existing event listeners to prevent duplicates
+      const newChip = chip.cloneNode(true);
+      chip.parentNode.replaceChild(newChip, chip);
+      
+      newChip.addEventListener('change', function() {
+        const span = this.nextElementSibling;
+        if (this.checked) {
+          span.classList.remove('bg-gray-50', 'border-gray-200', 'text-gray-600');
+          span.classList.add('bg-indigo-100', 'border-indigo-300', 'text-indigo-700');
+        } else {
+          span.classList.remove('bg-indigo-100', 'border-indigo-300', 'text-indigo-700');
+          span.classList.add('bg-gray-50', 'border-gray-200', 'text-gray-600');
+        }
+      });
+    });
+  }
+
+  // Simple tone chip toggle functionality - Turbo compatible
+  function initializeHomeToneChipToggles() {
+    const toneChips = document.querySelectorAll('input[name="tone_chips[]"]');
+    
+    toneChips.forEach(checkbox => {
+      // Remove existing event listeners to prevent duplicates
+      const newCheckbox = checkbox.cloneNode(true);
+      const newSpan = checkbox.nextElementSibling.cloneNode(true);
+      checkbox.parentNode.replaceChild(newCheckbox, checkbox);
+      newCheckbox.parentNode.replaceChild(newSpan, newCheckbox.nextElementSibling);
+      
+      const chipSpan = newCheckbox.nextElementSibling;
+      
+      chipSpan.addEventListener('click', function() {
+        newCheckbox.checked = !newCheckbox.checked;
+        
+        // Visual feedback
+        if (newCheckbox.checked) {
+          this.classList.add('bg-indigo-100', 'border-indigo-400', 'text-indigo-700');
+        } else {
+          this.classList.remove('bg-indigo-100', 'border-indigo-400', 'text-indigo-700');
+        }
+      });
+    });
+  }
+
+  initializeHomeToneChips();
+  initializeHomeToneChipToggles();
+});
+
+document.addEventListener('turbo:render', function() {
+  // Handle tone chip selection on home page - Turbo compatible
+  function initializeHomeToneChips() {
+    const toneChips = document.querySelectorAll('input[name="tone_chips[]"]');
+    
+    toneChips.forEach(chip => {
+      // Remove existing event listeners to prevent duplicates
+      const newChip = chip.cloneNode(true);
+      chip.parentNode.replaceChild(newChip, chip);
+      
+      newChip.addEventListener('change', function() {
+        const span = this.nextElementSibling;
+        if (this.checked) {
+          span.classList.remove('bg-gray-50', 'border-gray-200', 'text-gray-600');
+          span.classList.add('bg-indigo-100', 'border-indigo-300', 'text-indigo-700');
+        } else {
+          span.classList.remove('bg-indigo-100', 'border-indigo-300', 'text-indigo-700');
+          span.classList.add('bg-gray-50', 'border-gray-200', 'text-gray-600');
+        }
+      });
+    });
+  }
+
+  // Simple tone chip toggle functionality - Turbo compatible
+  function initializeHomeToneChipToggles() {
+    const toneChips = document.querySelectorAll('input[name="tone_chips[]"]');
+    
+    toneChips.forEach(checkbox => {
+      // Remove existing event listeners to prevent duplicates
+      const newCheckbox = checkbox.cloneNode(true);
+      const newSpan = checkbox.nextElementSibling.cloneNode(true);
+      checkbox.parentNode.replaceChild(newCheckbox, checkbox);
+      newCheckbox.parentNode.replaceChild(newSpan, newCheckbox.nextElementSibling);
+      
+      const chipSpan = newCheckbox.nextElementSibling;
+      
+      chipSpan.addEventListener('click', function() {
+        newCheckbox.checked = !newCheckbox.checked;
+        
+        // Visual feedback
+        if (newCheckbox.checked) {
+          this.classList.add('bg-indigo-100', 'border-indigo-400', 'text-indigo-700');
+        } else {
+          this.classList.remove('bg-indigo-100', 'border-indigo-400', 'text-indigo-700');
+        }
+      });
+    });
+  }
+
+  initializeHomeToneChips();
+  initializeHomeToneChipToggles();
 });
 </script>
 
