@@ -39,9 +39,10 @@ class GoodreadsCsvImporter
     csv = CSV.new(@io, headers: true, return_headers: false)
 
     csv.each_with_index do |row, i|
-      # Vérifier la limite d'import
-      if import_limit > 0 && (created + updated) >= import_limit
-        Rails.logger.info "Import limit reached (#{import_limit} books). Stopping import."
+      # Vérifier la limite d'import - compter TOUS les livres traités
+      total_processed = created + updated + skipped
+      if import_limit > 0 && total_processed >= import_limit
+        Rails.logger.info "Import limit reached (#{import_limit} books processed). Stopping import."
         break
       end
       
@@ -107,8 +108,9 @@ class GoodreadsCsvImporter
     end
 
     # Message final avec information sur la limite
-    if import_limit > 0 && (created + updated) >= import_limit
-      Rails.logger.info "CSV import stopped at limit: #{created} created, #{updated} updated, #{skipped} skipped, #{errors.length} errors (limit: #{import_limit})"
+    total_processed = created + updated + skipped
+    if import_limit > 0 && total_processed >= import_limit
+      Rails.logger.info "CSV import stopped at limit: #{total_processed} books processed (limit: #{import_limit}) - #{created} created, #{updated} updated, #{skipped} skipped, #{errors.length} errors"
     else
       Rails.logger.info "CSV import completed: #{created} created, #{updated} updated, #{skipped} skipped, #{errors.length} errors"
     end

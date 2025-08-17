@@ -312,11 +312,14 @@
           });
           
         // Close dropdown when clicking outside
-          document.addEventListener('click', function(e) {
-          if (!dropdownButton.contains(e.target) && !dropdown.contains(e.target)) {
-            console.log('🔄 Click outside, closing dropdown');
-            dropdown.classList.add('hidden');
-            arrow.style.transform = 'rotate(0deg)';
+        document.addEventListener('click', function(e) {
+          // Only handle click outside if dropdown is actually open
+          if (!dropdown.classList.contains('hidden')) {
+            if (!dropdownButton.contains(e.target) && !dropdown.contains(e.target)) {
+              console.log('🔄 Click outside, closing dropdown');
+              dropdown.classList.add('hidden');
+              arrow.style.transform = 'rotate(0deg)';
+            }
           }
         });
 
