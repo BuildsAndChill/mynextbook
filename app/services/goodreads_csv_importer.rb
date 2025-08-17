@@ -27,12 +27,24 @@ class GoodreadsCsvImporter
     skipped = 0
     errors  = []
 
+    # Récupérer la limite d'import depuis la configuration
+    import_limit = ENV.fetch('IMPORT_BOOKS_LIMIT', '0').to_i
+    
     Rails.logger.info "Starting CSV import for user: #{@user&.id}"
+    if import_limit > 0
+      Rails.logger.info "Import limit set to #{import_limit} books (for testing)"
+    end
 
     # Goodreads exporte un CSV avec headers. En général UTF-8 (parfois avec BOM).
     csv = CSV.new(@io, headers: true, return_headers: false)
 
     csv.each_with_index do |row, i|
+      # Vérifier la limite d'import
+      if import_limit > 0 && (created + updated) >= import_limit
+        Rails.logger.info "Import limit reached (#{import_limit} books). Stopping import."
+        break
+      end
+      
       begin
         # 1) Transformer la ligne CSV en hash d'attributs pour Book
         attrs = map_row(row)
@@ -94,7 +106,13 @@ class GoodreadsCsvImporter
       end
     end
 
-    Rails.logger.info "CSV import completed: #{created} created, #{updated} updated, #{skipped} skipped, #{errors.length} errors"
+    # Message final avec information sur la limite
+    if import_limit > 0 && (created + updated) >= import_limit
+      Rails.logger.info "CSV import stopped at limit: #{created} created, #{updated} updated, #{skipped} skipped, #{errors.length} errors (limit: #{import_limit})"
+    else
+      Rails.logger.info "CSV import completed: #{created} created, #{updated} updated, #{skipped} skipped, #{errors.length} errors"
+    end
+    
     Result.new(created:, updated:, skipped:, errors:)
   end
 

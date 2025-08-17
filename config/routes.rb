@@ -11,6 +11,7 @@ Rails.application.routes.draw do
   resources :books do
     collection do
       get :next_book   # Page de suggestion
+      delete :clear_library  # Vider toute la librairie
     end
   end
 

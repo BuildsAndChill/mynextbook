@@ -104,6 +104,35 @@ class BooksController < ApplicationController
     redirect_to next_book_books_path
   end
 
+  # Action : vider toute la librairie de l'utilisateur
+  def clear_library
+    begin
+      # Supprimer toutes les lectures de l'utilisateur
+      deleted_count = current_user.user_readings.count
+      current_user.user_readings.destroy_all
+      
+      # Optionnel : supprimer les métadonnées de livres qui ne sont plus utilisées
+      # (seulement si elles n'appartiennent à aucun autre utilisateur)
+      orphaned_metadata = BookMetadata.left_joins(:user_readings)
+                                     .where(user_readings: { id: nil })
+      orphaned_count = orphaned_metadata.count
+      orphaned_metadata.destroy_all
+      
+      render json: {
+        success: true,
+        message: "Library cleared successfully",
+        deleted_books: deleted_count,
+        deleted_metadata: orphaned_count
+      }
+    rescue => e
+      Rails.logger.error "Error clearing library: #{e.message}"
+      render json: {
+        success: false,
+        error: "Failed to clear library: #{e.message}"
+      }, status: :internal_server_error
+    end
+  end
+
   private
 
   def set_book
