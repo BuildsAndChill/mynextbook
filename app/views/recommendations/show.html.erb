@@ -92,7 +92,7 @@
             <% unless user_signed_in? %>
               <div class="mt-4 p-4 bg-blue-50 border border-blue-200 rounded-lg">
                 <label class="flex items-center space-x-3 cursor-pointer" onclick="handleHistoryToggle()">
-                  <%= check_box_tag :include_history, '1', false, 
+                  <%= check_box_tag :include_history, '1', params[:include_history] == '1', 
                       class: 'h-5 w-5 text-indigo-600 focus:ring-indigo-500 border-gray-300 rounded', 
                       onclick: 'event.preventDefault(); handleHistoryToggle();' %>
                   <div class="flex-1">
@@ -116,7 +116,7 @@
                 %>
                 
                 <label class="flex items-center space-x-3 cursor-pointer">
-                  <%= check_box_tag :include_history, '1', false, 
+                  <%= check_box_tag :include_history, '1', params[:include_history] == '1', 
                       class: 'h-5 w-5 text-indigo-600 focus:ring-indigo-500 border-gray-300 rounded',
                       onchange: 'toggleHistoryActions(this)' %>
                   <div class="flex-1">

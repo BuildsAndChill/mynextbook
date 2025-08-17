@@ -47,7 +47,7 @@
             
             <div class="mt-4 p-4 bg-blue-50 border border-blue-200 rounded-lg">
               <label class="flex items-center space-x-3 cursor-pointer">
-                <%= check_box_tag :include_history, '1', false, 
+                <%= check_box_tag :include_history, '1', params[:include_history] == '1', 
                     class: 'h-5 w-5 text-indigo-600 focus:ring-indigo-500 border-gray-300 rounded' %>
                 <div class="flex-1">
                   <span class="text-sm font-medium text-blue-900">Utiliser mon historique de lecture</span>
@@ -158,12 +158,21 @@
 </div>
 
 <script>
-  // Handle tone chip selection
-  document.addEventListener('DOMContentLoaded', function() {
+  // Handle tone chip selection - Turbo compatible
+  function initializeToneChips() {
+    console.log('🔧 Initializing tone chips...');
     const toneChips = document.querySelectorAll('input[name="tone_chips[]"]');
+    console.log('🔍 Found tone chips:', toneChips.length);
     
-    toneChips.forEach(chip => {
-      chip.addEventListener('change', function() {
+    toneChips.forEach((chip, index) => {
+      console.log(`🔍 Processing chip ${index}:`, chip);
+      
+      // Remove existing event listeners to prevent duplicates
+      const newChip = chip.cloneNode(true);
+      chip.parentNode.replaceChild(newChip, chip);
+      
+      newChip.addEventListener('change', function() {
+        console.log('🎯 Tone chip clicked:', this.value, 'checked:', this.checked);
         const span = this.nextElementSibling;
         if (this.checked) {
           span.classList.remove('bg-gray-50', 'border-gray-200', 'text-gray-600');
@@ -173,10 +182,20 @@
           span.classList.add('bg-gray-50', 'border-gray-200', 'text-gray-600');
         }
       });
+      
+      // Also add click event on the span for better UX
+      const span = newChip.nextElementSibling;
+      if (span) {
+        span.addEventListener('click', function() {
+          console.log('🎯 Tone chip span clicked');
+          newChip.checked = !newChip.checked;
+          newChip.dispatchEvent(new Event('change'));
+        });
+      }
     });
+  }
 
-
-
+  function initializeForm() {
     // Handle form submission
     const form = document.querySelector('form');
     if (form) {
@@ -194,8 +213,22 @@
         showButtonLoading(submitBtn, 'Getting recommendations...');
       });
     }
+  }
 
-
-
+  // Initialize on DOM ready
+  document.addEventListener('DOMContentLoaded', function() {
+    initializeToneChips();
+    initializeForm();
+  });
+  
+  // Re-initialize on Turbo navigation
+  document.addEventListener('turbo:load', function() {
+    initializeToneChips();
+    initializeForm();
+  });
+  
+  document.addEventListener('turbo:render', function() {
+    initializeToneChips();
+    initializeForm();
   });
 </script>
