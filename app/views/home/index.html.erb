@@ -208,16 +208,6 @@
               <p class="text-gray-600">Upload your reading history for personalized recommendations</p>
             </div>
           </div>
-          
-          <% if user_signed_in? %>
-            <%= link_to "Import Library", new_import_path, 
-                class: "inline-flex items-center px-4 py-2 text-sm font-medium text-green-600 bg-green-50 border border-green-200 rounded-lg hover:bg-green-100 transition-colors duration-200" %>
-          <% else %>
-            <button onclick="showSignupPopup('Sign up to import your Goodreads library and get personalized recommendations!')" 
-                    class="inline-flex items-center px-4 py-2 text-sm font-medium text-green-600 bg-green-50 border border-green-200 rounded-lg hover:bg-green-100 transition-colors duration-200">
-              Import Library
-            </button>
-          <% end %>
         </div>
 
         <!-- Manual Entry -->
@@ -233,34 +223,10 @@
               <p class="text-gray-600">Build your library by adding books you've read or want to read</p>
             </div>
           </div>
-          
-          <% if user_signed_in? %>
-            <%= link_to "Add Book", new_book_path, 
-                class: "inline-flex items-center px-4 py-2 text-sm font-medium text-blue-600 bg-blue-50 border border-blue-200 rounded-lg hover:bg-blue-100 transition-colors duration-200" %>
-          <% else %>
-            <button onclick="showSignupPopup('Sign up to build your personal library and get better recommendations!')" 
-                    class="inline-flex items-center px-4 py-2 text-sm font-medium text-blue-600 bg-blue-50 border border-blue-200 rounded-lg hover:bg-blue-100 transition-colors duration-200">
-              Add Book
-            </button>
-          <% end %>
         </div>
       </div>
 
-      <!-- Subtle Sign-Up CTA - Only show for users who haven't shared data yet -->
-      <% if user_signed_in? && current_user.books.empty? %>
-        <div class="mt-12 text-center">
-          <div class="bg-white rounded-2xl p-8 shadow-lg max-w-2xl mx-auto">
-            <h3 class="text-xl font-semibold text-gray-900 mb-3">Ready to Personalize?</h3>
-            <p class="text-gray-600 mb-6">Share your reading data to get AI recommendations tailored specifically to your taste.</p>
-            <div class="flex flex-col sm:flex-row gap-4 justify-center">
-              <%= link_to "Import Goodreads", new_import_path, 
-                  class: "inline-flex items-center px-6 py-3 bg-gradient-to-r from-indigo-600 to-purple-600 text-white font-medium rounded-lg hover:from-indigo-700 hover:to-purple-700 transition-all duration-200" %>
-              <%= link_to "Add Books Manually", new_book_path, 
-                  class: "inline-flex items-center px-6 py-3 border border-gray-300 text-gray-700 font-medium rounded-lg hover:bg-gray-50 transition-colors duration-200" %>
-            </div>
-          </div>
-        </div>
-      <% end %>
+
 
       <!-- Future Features -->
       <div class="mt-12 text-center">
@@ -335,10 +301,6 @@
             </div>
             <h3 class="text-lg font-semibold text-gray-900 mb-3">Build Your Library</h3>
             <p class="text-gray-600 mb-4">Import your Goodreads library or add books manually for even better personalized recommendations.</p>
-            <button onclick="showSignupPopup('Sign up to import your Goodreads library and get personalized recommendations!')" 
-                    class="inline-flex items-center px-4 py-2 bg-green-600 text-white text-sm font-medium rounded-lg hover:bg-green-700 transition-colors duration-200">
-              Import Goodreads
-            </button>
           </div>
         </div>
       </div>
@@ -436,42 +398,7 @@ document.addEventListener('DOMContentLoaded', function() {
     });
   });
 
-  // Function to show a signup popup
-  function showSignupPopup(message) {
-    const popup = document.createElement('div');
-    popup.className = 'fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50';
-    
-    const popupContent = document.createElement('div');
-    popupContent.className = 'bg-white p-6 rounded-lg shadow-xl max-w-md w-full mx-4';
-    
-    const title = document.createElement('h3');
-    title.className = 'text-lg font-medium text-gray-900 mb-2';
-    title.textContent = 'Sign Up Required';
-    
-    const content = document.createElement('p');
-    content.className = 'text-sm text-gray-700 mb-4';
-    content.textContent = message;
-    
-    const signupLink = document.createElement('a');
-    signupLink.href = '<%= new_user_registration_path %>';
-    signupLink.className = 'inline-flex items-center px-6 py-2 bg-gradient-to-r from-indigo-600 to-purple-600 text-white text-sm font-medium rounded-lg hover:from-indigo-700 hover:to-purple-700 transition-all duration-200';
-    signupLink.textContent = 'Sign Up Now';
-    
-    const closeBtn = document.createElement('button');
-    closeBtn.className = 'mt-4 px-4 py-2 bg-gray-200 text-gray-800 rounded-lg font-medium hover:bg-gray-300 transition-colors duration-200';
-    closeBtn.textContent = 'Close';
-    closeBtn.onclick = () => {
-      document.body.removeChild(popup);
-    };
-    
-    popupContent.appendChild(title);
-    popupContent.appendChild(content);
-    popupContent.appendChild(signupLink);
-    popupContent.appendChild(closeBtn);
-    popup.appendChild(popupContent);
-    
-    document.body.appendChild(popup);
-  }
+
 
 
 
