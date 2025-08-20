@@ -115,11 +115,14 @@ class RecommendationsController < ApplicationController
         tone_chips
       )
       
-      # Store only the session ID in the session cookie (very small)
-      session[:recommendation_session_id] = session_id
-      
-      Rails.logger.info "AI data stored using file storage. Session ID: #{session_id}"
-      Rails.logger.info "DEBUG: Session ID stored in session: #{session[:recommendation_session_id]}"
+          # Store only the session ID in the session cookie (very small)
+    session[:recommendation_session_id] = session_id
+    
+    # Log user interaction for analytics
+    Rails.logger.info "USER_INTERACTION: recommendation_created | session_id: #{session_id} | context: #{context} | tone_chips: #{tone_chips} | user_signed_in: #{user_signed_in?} | user_id: #{current_user&.id}"
+    
+    Rails.logger.info "AI data stored using file storage. Session ID: #{session_id}"
+    Rails.logger.info "DEBUG: Session ID stored in session: #{session[:recommendation_session_id]}"
       
     rescue => e
       Rails.logger.error "Error in recommendations#create: #{e.message}"
@@ -140,6 +143,9 @@ class RecommendationsController < ApplicationController
     # Handle refinement requests with context conservation
     refinement_text = params[:refinement_text]
     context = params[:context]
+    
+    # Log refinement interaction for analytics
+    Rails.logger.info "USER_INTERACTION: recommendation_refined | refinement_text: #{refinement_text} | context: #{context} | user_signed_in: #{user_signed_in?} | user_id: #{current_user&.id} | session_id: #{session[:recommendation_session_id]}"
     
     Rails.logger.info "Refining recommendation with: #{refinement_text}"
     Rails.logger.info "Context: #{context}"

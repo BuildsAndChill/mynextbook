@@ -1,0 +1,48 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <title>Admin - My Next Book</title>
+    <meta name="viewport" content="width=device-width,initial-scale=1">
+    <%= csrf_meta_tags %>
+    <%= csp_meta_tag %>
+
+    <%= stylesheet_link_tag "tailwind", "data-turbo-track": "reload" %>
+    <%= stylesheet_link_tag "application", "data-turbo-track": "reload" %>
+    <%= javascript_importmap_tags %>
+  </head>
+
+  <body class="bg-gray-50">
+    <!-- Header Admin -->
+    <header class="bg-white shadow-sm border-b border-gray-200">
+      <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+        <div class="flex justify-between items-center py-4">
+          <div class="flex items-center">
+            <h1 class="text-xl font-semibold text-gray-900">Admin Dashboard</h1>
+          </div>
+          
+          <div class="flex items-center space-x-4">
+            <span class="text-sm text-gray-600">
+              <strong>Mode Admin</strong>
+            </span>
+            <%= link_to "Retour à l'app", root_path, class: "text-sm text-blue-600 hover:text-blue-800" %>
+            <%= button_to "Déconnexion Admin", admin_logout_path, method: :delete, class: "text-sm text-red-600 hover:text-red-800" %>
+          </div>
+        </div>
+      </div>
+    </header>
+
+    <!-- Main Content -->
+    <main>
+      <%= yield %>
+    </main>
+
+    <!-- Footer Admin -->
+    <footer class="bg-white border-t border-gray-200 mt-12">
+      <div class="max-w-7xl mx-auto py-4 px-4 sm:px-6 lg:px-8">
+        <div class="text-center text-sm text-gray-500">
+          <p>&copy; <%= Date.current.year %> My Next Book - Interface d'administration</p>
+        </div>
+      </div>
+    </footer>
+  </body>
+</html>

@@ -18,6 +18,9 @@ class SubscribersController < ApplicationController
       # Marquer l'email comme capturé dans cette session
       session[:email_captured] = true
       
+      # Log email capture for analytics
+      Rails.logger.info "EMAIL_CAPTURED: email: #{result[:subscriber].email} | context: #{result[:subscriber].context} | tone_chips: #{result[:subscriber].tone_chips} | interaction_count: #{result[:subscriber].interaction_count} | session_id: #{session_id}"
+      
       # Succès - retourner une réponse positive
       render json: {
         success: true,

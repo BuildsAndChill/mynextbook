@@ -26,6 +26,16 @@ Rails.application.routes.draw do
     post :cleanup_session, on: :collection
   end
 
+  # Admin routes
+  get 'admin/dashboard', to: 'admin#dashboard'
+  post 'admin/dashboard', to: 'admin#dashboard'  # Pour l'authentification
+  delete 'admin/logout', to: 'admin#logout'      # Pour la déconnexion
+  get 'admin/logs', to: 'admin#logs'
+  get 'admin/subscribers', to: 'admin#subscribers'
+  get 'admin/users', to: 'admin#users'
+  get 'admin/analytics', to: 'admin#analytics'
+  get 'admin/export_data', to: 'admin#export_data'
+
   resources :imports, only: [:new, :create]
   
   # Capture des emails pour recommandations

@@ -1,0 +1,87 @@
+<div class="min-h-screen bg-gray-50 py-8">
+  <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+    <!-- Header -->
+    <div class="mb-8">
+      <h1 class="text-3xl font-bold text-gray-900">Subscribers</h1>
+      <p class="mt-2 text-gray-600">Liste des emails capturés et leurs interactions</p>
+    </div>
+
+    <!-- Navigation Admin -->
+    <div class="mb-8">
+      <nav class="flex space-x-4">
+        <%= link_to "Dashboard", admin_dashboard_path, class: "px-3 py-2 rounded-md text-sm font-medium text-gray-700 hover:text-gray-900 hover:bg-gray-100" %>
+        <%= link_to "Logs", admin_logs_path, class: "px-3 py-2 rounded-md text-sm font-medium text-gray-700 hover:text-gray-900 hover:bg-gray-100" %>
+        <%= link_to "Subscribers", admin_subscribers_path, class: "px-3 py-2 rounded-md text-sm font-medium bg-indigo-100 text-indigo-700" %>
+        <%= link_to "Users", admin_users_path, class: "px-3 py-2 rounded-md text-sm font-medium text-gray-700 hover:text-gray-900 hover:bg-gray-100" %>
+        <%= link_to "Analytics", admin_analytics_path, class: "px-3 py-2 rounded-md text-sm font-medium text-gray-700 hover:text-gray-900 hover:bg-gray-100" %>
+        <%= link_to "Export Data", admin_export_data_path, class: "px-3 py-2 rounded-md text-sm font-medium text-gray-700 hover:text-gray-900 hover:bg-gray-100" %>
+      </nav>
+    </div>
+
+    <!-- Export Buttons -->
+    <div class="mb-6 flex justify-between items-center">
+      <div class="flex space-x-3">
+        <%= link_to "Export CSV", admin_subscribers_path(format: :csv), class: "inline-flex items-center px-4 py-2 border border-gray-300 shadow-sm text-sm font-medium rounded-md text-gray-700 bg-white hover:bg-gray-50" %>
+        <%= link_to "Export JSON", admin_subscribers_path(format: :json), class: "inline-flex items-center px-4 py-2 border border-gray-300 shadow-sm text-sm font-medium rounded-md text-gray-700 bg-white hover:bg-gray-50" %>
+      </div>
+      <div class="text-sm text-gray-500">
+        Total: <%= @subscribers.count %> subscribers
+      </div>
+    </div>
+
+    <!-- Subscribers Table -->
+    <div class="bg-white shadow overflow-hidden sm:rounded-md">
+      <ul class="divide-y divide-gray-200">
+        <% @subscribers.each do |subscriber| %>
+          <li class="px-6 py-4">
+            <div class="flex items-center justify-between">
+              <div class="flex-1 min-w-0">
+                <div class="flex items-center space-x-3">
+                  <div class="flex-shrink-0">
+                    <div class="h-10 w-10 rounded-full bg-blue-100 flex items-center justify-center">
+                      <svg class="h-5 w-5 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 8l7.89 4.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z"></path>
+                      </svg>
+                    </div>
+                  </div>
+                  <div class="flex-1 min-w-0">
+                    <p class="text-sm font-medium text-gray-900 truncate"><%= subscriber.email %></p>
+                    <p class="text-sm text-gray-500 truncate">
+                      Context: <%= subscriber.context&.truncate(50) || 'N/A' %>
+                    </p>
+                    <p class="text-xs text-gray-400">
+                      Créé le <%= subscriber.created_at.strftime("%d/%m/%Y à %H:%M") %>
+                    </p>
+                  </div>
+                </div>
+              </div>
+              <div class="flex items-center space-x-4">
+                <div class="text-right">
+                  <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-blue-100 text-blue-800">
+                    <%= subscriber.interaction_count %> interactions
+                  </span>
+                </div>
+                <div class="text-right">
+                  <% if subscriber.tone_chips.present? %>
+                    <div class="flex flex-wrap gap-1">
+                      <% subscriber.tone_chips.first(3).each do |tone| %>
+                        <span class="inline-flex items-center px-2 py-1 rounded-full text-xs font-medium bg-gray-100 text-gray-800">
+                          <%= tone %>
+                        </span>
+                      <% end %>
+                    </div>
+                  <% end %>
+                </div>
+              </div>
+            </div>
+          </li>
+        <% end %>
+      </ul>
+    </div>
+
+    <!-- Pagination Info -->
+    <div class="mt-6 text-center text-sm text-gray-500">
+      Affichage des 100 derniers subscribers
+    </div>
+  </div>
+</div>
