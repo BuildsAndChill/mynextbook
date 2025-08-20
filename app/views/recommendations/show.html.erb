@@ -7,6 +7,9 @@
        <!-- Book Suggestions - First on mobile, right on desktop -->
        <div class="order-1 lg:order-2">
          <%= render 'suggestions', is_refined: @show_refined_message %>
+         
+         <!-- Email CTA - Appears after recommendations -->
+         <%= render 'email_cta' %>
        </div>
        
        <!-- Refine Form - Second on mobile, left on desktop -->

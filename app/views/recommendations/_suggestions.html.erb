@@ -185,10 +185,7 @@
       </div>
     <% end %>
     
-    <!-- CTA Email non-bloquant -->
-    <% if should_show_email_cta? && !email_already_captured? %>
-      <%= render 'email_cta', message: should_show_email_cta?[:message] %>
-    <% end %>
+
   </div>
 <% elsif local_assigns[:show_empty_state] %>
   <!-- Empty State for Index (Initial Form) -->
