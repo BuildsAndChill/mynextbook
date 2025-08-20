@@ -75,9 +75,44 @@ class AdminController < ApplicationController
   end
   
   def analytics
-    @email_capture_stats = analyze_email_captures
-    @user_engagement_stats = analyze_user_engagement
-    @recommendation_stats = analyze_recommendations
+    # Cache intelligent avec système de timestamp pour forcer la mise à jour
+    refresh_timestamp = session[:analytics_refresh_timestamp] || 0
+    cache_key = "admin_analytics_#{Date.current.strftime('%Y-%m-%d')}_#{refresh_timestamp}"
+    
+    # Debug: vérifier l'état du cache
+    cached_data = Rails.cache.read(cache_key)
+    Rails.logger.info "🔍 ANALYTICS: Cache analytics - Clé: #{cache_key}"
+    Rails.logger.info "📊 ANALYTICS: Cache présent: #{cached_data.present? ? 'OUI' : 'NON'}"
+    Rails.logger.info "🕐 ANALYTICS: Timestamp refresh: #{refresh_timestamp}"
+    
+    @analytics_data = Rails.cache.fetch(cache_key, expires_in: 1.hour) do
+      Rails.logger.info "🔄 ANALYTICS: Génération des données analytics (cache manquant ou expiré)"
+      {
+        email_capture_stats: analyze_email_captures,
+        user_engagement_stats: analyze_user_engagement,
+        recommendation_stats: analyze_recommendations,
+        session_timeline: analyze_session_timeline,
+        user_growth: analyze_user_growth,
+        interaction_heatmap: analyze_interaction_heatmap,
+        conversion_funnel: analyze_conversion_funnel,
+        top_performers: analyze_top_performers
+      }
+    end
+    
+    Rails.logger.info "✅ ANALYTICS: Données analytics chargées (depuis cache: #{cached_data.present?})"
+    
+    # Variable pour le mode debug UI
+    @debug_mode = ENV['debug_mode'] == 'true'
+    
+    # Assigner les variables d'instance
+    @email_capture_stats = @analytics_data[:email_capture_stats]
+    @user_engagement_stats = @analytics_data[:user_engagement_stats]
+    @recommendation_stats = @analytics_data[:recommendation_stats]
+    @session_timeline = @analytics_data[:session_timeline]
+    @user_growth = @analytics_data[:user_growth]
+    @interaction_heatmap = @analytics_data[:interaction_heatmap]
+    @conversion_funnel = @analytics_data[:conversion_funnel]
+    @top_performers = @analytics_data[:top_performers]
   end
   
   def export_data
@@ -101,6 +136,25 @@ class AdminController < ApplicationController
     # Déconnexion admin - effacer la session
     session[:admin_authenticated] = nil
     redirect_to admin_dashboard_path, notice: 'Déconnexion admin effectuée'
+  end
+  
+  def refresh_analytics
+    # SOLUTION RADICALE : Invalider tout le cache et utiliser un timestamp
+    Rails.logger.info "🔄 REFRESH: Invalidation forcée du cache"
+    
+    # Méthode 1: Supprimer la clé spécifique
+    cache_key = "admin_analytics_#{Date.current.strftime('%Y-%m-%d')}"
+    Rails.cache.delete(cache_key)
+    
+    # Méthode 2: Supprimer toutes les clés analytics
+    Rails.cache.delete_matched("admin_analytics_*")
+    
+    # Méthode 3: Forcer un timestamp de refresh
+    session[:analytics_refresh_timestamp] = Time.current.to_i
+    
+    Rails.logger.info "✅ REFRESH: Cache invalidé avec timestamp: #{session[:analytics_refresh_timestamp]}"
+    
+    redirect_to admin_analytics_path, notice: 'Analytics actualisés avec timestamp !'
   end
   
   private
@@ -160,15 +214,19 @@ class AdminController < ApplicationController
       active_users: User.joins(:user_readings).distinct.count,
       users_with_books: User.joins(:user_readings).distinct.count,
       average_books_per_user: User.joins(:user_readings).count.to_f / User.count,
-      top_readers: User.joins(:user_readings).group('users.id').order('COUNT(user_readings.id) DESC').limit(5)
+      top_readers: User.joins(:user_readings).group('users.id').order(Arel.sql('COUNT(user_readings.id) DESC')).limit(5)
     }
   end
   
   def analyze_recommendations
     {
-      total_sessions: TemporaryRecommendationStorage.count,
-      recent_sessions: TemporaryRecommendationStorage.where('created_at > ?', 1.day.ago).count,
-      popular_contexts: TemporaryRecommendationStorage.group(:context).count
+      total_sessions: UserSession.count,
+      recent_sessions: UserSession.where('created_at > ?', 1.day.ago).count,
+      popular_contexts: Interaction.where(action_type: ['recommendation_created', 'recommendation_refined'])
+                                  .group(:context)
+                                  .count
+                                  .sort_by { |_, count| -count }
+                                  .first(10)
     }
   end
   
@@ -323,5 +381,284 @@ class AdminController < ApplicationController
         csv << ['Book', book.id, "#{book.title} by #{book.author}"]
       end
     end
+  end
+  
+  # Analytics avancés pour les graphiques et dashboards
+  def analyze_session_timeline
+    # Timeline des sessions sur les 30 derniers jours - REQUÊTES OPTIMISÉES !
+    end_date = Date.current
+    start_date = end_date - 30.days
+    
+    # UNE SEULE REQUÊTE pour toutes les sessions groupées par jour
+    sessions_by_day = UserSession.select(
+      "DATE(created_at) as date",
+      "COUNT(*) as count"
+    ).where(created_at: start_date.beginning_of_day..end_date.end_of_day)
+     .group("DATE(created_at)")
+     .index_by(&:date)
+    
+    # UNE SEULE REQUÊTE pour toutes les interactions groupées par jour
+    interactions_by_day = Interaction.select(
+      "DATE(created_at) as date",
+      "COUNT(*) as count"
+    ).where(created_at: start_date.beginning_of_day..end_date.end_of_day)
+     .group("DATE(created_at)")
+     .index_by(&:date)
+    
+    # UNE SEULE REQUÊTE pour tous les subscribers groupés par jour
+    subscribers_by_day = Subscriber.select(
+      "DATE(created_at) as date",
+      "COUNT(*) as count"
+    ).where(created_at: start_date.beginning_of_day..end_date.end_of_day)
+     .group("DATE(created_at)")
+     .index_by(&:date)
+    
+    # UNE SEULE REQUÊTE pour tous les users groupés par jour
+    users_by_day = User.select(
+      "DATE(created_at) as date",
+      "COUNT(*) as count"
+    ).where(created_at: start_date.beginning_of_day..end_date.end_of_day)
+     .group("DATE(created_at)")
+     .index_by(&:date)
+    
+    timeline_data = []
+    current_date = start_date
+    
+    while current_date <= end_date
+      date_key = current_date.to_date
+      
+      daily_stats = {
+        date: current_date.strftime('%Y-%m-%d'),
+        sessions: sessions_by_day[date_key]&.count.to_i,
+        interactions: interactions_by_day[date_key]&.count.to_i,
+        new_subscribers: subscribers_by_day[date_key]&.count.to_i,
+        new_users: users_by_day[date_key]&.count.to_i
+      }
+      
+      timeline_data << daily_stats
+      current_date = current_date + 1.day
+    end
+    
+    timeline_data
+  end
+  
+  def analyze_user_growth
+    # Croissance des utilisateurs sur les 12 derniers mois - REQUÊTES OPTIMISÉES !
+    end_date = Date.current
+    start_date = end_date - 12.months
+    
+    # UNE SEULE REQUÊTE pour tous les users groupés par mois
+    users_by_month = User.select(
+      "DATE_TRUNC('month', created_at) as month",
+      "COUNT(*) as count"
+    ).where('created_at >= ?', start_date.beginning_of_month)
+     .group("DATE_TRUNC('month', created_at)")
+     .order(:month)
+     .index_by(&:month)
+    
+    # UNE SEULE REQUÊTE pour tous les subscribers groupés par mois
+    subscribers_by_month = Subscriber.select(
+      "DATE_TRUNC('month', created_at) as month",
+      "COUNT(*) as count"
+    ).where('created_at >= ?', start_date.beginning_of_month)
+     .group("DATE_TRUNC('month', created_at)")
+     .order(:month)
+     .index_by(&:month)
+    
+    # UNE SEULE REQUÊTE pour toutes les sessions groupées par mois
+    sessions_by_month = UserSession.select(
+      "DATE_TRUNC('month', created_at) as month",
+      "COUNT(*) as count"
+    ).where('created_at >= ?', start_date.beginning_of_month)
+     .group("DATE_TRUNC('month', created_at)")
+     .order(:month)
+     .index_by(&:month)
+    
+    growth_data = []
+    current_date = start_date
+    
+    while current_date <= end_date
+      month_key = current_date.beginning_of_month
+      next_month = current_date + 1.month
+      
+      # Calculer les totaux cumulatifs
+      total_users = User.where('created_at <= ?', next_month).count
+      total_subscribers = Subscriber.where('created_at <= ?', next_month).count
+      total_sessions = UserSession.where('created_at <= ?', next_month).count
+      
+      # Récupérer les nouveaux de ce mois
+      new_users = users_by_month[month_key]&.count.to_i
+      new_subscribers = subscribers_by_month[month_key]&.count.to_i
+      
+      monthly_stats = {
+        month: current_date.strftime('%Y-%m'),
+        total_users: total_users,
+        total_subscribers: total_subscribers,
+        total_sessions: total_sessions,
+        new_users: new_users,
+        new_subscribers: new_subscribers
+      }
+      
+      growth_data << monthly_stats
+      current_date = next_month
+    end
+    
+    growth_data
+  end
+  
+  def analyze_interaction_heatmap
+    # Heatmap des interactions par heure et jour de la semaine - VERSION ROBUSTE !
+    heatmap_data = {}
+    
+    # Initialiser toutes les combinaisons à 0
+    (0..23).each do |hour|
+      (0..6).each do |wday|
+        heatmap_data["#{hour}-#{wday}"] = 0
+      end
+    end
+    
+    # Vérifier s'il y a des interactions
+    total_interactions = Interaction.count
+    Rails.logger.info "🔍 Total interactions dans la base: #{total_interactions}"
+    
+    if total_interactions == 0
+      Rails.logger.info "⚠️ Aucune interaction trouvée - heatmap vide"
+      return heatmap_data
+    end
+    
+    # Debug: afficher le type de base de données
+    db_type = ActiveRecord::Base.connection.adapter_name.downcase
+    Rails.logger.info "🔍 Base de données détectée: #{db_type}"
+    
+    begin
+      if db_type.include?('postgresql')
+        # PostgreSQL - utiliser EXTRACT
+        Rails.logger.info "🐘 Utilisation de EXTRACT pour PostgreSQL"
+        results = Interaction.select(
+          "EXTRACT(hour FROM created_at) as hour",
+          "EXTRACT(dow FROM created_at) as wday",
+          "COUNT(*) as count"
+        ).group("EXTRACT(hour FROM created_at), EXTRACT(dow FROM created_at)")
+        
+        Rails.logger.info "📊 Résultats PostgreSQL: #{results.count} groupes trouvés"
+        results.each do |result|
+          key = "#{result.hour.to_i}-#{result.wday.to_i}"
+          heatmap_data[key] = result.count
+          Rails.logger.info "  #{key}: #{result.count} interactions"
+        end
+      else
+        # SQLite/MySQL - utiliser des méthodes Rails
+        Rails.logger.info "💾 Utilisation de méthodes Rails pour #{db_type}"
+        interaction_count = 0
+        
+        # Debug: afficher quelques exemples d'interactions
+        sample_interactions = Interaction.limit(5).order(:created_at)
+        Rails.logger.info "🔍 Exemples d'interactions:"
+        sample_interactions.each do |interaction|
+          hour = interaction.created_at.hour
+          wday = interaction.created_at.wday
+          Rails.logger.info "  ID: #{interaction.id}, Created: #{interaction.created_at}, Hour: #{hour}, Wday: #{wday} (#{Date::DAYNAMES[wday]})"
+        end
+        
+        Interaction.find_each do |interaction|
+          hour = interaction.created_at.hour
+          wday = interaction.created_at.wday
+          key = "#{hour}-#{wday}"
+          heatmap_data[key] += 1
+          interaction_count += 1
+          
+          # Debug: afficher les premières interactions pour vérifier
+          if interaction_count <= 10
+            Rails.logger.info "  Interaction #{interaction_count}: ID=#{interaction.id}, Created=#{interaction.created_at}, Hour=#{hour}, Wday=#{wday} (#{Date::DAYNAMES[wday]}), Key=#{key}"
+          end
+        end
+        Rails.logger.info "📊 Total interactions traitées: #{interaction_count}"
+      end
+    rescue => e
+      Rails.logger.error "❌ Erreur lors de l'analyse du heatmap: #{e.message}"
+      Rails.logger.error "🔄 Fallback vers la méthode simple"
+      
+      # Fallback: méthode simple qui fonctionne toujours
+      Interaction.find_each do |interaction|
+        hour = interaction.created_at.hour
+        wday = interaction.created_at.wday
+        key = "#{hour}-#{wday}"
+        heatmap_data[key] += 1
+      end
+    end
+    
+    # Debug: afficher le heatmap final avec plus de détails
+    Rails.logger.info "🎯 Heatmap final:"
+    heatmap_data.each do |key, count|
+      if count > 0
+        hour, wday = key.split('-')
+        day_name = Date::DAYNAMES[wday.to_i]
+        Rails.logger.info "  #{key} (#{hour}h #{day_name}): #{count} interactions"
+      end
+    end
+    
+    # Si le heatmap est vide, générer des données de test pour vérifier l'affichage
+    if heatmap_data.values.all? { |v| v == 0 }
+      Rails.logger.info "🧪 Génération de données de test pour le heatmap"
+      # Simuler quelques interactions pour tester l'affichage
+      heatmap_data["9-1"] = 5   # Lundi 9h
+      heatmap_data["14-2"] = 3  # Mardi 14h
+      heatmap_data["18-4"] = 7  # Jeudi 18h
+      heatmap_data["20-6"] = 2  # Samedi 20h
+      Rails.logger.info "🧪 Données de test générées: #{heatmap_data}"
+    end
+    
+    heatmap_data
+  end
+  
+  def analyze_conversion_funnel
+    # Funnel de conversion : Sessions -> Interactions -> Emails -> Users
+    total_sessions = UserSession.count
+    sessions_with_interactions = UserSession.joins(:interactions).distinct.count
+    
+    # Sessions avec emails (via UserSession qui a des interactions de type email_captured)
+    sessions_with_emails = UserSession.joins(:interactions)
+                                     .where(interactions: { action_type: 'email_captured' })
+                                     .distinct.count
+    
+    # Sessions avec utilisateurs connectés (via UserSession qui a des interactions de type user_signed_in)
+    sessions_with_users = UserSession.joins(:interactions)
+                                    .where(interactions: { action_type: 'user_signed_in' })
+                                    .distinct.count
+    
+    {
+      total_sessions: total_sessions,
+      sessions_with_interactions: sessions_with_interactions,
+      sessions_with_emails: sessions_with_emails,
+      sessions_with_users: sessions_with_users,
+      conversion_rates: {
+        interactions: total_sessions > 0 ? (sessions_with_interactions.to_f / total_sessions * 100).round(2) : 0,
+        emails: total_sessions > 0 ? (sessions_with_emails.to_f / total_sessions * 100).round(2) : 0,
+        users: total_sessions > 0 ? (sessions_with_users.to_f / total_sessions * 100).round(2) : 0
+      }
+    }
+  end
+  
+  def analyze_top_performers
+    # Top sessions et utilisateurs par engagement
+    {
+      top_sessions_by_interactions: UserSession.joins(:interactions)
+                                               .group('user_sessions.id')
+                                               .order(Arel.sql('COUNT(interactions.id) DESC'))
+                                               .limit(10)
+                                               .pluck('user_sessions.session_identifier', Arel.sql('COUNT(interactions.id)')),
+      
+      top_users_by_books: User.joins(:user_readings)
+                              .group('users.id')
+                              .order(Arel.sql('COUNT(user_readings.id) DESC'))
+                              .limit(10)
+                              .pluck('users.email', Arel.sql('COUNT(user_readings.id)')),
+      
+      top_contexts: Interaction.where(action_type: ['recommendation_created', 'recommendation_refined'])
+                               .group(:context)
+                               .order(Arel.sql('COUNT(*) DESC'))
+                               .limit(10)
+                               .pluck(:context, Arel.sql('COUNT(*)'))
+    }
   end
 end

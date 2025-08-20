@@ -43,6 +43,7 @@ Rails.application.routes.draw do
         get :analytics
       end
     end
+    get 'refresh_analytics', to: 'admin#refresh_analytics'
   end
 
   resources :imports, only: [:new, :create]
