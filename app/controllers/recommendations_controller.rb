@@ -228,12 +228,16 @@ class RecommendationsController < ApplicationController
       enrich_with_direct_links(@parsed_response)
       
       # Store results for all users using file storage (avoid cookie overflow)
+      # Generate a session_id linked to the current refinement session
+      refinement_session_id = "refined_#{current_session_id}_#{Time.current.to_i}"
+      
       session_id = TemporaryRecommendationStorage.store(
         @ai_response,
         @parsed_response,
         @user_prompt,
         context,
-        [] # No tone chips for refinement
+        [], # No tone chips for refinement
+        refinement_session_id
       )
       
       # Store only the session ID in session (very small) - CRITICAL FOR DISPLAY
