@@ -1,0 +1,287 @@
+<div class="min-h-screen bg-gray-50 py-8">
+  <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+    <!-- Header -->
+    <div class="mb-8">
+      <h1 class="text-3xl font-bold text-gray-900">Interactions</h1>
+      <p class="mt-2 text-sm text-gray-600">
+        Vue granulaire de toutes les interactions utilisateur avec leurs détails et métadonnées
+      </p>
+    </div>
+
+    <!-- Navigation -->
+    <div class="mb-8">
+      <%= render 'admin/shared/navigation' %>
+    </div>
+
+    <!-- Stats Cards -->
+    <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
+      <!-- Total Interactions -->
+      <div class="bg-white overflow-hidden shadow rounded-lg">
+        <div class="p-5">
+          <div class="flex items-center">
+            <div class="flex-shrink-0">
+              <svg class="h-6 w-6 text-purple-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 10V3L4 14h7v7l9-11h-7z"></path>
+              </svg>
+            </div>
+            <div class="ml-5 w-0 flex-1">
+              <dl>
+                <dt class="text-sm font-medium text-gray-500 truncate">Total Interactions</dt>
+                <dd class="text-lg font-medium text-gray-900"><%= @interaction_stats[:total] %></dd>
+              </dl>
+            </div>
+          </div>
+        </div>
+        <div class="bg-gray-50 px-5 py-3">
+          <div class="text-sm">
+            <span class="text-purple-600">+<%= @interaction_stats[:recent] %></span>
+            <span class="text-gray-400">ce jour</span>
+          </div>
+        </div>
+      </div>
+
+      <!-- Email Capture -->
+      <div class="bg-white overflow-hidden shadow rounded-lg">
+        <div class="p-5">
+          <div class="flex items-center">
+            <div class="flex-shrink-0">
+              <svg class="h-6 w-6 text-blue-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 8l7.89 4.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2 2v10a2 2 0 002 2z"></path>
+              </svg>
+            </div>
+            <div class="ml-5 w-0 flex-1">
+              <dl>
+                <dt class="text-sm font-medium text-gray-500 truncate">Email Capture</dt>
+                <dd class="text-lg font-medium text-gray-900"><%= @interaction_stats[:by_category][:email_capture] %></dd>
+              </dl>
+            </div>
+          </div>
+        </div>
+        <div class="bg-gray-50 px-5 py-3">
+          <div class="text-sm text-gray-600">
+            Captures d'emails
+          </div>
+        </div>
+      </div>
+
+      <!-- Recommendations -->
+      <div class="bg-white overflow-hidden shadow rounded-lg">
+        <div class="p-5">
+          <div class="flex items-center">
+            <div class="flex-shrink-0">
+              <svg class="h-6 w-6 text-green-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9.663 17h4.673M12 3v1m6.364 1.636l-.707.707M21 12h-1M4 12H3m3.343-5.657l-.707-.707m2.828 9.9a5 5 0 117.072 0l-.548.547A3.374 3.374 0 0014 18.469V19a2 2 0 11-4 0v-.531c0-.895-.356-1.754-.988-2.386l-.548-.547z"></path>
+              </svg>
+            </div>
+            <div class="ml-5 w-0 flex-1">
+              <dl>
+                <dt class="text-sm font-medium text-gray-500 truncate">Recommandations</dt>
+                <dd class="text-lg font-medium text-gray-900"><%= @interaction_stats[:by_category][:recommendation] %></dd>
+              </dl>
+            </div>
+          </div>
+        </div>
+        <div class="bg-gray-50 px-5 py-3">
+          <div class="text-sm text-gray-600">
+            Créées et affinées
+          </div>
+        </div>
+      </div>
+
+      <!-- Authentication -->
+      <div class="bg-white overflow-hidden shadow rounded-lg">
+        <div class="p-5">
+          <div class="flex items-center">
+            <div class="flex-shrink-0">
+              <svg class="h-6 w-6 text-orange-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z"></path>
+              </svg>
+            </div>
+            <div class="ml-5 w-0 flex-1">
+              <dl>
+                <dt class="text-sm font-medium text-gray-500 truncate">Authentification</dt>
+                <dd class="text-lg font-medium text-gray-900"><%= @interaction_stats[:by_category][:authentication] %></dd>
+              </dl>
+            </div>
+          </div>
+        </div>
+        <div class="bg-gray-50 px-5 py-3">
+          <div class="text-sm text-gray-600">
+            Connexions utilisateur
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Export Buttons -->
+    <div class="mb-6 flex justify-between items-center">
+      <div class="text-sm text-gray-600">
+        Total: <%= @interactions.count %> interactions affichées
+      </div>
+      <div class="flex space-x-3">
+        <%= link_to "Export CSV", admin_interactions_path(format: :csv), class: "inline-flex items-center px-4 py-2 border border-gray-300 shadow-sm text-sm font-medium rounded-md text-gray-700 bg-white hover:bg-gray-50" %>
+        <%= link_to "Export JSON", admin_interactions_path(format: :json), class: "inline-flex items-center px-4 py-2 border border-gray-300 shadow-sm text-sm font-medium rounded-md text-gray-700 bg-white hover:bg-gray-50" %>
+      </div>
+    </div>
+
+    <!-- Interactions List -->
+    <div class="space-y-4">
+      <% @interactions.each_with_index do |interaction, interaction_index| %>
+        <div class="bg-white shadow rounded-lg overflow-hidden">
+          <!-- Interaction Header -->
+          <button class="w-full px-6 py-4 text-left hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-inset" 
+                  onclick="toggleInteraction('interaction-<%= interaction_index %>')"
+                  aria-expanded="false"
+                  aria-controls="interaction-content-<%= interaction_index %>">
+            <div class="flex items-center justify-between">
+              <div class="flex items-center space-x-3">
+                <div class="flex-shrink-0">
+                  <div class="h-10 w-10 rounded-full <%= case interaction.instance_variable_get(:@interaction_category)
+                                                          when 'email_capture' then 'bg-blue-100'
+                                                          when 'authentication' then 'bg-orange-100'
+                                                          when 'recommendation' then 'bg-green-100'
+                                                          when 'feedback' then 'bg-purple-100'
+                                                          else 'bg-gray-100'
+                                                          end %> flex items-center justify-center">
+                    <svg class="h-5 w-5 <%= case interaction.instance_variable_get(:@interaction_category)
+                                           when 'email_capture' then 'text-blue-600'
+                                           when 'authentication' then 'text-orange-600'
+                                           when 'recommendation' then 'text-green-600'
+                                           when 'feedback' then 'text-purple-600'
+                                           else 'text-gray-600'
+                                           end %>" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 10V3L4 14h7v7l9-11h-7z"></path>
+                    </svg>
+                  </div>
+                </div>
+                <div class="flex-1 min-w-0">
+                  <p class="text-sm font-medium text-gray-900">
+                    <%= interaction.action_type&.humanize %>
+                  </p>
+                  <p class="text-sm text-gray-500">
+                    <%= interaction.context || 'Aucun contexte' %> • <%= interaction.created_at.strftime("%d/%m/%Y à %H:%M") %>
+                  </p>
+                </div>
+              </div>
+              <div class="flex items-center space-x-4">
+                <!-- Category Badge -->
+                <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium 
+                  <%= case interaction.instance_variable_get(:@interaction_category)
+                      when 'email_capture' then 'bg-blue-100 text-blue-800'
+                      when 'authentication' then 'bg-orange-100 text-orange-800'
+                      when 'recommendation' then 'bg-green-100 text-green-800'
+                      when 'feedback' then 'bg-purple-100 text-purple-800'
+                      else 'bg-gray-100 text-gray-800'
+                      end %>">
+                  <%= interaction.instance_variable_get(:@interaction_category)&.humanize %>
+                </span>
+                
+                <!-- Linked Emails Count -->
+                <% linked_emails = interaction.instance_variable_get(:@linked_emails) %>
+                <% if linked_emails.any? %>
+                  <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-purple-100 text-purple-800">
+                    <%= linked_emails.count %> email(s)
+                  </span>
+                <% end %>
+                
+                <svg id="interaction-<%= interaction_index %>-icon" class="h-5 w-5 text-gray-400 transform transition-transform duration-200" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"></path>
+                </svg>
+              </div>
+            </div>
+          </button>
+          
+          <!-- Interaction Content -->
+          <div id="interaction-content-<%= interaction_index %>" class="hidden border-t border-gray-200">
+            <div class="px-6 py-4">
+              <!-- Interaction Info -->
+              <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mb-6">
+                <div>
+                  <h4 class="text-sm font-medium text-gray-700 mb-2">Informations de l'interaction</h4>
+                  <div class="space-y-2 text-sm text-gray-600">
+                    <p><strong>ID:</strong> <%= interaction.id %></p>
+                    <p><strong>Action Type:</strong> <%= interaction.action_type %></p>
+                    <p><strong>Contexte:</strong> <%= interaction.context || 'Aucun' %></p>
+                    <p><strong>Créée le:</strong> <%= interaction.created_at.strftime("%d/%m/%Y à %H:%M") %></p>
+                    <p><strong>Catégorie:</strong> 
+                      <span class="inline-flex items-center px-2 py-1 rounded-full text-xs font-medium 
+                        <%= case interaction.instance_variable_get(:@interaction_category)
+                            when 'email_capture' then 'bg-blue-100 text-blue-800'
+                            when 'authentication' then 'bg-orange-100 text-orange-800'
+                            when 'recommendation' then 'bg-green-100 text-green-800'
+                            when 'feedback' then 'bg-purple-100 text-purple-800'
+                            else 'bg-gray-100 text-gray-800'
+                            end %>">
+                        <%= interaction.instance_variable_get(:@interaction_category)&.humanize %>
+                      </span>
+                    </p>
+                  </div>
+                </div>
+                
+                <div>
+                  <h4 class="text-sm font-medium text-gray-700 mb-2">Session & Emails liés</h4>
+                  <div class="space-y-2">
+                    <% if interaction.user_session.present? %>
+                      <div class="bg-gray-50 p-3 rounded border">
+                        <p class="text-sm font-medium text-gray-900">Session</p>
+                        <p class="text-xs text-gray-500">ID: <%= interaction.user_session.session_identifier %></p>
+                        <p class="text-xs text-gray-500">Créée: <%= interaction.user_session.created_at.strftime("%d/%m/%Y à %H:%M") %></p>
+                      </div>
+                    <% end %>
+                    
+                    <% linked_emails = interaction.instance_variable_get(:@linked_emails) %>
+                    <% if linked_emails.any? %>
+                      <div>
+                        <p class="text-sm font-medium text-gray-700 mb-2">Emails liés</p>
+                        <% linked_emails.each do |email_data| %>
+                          <div class="bg-blue-50 p-3 rounded border mb-2">
+                            <p class="text-sm font-medium text-gray-900"><%= email_data[:email] %></p>
+                            <p class="text-xs text-gray-500">
+                              <%= email_data[:source] %> • <%= email_data[:timestamp].strftime("%d/%m/%Y à %H:%M") %>
+                            </p>
+                          </div>
+                        <% end %>
+                      </div>
+                    <% else %>
+                      <p class="text-sm text-gray-500 italic">Aucun email lié</p>
+                    <% end %>
+                  </div>
+                </div>
+              </div>
+              
+              <!-- Metadata -->
+              <% if interaction.metadata.present? %>
+                <div class="mb-6">
+                  <h4 class="text-sm font-medium text-gray-700 mb-3">Métadonnées</h4>
+                  <div class="bg-gray-50 p-4 rounded border">
+                    <pre class="text-sm text-gray-600 overflow-x-auto"><%= JSON.pretty_generate(interaction.metadata) %></pre>
+                  </div>
+                </div>
+              <% end %>
+            </div>
+          </div>
+        </div>
+      <% end %>
+    </div>
+
+    <!-- Footer Info -->
+    <div class="mt-8 text-center text-sm text-gray-500">
+      Affichage des 100 dernières interactions
+    </div>
+  </div>
+</div>
+
+<script>
+function toggleInteraction(interactionId) {
+  const content = document.getElementById(interactionId.replace('interaction-', 'interaction-content-'));
+  const icon = document.getElementById(interactionId + '-icon');
+  
+  if (content.classList.contains('hidden')) {
+    content.classList.remove('hidden');
+    icon.style.transform = 'rotate(180deg)';
+  } else {
+    content.classList.add('hidden');
+    icon.style.transform = 'rotate(0deg)';
+  }
+}
+</script>

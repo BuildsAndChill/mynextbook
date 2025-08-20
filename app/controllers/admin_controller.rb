@@ -102,6 +102,31 @@ class AdminController < ApplicationController
     end
   end
   
+  def interactions
+    # Récupérer toutes les interactions avec enrichissement des données
+    @interactions = Interaction.includes(:user_session)
+                              .order(created_at: :desc)
+                              .limit(100)
+    
+    # Enrichir chaque interaction avec les informations de session
+    @interactions.each do |interaction|
+      # Lier aux emails/subscribers si possible
+      interaction.instance_variable_set(:@linked_emails, find_linked_emails_for_interaction(interaction))
+      
+      # Déterminer le type d'interaction
+      interaction.instance_variable_set(:@interaction_category, categorize_interaction(interaction))
+    end
+    
+    # Calculer les statistiques des interactions
+    @interaction_stats = calculate_interaction_stats
+    
+    respond_to do |format|
+      format.html
+      format.csv { send_data export_interactions_csv, filename: "interactions-#{Date.current}.csv" }
+      format.json { render json: @interactions.as_json(methods: [:linked_emails, :interaction_category]) }
+    end
+  end
+  
   def users
     @users = User.includes(:user_readings, :user_book_feedbacks)
                  .order(created_at: :desc)
@@ -779,6 +804,112 @@ class AdminController < ApplicationController
       recent_sessions: recent_sessions,
       active_sessions: active_sessions
     }
+  end
+  
+  # Trouver les emails liés à une interaction
+  def find_linked_emails_for_interaction(interaction)
+    emails = []
+    
+    # Chercher dans les subscribers avec le même session_id
+    if interaction.user_session&.session_identifier.present?
+      subscribers = Subscriber.where(session_id: interaction.user_session.session_identifier)
+      subscribers.each do |subscriber|
+        emails << {
+          email: subscriber.email,
+          source: 'subscriber',
+          timestamp: subscriber.created_at
+        }
+      end
+    end
+    
+    # Chercher dans les interactions de type email_captured avec le même contexte
+    if interaction.context.present?
+      email_interactions = Interaction.where(
+        action_type: 'email_captured',
+        context: interaction.context
+      ).where('created_at <= ?', interaction.created_at)
+      
+      email_interactions.each do |email_interaction|
+        if email_interaction.metadata&.dig('email').present?
+          emails << {
+            email: email_interaction.metadata['email'],
+            source: 'email_captured',
+            timestamp: email_interaction.created_at
+          }
+        end
+      end
+    end
+    
+    emails.uniq { |e| e[:email] }
+  end
+  
+  # Catégoriser une interaction
+  def categorize_interaction(interaction)
+    case interaction.action_type
+    when 'email_captured'
+      'email_capture'
+    when 'user_signed_in'
+      'authentication'
+    when 'recommendation_created', 'recommendation_refined'
+      'recommendation'
+    when 'book_feedback'
+      'feedback'
+    else
+      'other'
+    end
+  end
+  
+  # Calculer les statistiques des interactions
+  def calculate_interaction_stats
+    total_interactions = Interaction.count
+    
+    # Interactions par type
+    interactions_by_type = Interaction.group(:action_type).count
+    
+    # Interactions par contexte
+    interactions_by_context = Interaction.group(:context).count
+    
+    # Interactions récentes (24h)
+    recent_interactions = Interaction.where('created_at > ?', 1.day.ago).count
+    
+    # Interactions par catégorie
+    interactions_by_category = {
+      email_capture: Interaction.where(action_type: 'email_captured').count,
+      authentication: Interaction.where(action_type: 'user_signed_in').count,
+      recommendation: Interaction.where(action_type: ['recommendation_created', 'recommendation_refined']).count,
+      feedback: Interaction.where(action_type: 'book_feedback').count,
+      other: total_interactions - Interaction.where(action_type: ['email_captured', 'user_signed_in', 'recommendation_created', 'recommendation_refined', 'book_feedback']).count
+    }
+    
+    {
+      total: total_interactions,
+      by_type: interactions_by_type,
+      by_context: interactions_by_context,
+      by_category: interactions_by_category,
+      recent: recent_interactions
+    }
+  end
+  
+  # Export CSV des interactions
+  def export_interactions_csv
+    require 'csv'
+    
+    CSV.generate(headers: true) do |csv|
+      csv << ['ID', 'Action Type', 'Context', 'Created At', 'Session ID', 'Category', 'Linked Emails', 'Metadata']
+      
+      @interactions.each do |interaction|
+        csv << [
+          interaction.id,
+          interaction.action_type,
+          interaction.context,
+          interaction.created_at,
+          interaction.user_session&.session_identifier,
+          interaction.instance_variable_get(:@interaction_category),
+          interaction.instance_variable_get(:@linked_emails).map { |e| e[:email] }.join('; '),
+          interaction.metadata&.to_json
+        ]
+      end
+    end
   end
   
   # Export CSV des sessions

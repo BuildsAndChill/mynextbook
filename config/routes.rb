@@ -32,6 +32,7 @@ Rails.application.routes.draw do
   delete 'admin/logout', to: 'admin#logout'      # Pour la déconnexion
   get 'admin/logs', to: 'admin#logs'
   get 'admin/sessions', to: 'admin#sessions'
+  get 'admin/interactions', to: 'admin#interactions'
   get 'admin/subscribers', to: 'admin#subscribers'
   get 'admin/users', to: 'admin#users'
   get 'admin/analytics', to: 'admin#analytics'

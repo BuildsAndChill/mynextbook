@@ -5,6 +5,9 @@
   <%= link_to "Sessions", admin_sessions_path, 
       class: "px-3 py-2 rounded-md text-sm font-medium #{current_page?(admin_sessions_path) ? 'bg-indigo-100 text-indigo-700' : 'text-gray-700 hover:text-gray-900 hover:bg-gray-100'}" %>
   
+  <%= link_to "Interactions", admin_interactions_path, 
+      class: "px-3 py-2 rounded-md text-sm font-medium #{current_page?(admin_interactions_path) ? 'bg-indigo-100 text-indigo-700' : 'text-gray-700 hover:text-gray-900 hover:bg-gray-100'}" %>
+  
   <%= link_to "Subscribers", admin_subscribers_path, 
       class: "px-3 py-2 rounded-md text-sm font-medium #{current_page?(admin_subscribers_path) ? 'bg-indigo-100 text-indigo-700' : 'text-gray-700 hover:text-gray-900 hover:bg-gray-100'}" %>
   
