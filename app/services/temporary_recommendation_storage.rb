@@ -3,9 +3,9 @@ class TemporaryRecommendationStorage
   STORAGE_DIR = Rails.root.join('tmp', 'recommendations')
   EXPIRY_TIME = 1.hour
 
-  def self.store(ai_response, parsed_response, user_prompt, context, tone_chips)
-    # Generate unique session ID
-    session_id = SecureRandom.uuid
+  def self.store(ai_response, parsed_response, user_prompt, context, tone_chips, session_id = nil)
+    # Use provided session_id or generate unique one
+    session_id ||= SecureRandom.uuid
     
     # Prepare data structure
     ai_data = {

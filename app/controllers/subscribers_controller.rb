@@ -92,27 +92,27 @@ class SubscribersController < ApplicationController
     Rails.logger.info "DEBUG: recommendation_session_id: #{session[:recommendation_session_id]}"
     Rails.logger.info "DEBUG: refined_session_id: #{session[:refined_session_id]}"
     
-    # Vérifier les sessions de recommandations
-    if session[:recommendation_session_id]
-      stored_data = TemporaryRecommendationStorage.retrieve(session[:recommendation_session_id])
+    # Vérifier les sessions de refinement EN PREMIER (priorité)
+    if session[:refined_session_id]
+      stored_data = TemporaryRecommendationStorage.retrieve(session[:refined_session_id])
       if stored_data
         context_data[:context] = stored_data[:context]
         context_data[:tone_chips] = stored_data[:tone_chips]
         context_data[:ai_response] = stored_data[:ai_response]
         context_data[:parsed_response] = stored_data[:parsed_response]
-        Rails.logger.info "DEBUG: Found recommendation session data"
+        Rails.logger.info "DEBUG: Found refined session data (PRIORITY)"
       end
     end
     
-    # Vérifier les sessions de refinement
-    if session[:refined_session_id]
-      stored_data = TemporaryRecommendationStorage.retrieve(session[:refined_session_id])
+    # Vérifier les sessions de recommandations EN DEUXIÈME (fallback)
+    if session[:recommendation_session_id] && !context_data[:parsed_response].present?
+      stored_data = TemporaryRecommendationStorage.retrieve(session[:recommendation_session_id])
       if stored_data
         context_data[:context] ||= stored_data[:context]
         context_data[:tone_chips] ||= stored_data[:tone_chips]
         context_data[:ai_response] ||= stored_data[:ai_response]
         context_data[:parsed_response] ||= stored_data[:parsed_response]
-        Rails.logger.info "DEBUG: Found refined session data"
+        Rails.logger.info "DEBUG: Found recommendation session data (fallback)"
       end
     end
     
