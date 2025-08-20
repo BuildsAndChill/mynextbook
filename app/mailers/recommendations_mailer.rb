@@ -8,8 +8,10 @@ class RecommendationsMailer < ApplicationMailer
     @subscriber = subscriber
     @recommendations = recommendations_data
     @context = context
-    @books = @recommendations&.dig(:picks) || []
-    @explanation = @recommendations&.dig(:explanation) || "Voici tes recommandations personnalisées !"
+    
+    # Gérer les clés string ET symbols pour la compatibilité
+    @books = @recommendations&.dig(:picks) || @recommendations&.dig('picks') || []
+    @explanation = @recommendations&.dig(:explanation) || @recommendations&.dig('explanation') || "Voici tes recommandations personnalisées !"
     
     # Métadonnées pour l'email
     @sent_at = Time.current
