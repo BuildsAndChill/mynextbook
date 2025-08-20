@@ -77,3 +77,6 @@ gem "devise", "~> 4.9"
 
 # Pagination
 gem "kaminari"
+
+# Mailgun for email delivery
+gem "mailgun-ruby", "~> 1.2"

@@ -41,26 +41,35 @@ Rails.application.configure do
   config.action_mailer.default_url_options = { host: "localhost", port: 3000 }
   
   # Configure email delivery method for development
-  config.action_mailer.delivery_method = :smtp
+  # Priority: Mailgun > Gmail > File storage
   
-  # Gmail SMTP configuration (utilise les variables de env.example)
-  config.action_mailer.smtp_settings = {
-    address: ENV.fetch('SMTP_ADDRESS', 'smtp.gmail.com'),
-    port: ENV.fetch('SMTP_PORT', 587).to_i,
-    domain: 'gmail.com',
-    user_name: ENV.fetch('SMTP_USERNAME', ''),
-    password: ENV.fetch('SMTP_PASSWORD', ''),
-    authentication: 'plain',
-    enable_starttls_auto: true
-  }
-  
-  # Fallback to file storage if Gmail not configured
-  if ENV['SMTP_USERNAME'].blank? || ENV['SMTP_PASSWORD'].blank?
+  if ENV['MAILGUN_API_KEY'].present? && ENV['MAILGUN_DOMAIN'].present?
+    # Mailgun configuration (priorité haute)
+    config.action_mailer.delivery_method = :mailgun
+    config.action_mailer.mailgun_settings = {
+      api_key: ENV['MAILGUN_API_KEY'],
+      domain: ENV['MAILGUN_DOMAIN'],
+      region: ENV.fetch('MAILGUN_REGION', 'eu')
+    }
+    puts "✅ Mailgun configuré pour l'envoi d'emails"
+  elsif ENV['SMTP_USERNAME'].present? && ENV['SMTP_PASSWORD'].present?
+    # Gmail SMTP configuration (fallback)
+    config.action_mailer.delivery_method = :smtp
+    config.action_mailer.smtp_settings = {
+      address: ENV.fetch('SMTP_ADDRESS', 'smtp.gmail.com'),
+      port: ENV.fetch('SMTP_PORT', 587).to_i,
+      domain: 'gmail.com',
+      user_name: ENV.fetch('SMTP_USERNAME', ''),
+      password: ENV.fetch('SMTP_PASSWORD', ''),
+      authentication: 'plain',
+      enable_starttls_auto: true
+    }
+    puts "✅ Gmail configuré pour l'envoi d'emails"
+  else
+    # Fallback to file storage if no email service configured
     config.action_mailer.delivery_method = :file
     config.action_mailer.file_settings = { location: Rails.root.join('tmp', 'mails') }
-    puts "⚠️ Gmail non configuré, emails stockés dans tmp/mails/"
-  else
-    puts "✅ Gmail configuré pour l'envoi d'emails"
+    puts "⚠️ Aucun service email configuré, emails stockés dans tmp/mails/"
   end
 
   # Print deprecation notices to the Rails logger.

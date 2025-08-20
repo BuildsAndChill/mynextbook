@@ -58,16 +58,40 @@ Rails.application.configure do
   # config.action_mailer.raise_delivery_errors = false
 
   # Set host to be used by links generated in mailer templates.
-  config.action_mailer.default_url_options = { host: "example.com" }
+  config.action_mailer.default_url_options = { host: "mynextbook.onrender.com" }
 
-  # Specify outgoing SMTP server. Remember to add smtp/* credentials via rails credentials:edit.
-  # config.action_mailer.smtp_settings = {
-  #   user_name: Rails.application.credentials.dig(:smtp, :user_name),
-  #   password: Rails.application.credentials.dig(:smtp, :password),
-  #   address: "smtp.example.com",
-  #   port: 587,
-  #   authentication: :plain
-  # }
+  # Configure email delivery method for production
+  # Priority: Mailgun > SMTP > File storage
+  
+  if ENV['MAILGUN_API_KEY'].present? && ENV['MAILGUN_DOMAIN'].present?
+    # Mailgun configuration (priorité haute)
+    config.action_mailer.delivery_method = :mailgun
+    config.action_mailer.mailgun_settings = {
+      api_key: ENV['MAILGUN_API_KEY'],
+      domain: ENV['MAILGUN_DOMAIN'],
+      region: ENV.fetch('MAILGUN_REGION', 'eu')
+    }
+    config.action_mailer.raise_delivery_errors = true
+    puts "✅ Mailgun configuré pour la production"
+  elsif ENV['SMTP_USERNAME'].present? && ENV['SMTP_PASSWORD'].present?
+    # SMTP configuration (fallback)
+    config.action_mailer.delivery_method = :smtp
+    config.action_mailer.smtp_settings = {
+      user_name: ENV['SMTP_USERNAME'],
+      password: ENV['SMTP_PASSWORD'],
+      address: ENV.fetch('SMTP_ADDRESS', 'smtp.gmail.com'),
+      port: ENV.fetch('SMTP_PORT', 587).to_i,
+      authentication: :plain,
+      enable_starttls_auto: true
+    }
+    config.action_mailer.raise_delivery_errors = true
+    puts "✅ SMTP configuré pour la production"
+  else
+    # Fallback to file storage if no email service configured
+    config.action_mailer.delivery_method = :file
+    config.action_mailer.file_settings = { location: Rails.root.join('tmp', 'mails') }
+    puts "⚠️ Aucun service email configuré, emails stockés dans tmp/mails/"
+  end
 
   # Enable locale fallbacks for I18n (makes lookups for any locale fall back to
   # the I18n.default_locale when a translation cannot be found).
