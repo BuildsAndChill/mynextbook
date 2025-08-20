@@ -1,0 +1,153 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Tes recommandations de livres</title>
+  <style>
+    /* Styles inline pour compatibilité email */
+    .container { max-width: 600px; margin: 0 auto; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; }
+    .header { background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); padding: 30px; text-align: center; color: white; }
+    .header h1 { margin: 0; font-size: 24px; font-weight: bold; }
+    .header p { margin: 10px 0 0 0; font-size: 16px; opacity: 0.9; }
+    .content { padding: 30px; background: #ffffff; }
+    .context-box { background: #f8fafc; border-left: 4px solid #667eea; padding: 20px; margin-bottom: 30px; border-radius: 0 8px 8px 0; }
+    .context-box p { margin: 0; font-size: 16px; color: #4a5568; font-style: italic; }
+    .explanation { font-size: 16px; color: #2d3748; margin-bottom: 30px; line-height: 1.6; }
+    .book { border: 1px solid #e2e8f0; border-radius: 12px; padding: 20px; margin-bottom: 20px; background: #ffffff; }
+    .book h3 { margin: 0 0 8px 0; font-size: 20px; color: #1a202c; font-weight: bold; }
+    .book .author { font-size: 16px; color: #667eea; margin-bottom: 12px; font-weight: 500; }
+    .book .description { font-size: 14px; color: #4a5568; line-height: 1.5; margin-bottom: 15px; }
+    .book .tags { display: flex; flex-wrap: wrap; gap: 6px; margin-bottom: 15px; }
+    .book .tag { background: #edf2f7; color: #4a5568; padding: 4px 8px; border-radius: 4px; font-size: 12px; }
+    .book .actions { display: flex; gap: 10px; flex-wrap: wrap; }
+    .btn { padding: 10px 16px; border-radius: 6px; text-decoration: none; font-size: 14px; font-weight: 500; display: inline-block; text-align: center; }
+    .btn-primary { background: #667eea; color: white; }
+    .btn-secondary { background: #f7fafc; color: #4a5568; border: 1px solid #e2e8f0; }
+    .footer { background: #f8fafc; padding: 30px; text-align: center; color: #718096; font-size: 14px; }
+    .footer a { color: #667eea; text-decoration: none; }
+    .footer .unsubscribe { margin-top: 20px; font-size: 12px; }
+    .stats { background: #f8fafc; padding: 20px; border-radius: 8px; margin-bottom: 30px; text-align: center; }
+    .stats-item { display: inline-block; margin: 0 15px; }
+    .stats-number { font-size: 24px; font-weight: bold; color: #667eea; display: block; }
+    .stats-label { font-size: 12px; color: #718096; text-transform: uppercase; letter-spacing: 0.5px; }
+    
+    /* Responsive */
+    @media (max-width: 600px) {
+      .container { margin: 0; }
+      .header, .content, .footer { padding: 20px; }
+      .book .actions { flex-direction: column; }
+      .btn { text-align: center; }
+      .stats-item { display: block; margin: 10px 0; }
+    }
+  </style>
+</head>
+<body style="margin: 0; padding: 0; background-color: #f7fafc;">
+  <div class="container">
+    <!-- Header -->
+    <div class="header">
+      <h1>📚 Tes Recommandations</h1>
+      <p>Découvertes personnalisées pour toi</p>
+    </div>
+
+    <!-- Content -->
+    <div class="content">
+      <!-- Context -->
+      <% if @context.present? %>
+        <div class="context-box">
+          <p><strong>Ta demande :</strong> "<%= @context %>"</p>
+        </div>
+      <% end %>
+
+      <!-- Stats -->
+      <div class="stats">
+        <div class="stats-item">
+          <span class="stats-number"><%= @books.count %></span>
+          <span class="stats-label">Livres sélectionnés</span>
+        </div>
+        <div class="stats-item">
+          <span class="stats-number"><%= @sent_at.strftime("%d/%m") %></span>
+          <span class="stats-label">Envoyé le</span>
+        </div>
+        <div class="stats-item">
+          <span class="stats-number">100%</span>
+          <span class="stats-label">Personnalisé</span>
+        </div>
+      </div>
+
+      <!-- Explanation -->
+      <div class="explanation">
+        <%= simple_format(@explanation) %>
+      </div>
+
+      <!-- Books -->
+      <% @books.each_with_index do |book, index| %>
+        <div class="book">
+          <h3><%= index + 1 %>. <%= book[:title] || book['title'] %></h3>
+          <div class="author">par <%= book[:author] || book['author'] %></div>
+          
+          <% if book[:description] || book['description'] %>
+            <div class="description">
+              <%= truncate(book[:description] || book['description'], length: 200) %>
+            </div>
+          <% end %>
+
+          <% if book[:genre] || book['genre'] %>
+            <div class="tags">
+              <span class="tag"><%= book[:genre] || book['genre'] %></span>
+              <% if book[:status] || book['status'] %>
+                <span class="tag"><%= (book[:status] || book['status']).humanize %></span>
+              <% end %>
+            </div>
+          <% end %>
+
+          <div class="actions">
+            <% if book[:search_url] || book['search_url'] %>
+              <a href="<%= book[:search_url] || book['search_url'] %>" class="btn btn-primary" target="_blank">
+                🔍 Voir sur Goodreads
+              </a>
+            <% end %>
+            <a href="https://www.google.com/search?q=<%= CGI.escape("#{book[:title] || book['title']} #{book[:author] || book['author']} livre") %>" class="btn btn-secondary" target="_blank">
+              📖 Rechercher
+            </a>
+          </div>
+        </div>
+      <% end %>
+
+      <!-- Call to Action -->
+      <div style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); padding: 25px; border-radius: 12px; text-align: center; margin-top: 30px;">
+        <h3 style="color: white; margin: 0 0 10px 0;">Envie de plus de recommandations ?</h3>
+        <p style="color: rgba(255,255,255,0.9); margin: 0 0 20px 0; font-size: 16px;">
+          Retourne sur MyNextBook pour affiner tes goûts et découvrir encore plus de livres parfaits pour toi.
+        </p>
+        <a href="<%= root_url %>" class="btn" style="background: white; color: #667eea; font-weight: bold; text-decoration: none;">
+          🚀 Découvrir plus de livres
+        </a>
+      </div>
+    </div>
+
+    <!-- Footer -->
+    <div class="footer">
+      <p>
+        <strong>MyNextBook</strong><br>
+        Tes prochaines lectures, personnalisées par IA
+      </p>
+      
+      <p style="margin-top: 20px;">
+        <a href="<%= root_url %>">🏠 Accueil</a> •
+        <a href="<%= root_url %>">📚 Nouvelles recommandations</a> •
+        <a href="mailto:contact@mynextbook.com">✉️ Contact</a>
+      </p>
+
+      <div class="unsubscribe">
+        <p>
+          Tu ne veux plus recevoir ces emails ?<br>
+          <a href="<%= root_url %>unsubscribe?token=<%= @unsubscribe_token %>&email=<%= CGI.escape(@subscriber.email) %>">
+            Se désabonner
+          </a>
+        </p>
+      </div>
+    </div>
+  </div>
+</body>
+</html>

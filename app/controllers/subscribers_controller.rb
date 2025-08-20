@@ -16,8 +16,11 @@ class SubscribersController < ApplicationController
     # Récupérer le contexte de la session actuelle
     context_data = extract_context_from_session
     
-    # Capturer l'email avec le service
-    result = EmailCaptureService.new.capture_email(email, context_data, current_session_id)
+    # Récupérer les recommandations pour les envoyer par email
+    recommendations_data = context_data[:parsed_response]
+    
+    # Capturer l'email avec le service et envoyer les recommandations
+    result = EmailCaptureService.new.capture_email(email, context_data, current_session_id, recommendations_data)
     
     if result[:success]
       # Marquer l'email comme capturé dans cette session
@@ -26,10 +29,16 @@ class SubscribersController < ApplicationController
       # Log email capture for analytics
       Rails.logger.info "EMAIL_CAPTURED: email: #{result[:subscriber].email} | context: #{result[:subscriber].context} | tone_chips: #{result[:subscriber].tone_chips} | interaction_count: #{result[:subscriber].interaction_count} | session_id: #{current_session_id}"
       
-      # Succès - retourner une réponse positive
+      # Succès - retourner une réponse positive avec message adapté
+      message = if recommendations_data.present?
+        'Parfait ! Tes recommandations ont été envoyées sur ton email.'
+      else
+        'Parfait ! Tu recevras tes prochaines découvertes par email.'
+      end
+      
       render json: {
         success: true,
-        message: 'Parfait ! Tu recevras tes prochaines découvertes par email.',
+        message: message,
         subscriber: {
           email: result[:subscriber].email,
           interaction_count: result[:subscriber].interaction_count
@@ -41,6 +50,35 @@ class SubscribersController < ApplicationController
         success: false,
         error: result[:error]
       }, status: :unprocessable_entity
+    end
+  end
+
+  # Gestion du désabonnement
+  def unsubscribe
+    email = params[:email]
+    token = params[:token]
+    
+    if email.present? && token.present?
+      subscriber = Subscriber.find_by(email: email)
+      
+      if subscriber && valid_unsubscribe_token?(subscriber, token)
+        subscriber.update(unsubscribed: true, unsubscribed_at: Time.current)
+        
+        render json: {
+          success: true,
+          message: "Tu as été désabonné(e) avec succès. Tu ne recevras plus d'emails de notre part."
+        }
+      else
+        render json: {
+          success: false,
+          error: "Lien de désabonnement invalide ou expiré."
+        }, status: :unprocessable_entity
+      end
+    else
+      render json: {
+        success: false,
+        error: "Paramètres manquants pour le désabonnement."
+      }, status: :bad_request
     end
   end
 
@@ -86,5 +124,10 @@ class SubscribersController < ApplicationController
     context_data
   end
 
+  # Valide le token de désabonnement
+  def valid_unsubscribe_token?(subscriber, token)
+    expected_token = Digest::SHA256.hexdigest("#{subscriber.id}-#{subscriber.email}-#{Rails.application.secret_key_base}")[0..16]
+    expected_token == token
+  end
 
 end

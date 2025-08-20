@@ -1,0 +1,45 @@
+📚 TES RECOMMANDATIONS DE LIVRES
+===============================================
+
+<% if @context.present? %>
+Ta demande : "<%= @context %>"
+
+<% end %>
+<%= @explanation %>
+
+<% @books.each_with_index do |book, index| %>
+<%= index + 1 %>. <%= book[:title] || book['title'] %>
+   par <%= book[:author] || book['author'] %>
+   
+<% if book[:description] || book['description'] %>
+   <%= truncate(book[:description] || book['description'], length: 150) %>
+   
+<% end %>
+<% if book[:genre] || book['genre'] %>
+   Genre : <%= book[:genre] || book['genre'] %>
+<% end %>
+<% if book[:search_url] || book['search_url'] %>
+   
+   🔍 Voir sur Goodreads : <%= book[:search_url] || book['search_url'] %>
+<% end %>
+   📖 Rechercher : https://www.google.com/search?q=<%= CGI.escape("#{book[:title] || book['title']} #{book[:author] || book['author']} livre") %>
+
+---
+
+<% end %>
+
+🚀 ENVIE DE PLUS DE RECOMMANDATIONS ?
+=====================================
+
+Retourne sur MyNextBook pour affiner tes goûts et découvrir encore plus de livres parfaits pour toi.
+
+🏠 Accueil : <%= root_url %>
+📚 Nouvelles recommandations : <%= root_url %>
+✉️ Contact : contact@mynextbook.com
+
+---
+
+MyNextBook - Tes prochaines lectures, personnalisées par IA
+
+Tu ne veux plus recevoir ces emails ?
+Se désabonner : <%= root_url %>unsubscribe?token=<%= @unsubscribe_token %>&email=<%= CGI.escape(@subscriber.email) %>

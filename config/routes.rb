@@ -49,4 +49,5 @@ Rails.application.routes.draw do
   
   # Capture des emails pour recommandations
   resources :subscribers, only: [:create]
+  get 'unsubscribe', to: 'subscribers#unsubscribe'
 end

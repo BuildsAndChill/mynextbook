@@ -10,13 +10,19 @@ class EmailCaptureService
     }
   end
 
-  # Capture un email avec le contexte de la recommandation
-  def capture_email(email, context_data, session_id)
+  # Capture un email avec le contexte de la recommandation et envoie les recommandations
+  def capture_email(email, context_data, session_id, recommendations_data = nil)
     return { success: false, error: 'Email invalide' } unless valid_email?(email)
     
     begin
       # Utiliser le modèle amélioré pour trouver ou créer le subscriber
       subscriber = Subscriber.find_or_create_by_email(email, context_data.merge(session_id: session_id))
+      
+      # Envoyer les recommandations par email si elles sont fournies
+      if recommendations_data.present?
+        send_recommendations_email(subscriber, recommendations_data, context_data[:context])
+        Rails.logger.info "Email de recommandations envoyé à: #{email}"
+      end
       
       Rails.logger.info "Email capturé avec succès: #{email} (interactions: #{subscriber.interaction_count})"
       { success: true, subscriber: subscriber, action: subscriber.created_at == subscriber.updated_at ? 'created' : 'updated' }
@@ -59,5 +65,15 @@ class EmailCaptureService
     email.present? && email.match?(URI::MailTo::EMAIL_REGEXP)
   end
 
+  # Envoie les recommandations par email
+  def send_recommendations_email(subscriber, recommendations_data, context)
+    begin
+      RecommendationsMailer.send_recommendations(subscriber, recommendations_data, context).deliver_now
+      Rails.logger.info "Email de recommandations envoyé avec succès à #{subscriber.email}"
+    rescue => e
+      Rails.logger.error "Erreur lors de l'envoi de l'email à #{subscriber.email}: #{e.message}"
+      # Ne pas faire échouer la capture d'email si l'envoi échoue
+    end
+  end
 
 end
