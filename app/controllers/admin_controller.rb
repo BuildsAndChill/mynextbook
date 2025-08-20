@@ -46,9 +46,7 @@ class AdminController < ApplicationController
   end
   
   def subscribers
-    @subscribers = Subscriber.includes(:user_readings)
-                           .order(created_at: :desc)
-                           .limit(100)
+    @subscribers = Subscriber.order(created_at: :desc).limit(100)
     
     respond_to do |format|
       format.html
