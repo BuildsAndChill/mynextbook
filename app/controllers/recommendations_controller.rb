@@ -88,6 +88,13 @@ class RecommendationsController < ApplicationController
       @parsed_response = parse_ai_response(@ai_response)
       Rails.logger.info "Parsed response: #{@parsed_response}"
       
+      # Track recommendation creation
+      track_user_action('recommendation_created', {
+        context: context,
+        tone_chips: tone_chips,
+        include_history: include_history
+      })
+      
       # Enrich recommendations with metadata (non-blocking)
       enrich_recommendations_with_metadata(@parsed_response)
       
@@ -194,6 +201,13 @@ class RecommendationsController < ApplicationController
       # Parse AI response into structured format
       @parsed_response = parse_ai_response(@ai_response)
       Rails.logger.info "Refined recommendation generated successfully"
+      
+      # Track refinement
+      track_user_action('recommendation_refined', {
+        refinement_text: refinement_text,
+        context: context,
+        include_history: include_history
+      })
       
       # Enrich recommendations with metadata (non-blocking)
       enrich_recommendations_with_metadata(@parsed_response)

@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[8.0].define(version: 2025_08_14_092833) do
+ActiveRecord::Schema[8.0].define(version: 2025_08_20_091025) do
   # These are extensions that must be enabled in order to support this database
   enable_extension "pg_catalog.plpgsql"
 
@@ -28,6 +28,19 @@ ActiveRecord::Schema[8.0].define(version: 2025_08_14_092833) do
     t.index ["isbn"], name: "index_book_metadata_on_isbn", unique: true, where: "(isbn IS NOT NULL)"
     t.index ["isbn13"], name: "index_book_metadata_on_isbn13", unique: true, where: "(isbn13 IS NOT NULL)"
     t.index ["title", "author"], name: "index_book_metadata_on_title_and_author", unique: true, where: "((isbn IS NULL) AND (isbn13 IS NULL) AND (goodreads_book_id IS NULL))"
+  end
+
+  create_table "subscribers", force: :cascade do |t|
+    t.string "email"
+    t.text "context"
+    t.text "tone_chips"
+    t.text "ai_response"
+    t.text "parsed_response"
+    t.integer "interaction_count"
+    t.string "session_id"
+    t.datetime "created_at", null: false
+    t.datetime "updated_at", null: false
+    t.index ["email"], name: "index_subscribers_on_email"
   end
 
   create_table "user_book_feedbacks", force: :cascade do |t|

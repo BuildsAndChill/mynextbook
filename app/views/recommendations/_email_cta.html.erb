@@ -1,0 +1,152 @@
+<!-- CTA Email non-bloquant et non-gênant -->
+<div id="email-cta" class="mt-6 p-4 bg-gradient-to-r from-blue-50 to-indigo-50 border border-blue-200 rounded-xl shadow-sm" style="display: none;">
+  <div class="text-center">
+    <!-- Icône email -->
+    <div class="mx-auto flex items-center justify-center h-10 w-10 rounded-full bg-blue-100 mb-3">
+      <svg class="h-5 w-5 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 8l7.89 4.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z"></path>
+      </svg>
+    </div>
+    
+    <!-- Message dynamique -->
+    <h4 id="email-cta-message" class="text-sm font-medium text-blue-900 mb-3">
+      <%= local_assigns[:message] || 'Recevoir ces recommandations dans ta boîte mail ?' %>
+    </h4>
+    
+    <!-- Formulaire email -->
+    <form id="email-capture-form" class="flex flex-col sm:flex-row gap-3 justify-center items-center">
+      <input type="email" 
+             id="subscriber-email" 
+             name="email" 
+             placeholder="ton@email.com" 
+             class="flex-1 max-w-xs px-4 py-2 border border-blue-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 text-sm"
+             required>
+      
+      <button type="submit" 
+              class="px-6 py-2 bg-gradient-to-r from-blue-600 to-indigo-600 text-white text-sm font-medium rounded-lg hover:from-blue-700 hover:to-indigo-700 transition-all duration-200 transform hover:scale-105 focus:ring-2 focus:ring-blue-500 focus:ring-offset-2">
+        Recevoir
+      </button>
+    </form>
+    
+    <!-- Lien de fermeture discret -->
+    <button onclick="hideEmailCTA()" 
+            class="mt-3 text-xs text-blue-600 hover:text-blue-800 transition-colors">
+      Pas maintenant
+    </button>
+  </div>
+  
+  <!-- Message de succès (caché par défaut) -->
+  <div id="email-success" class="hidden mt-3 p-3 bg-green-50 border border-green-200 rounded-lg">
+    <div class="flex items-center text-green-800">
+      <svg class="h-4 w-4 text-green-500 mr-2" fill="currentColor" viewBox="0 0 20 20">
+        <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clip-rule="evenodd"></path>
+      </svg>
+      <span class="text-sm font-medium">Parfait ! Tu recevras tes prochaines découvertes par email.</span>
+    </div>
+  </div>
+</div>
+
+<script>
+// Gestion du CTA email
+let emailCTAShown = false;
+
+// Afficher le CTA email après un délai
+function showEmailCTA(message = null) {
+  if (emailCTAShown) return;
+  
+  const cta = document.getElementById('email-cta');
+  const messageEl = document.getElementById('email-cta-message');
+  
+  if (message) {
+    messageEl.textContent = message;
+  }
+  
+  cta.style.display = 'block';
+  emailCTAShown = true;
+  
+  // Animation d'apparition douce
+  cta.style.opacity = '0';
+  cta.style.transform = 'translateY(10px)';
+  
+  setTimeout(() => {
+    cta.style.transition = 'all 0.3s ease-out';
+    cta.style.opacity = '1';
+    cta.style.transform = 'translateY(0)';
+  }, 100);
+}
+
+// Cacher le CTA email
+function hideEmailCTA() {
+  const cta = document.getElementById('email-cta');
+  cta.style.transition = 'all 0.3s ease-in';
+  cta.style.opacity = '0';
+  cta.style.transform = 'translateY(10px)';
+  
+  setTimeout(() => {
+    cta.style.display = 'none';
+    emailCTAShown = false;
+  }, 300);
+}
+
+// Gestion du formulaire de capture d'email
+document.getElementById('email-capture-form').addEventListener('submit', async function(e) {
+  e.preventDefault();
+  
+  const email = document.getElementById('subscriber-email').value;
+  const submitBtn = this.querySelector('button[type="submit"]');
+  const originalText = submitBtn.textContent;
+  
+  // Désactiver le bouton pendant la soumission
+  submitBtn.disabled = true;
+  submitBtn.textContent = 'Envoi...';
+  
+  try {
+    const response = await fetch('/subscribers', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'X-CSRF-Token': document.querySelector('meta[name="csrf-token"]')?.getAttribute('content')
+      },
+      body: JSON.stringify({
+        email: email,
+        session_id: '<%= session.id %>'
+      })
+    });
+    
+    const result = await response.json();
+    
+    if (result.success) {
+      // Succès - afficher le message de confirmation
+      document.getElementById('email-success').classList.remove('hidden');
+      document.getElementById('email-capture-form').style.display = 'none';
+      
+      // Cacher le CTA après 3 secondes
+      setTimeout(() => {
+        hideEmailCTA();
+      }, 3000);
+      
+    } else {
+      // Erreur - afficher le message d'erreur
+      alert(result.error || 'Erreur lors de la capture de l\'email');
+      submitBtn.disabled = false;
+      submitBtn.textContent = originalText;
+    }
+    
+  } catch (error) {
+    console.error('Erreur:', error);
+    alert('Erreur de connexion. Veuillez réessayer.');
+    submitBtn.disabled = false;
+    submitBtn.textContent = originalText;
+  }
+});
+
+// Afficher le CTA après la première recommandation (délai de 2 secondes)
+document.addEventListener('DOMContentLoaded', function() {
+  // Vérifier si c'est la première recommandation
+  if (document.querySelector('.book-suggestion')) {
+    setTimeout(() => {
+      showEmailCTA('Recevoir ces recommandations dans ta boîte mail ?');
+    }, 2000);
+  }
+});
+</script>

@@ -42,4 +42,58 @@ module RecommendationsHelper
       return google_books_url
     end
   end
+  
+  # Détermine si on doit afficher le CTA email et avec quel message
+  def should_show_email_cta?
+    return false if user_signed_in? # Pas de CTA pour les utilisateurs connectés
+    
+    # Compter les interactions de la session actuelle
+    interaction_count = count_current_session_interactions
+    
+    case interaction_count
+    when 1
+      { show: true, type: 'soft', message: 'Recevoir ces recommandations dans ta boîte mail ?' }
+    when 2
+      { show: true, type: 'gentle', message: 'Pour continuer à explorer, entre ton email gratuit' }
+    when 3..Float::INFINITY
+      { show: true, type: 'friendly', message: 'Recevoir tes prochaines découvertes par email ?' }
+    else
+      { show: false, type: nil, message: nil }
+    end
+  end
+  
+  # Compte les interactions de la session actuelle
+  def count_current_session_interactions
+    user_actions = session[:user_actions] || []
+    session_actions = user_actions.select { |action| action[:session_id] == session.id.to_s }
+    
+    recommendations = session_actions.count { |action| action[:action] == 'recommendation_created' }
+    refinements = session_actions.count { |action| action[:action] == 'recommendation_refined' }
+    
+    recommendations + refinements
+  end
+  
+  # Génère un message personnalisé basé sur le contexte
+  def personalized_email_message
+    context = session[:last_context] || 'tes préférences'
+    
+    messages = [
+      "Recevoir tes prochaines découvertes basées sur '#{context.truncate(30)}' ?",
+      "Garder une trace de tes recommandations personnalisées ?",
+      "Recevoir des suggestions similaires par email ?",
+      "Ne jamais perdre tes bonnes découvertes ?"
+    ]
+    
+    messages.sample
+  end
+  
+  # Vérifie si l'utilisateur a déjà fourni un email dans cette session
+  def email_already_captured?
+    session[:email_captured] == true
+  end
+  
+  # Marque l'email comme capturé dans cette session
+  def mark_email_captured
+    session[:email_captured] = true
+  end
 end

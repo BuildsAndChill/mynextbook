@@ -27,4 +27,7 @@ Rails.application.routes.draw do
   end
 
   resources :imports, only: [:new, :create]
+  
+  # Capture des emails pour recommandations
+  resources :subscribers, only: [:create]
 end
