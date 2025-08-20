@@ -1,0 +1,19 @@
+# Read about fixtures at https://api.rubyonrails.org/classes/ActiveRecord/FixtureSet.html
+
+one:
+  subscriber: one
+  context: MyString
+  tone_chips: MyText
+  ai_response: MyText
+  parsed_response: MyText
+  session_id: MyString
+  interaction_number: 1
+
+two:
+  subscriber: two
+  context: MyString
+  tone_chips: MyText
+  ai_response: MyText
+  parsed_response: MyText
+  session_id: MyString
+  interaction_number: 1

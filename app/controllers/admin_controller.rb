@@ -22,16 +22,23 @@ class AdminController < ApplicationController
     
     # GET normal - afficher le dashboard
     @stats = {
+      total_sessions: UserSession.count,
+      active_sessions: UserSession.active.count,
+      total_interactions: Interaction.count,
       total_subscribers: Subscriber.count,
       total_users: User.count,
       total_books: BookMetadata.count,
       total_readings: UserReading.count,
+      recent_sessions: UserSession.where('created_at > ?', 1.day.ago).count,
       recent_subscribers: Subscriber.where('created_at > ?', 1.day.ago).count,
-      recent_users: User.where('created_at > ?', 1.day.ago).count
+      recent_users: User.where('created_at > ?', 1.day.ago).count,
+      recent_interactions: Interaction.where('created_at > ?', 1.day.ago).count
     }
     
+    @recent_sessions = UserSession.includes(:interactions).order(created_at: :desc).limit(10)
     @recent_subscribers = Subscriber.order(created_at: :desc).limit(10)
     @recent_users = User.order(created_at: :desc).limit(10)
+    @recent_interactions = Interaction.includes(:user_session).order(created_at: :desc).limit(15)
   end
   
   def logs
@@ -46,12 +53,12 @@ class AdminController < ApplicationController
   end
   
   def subscribers
-    @subscribers = Subscriber.order(created_at: :desc).limit(100)
+    @subscribers = Subscriber.includes(:subscriber_interactions).order(created_at: :desc).limit(100)
     
     respond_to do |format|
       format.html
       format.csv { send_data export_subscribers_csv, filename: "subscribers-#{Date.current}.csv" }
-      format.json { render json: @subscribers }
+      format.json { render json: @subscribers.as_json(include: :subscriber_interactions) }
     end
   end
   

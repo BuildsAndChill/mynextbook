@@ -29,15 +29,15 @@
       </div>
     </div>
 
-    <!-- Subscribers Accordions -->
+    <!-- Subscribers Tree View -->
     <div class="space-y-4">
-      <% @subscribers.each_with_index do |subscriber, index| %>
+      <% @subscribers.each_with_index do |subscriber, subscriber_index| %>
         <div class="bg-white shadow rounded-lg overflow-hidden">
-          <!-- Accordion Header -->
+          <!-- Subscriber Header -->
           <button class="w-full px-6 py-4 text-left hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-inset" 
-                  onclick="toggleAccordion('subscriber-<%= index %>')"
+                  onclick="toggleSubscriber('subscriber-<%= subscriber_index %>')"
                   aria-expanded="false"
-                  aria-controls="subscriber-content-<%= index %>">
+                  aria-controls="subscriber-content-<%= subscriber_index %>">
             <div class="flex items-center justify-between">
               <div class="flex items-center space-x-3">
                 <div class="flex-shrink-0">
@@ -50,7 +50,7 @@
                 <div class="flex-1 min-w-0">
                   <p class="text-sm font-medium text-gray-900"><%= subscriber.email %></p>
                   <p class="text-sm text-gray-500">
-                    Context: <%= subscriber.context || 'N/A' %>
+                    <%= subscriber.subscriber_interactions.count %> interactions total
                   </p>
                 </div>
               </div>
@@ -58,32 +58,32 @@
                 <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-blue-100 text-blue-800">
                   <%= subscriber.interaction_count %> interactions
                 </span>
-                <svg id="subscriber-<%= index %>-icon" class="h-5 w-5 text-gray-400 transform transition-transform duration-200" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <svg id="subscriber-<%= subscriber_index %>-icon" class="h-5 w-5 text-gray-400 transform transition-transform duration-200" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"></path>
                 </svg>
               </div>
             </div>
           </button>
           
-          <!-- Accordion Content -->
-          <div id="subscriber-content-<%= index %>" class="hidden px-6 pb-4 border-t border-gray-200">
-            <div class="mt-4 space-y-4">
-              <!-- Basic Info -->
-              <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+          <!-- Subscriber Content -->
+          <div id="subscriber-content-<%= subscriber_index %>" class="hidden border-t border-gray-200">
+            <div class="px-6 py-4">
+              <!-- Subscriber Info -->
+              <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mb-6">
                 <div>
-                  <h4 class="text-sm font-medium text-gray-700 mb-2">Informations de base</h4>
+                  <h4 class="text-sm font-medium text-gray-700 mb-2">Informations du subscriber</h4>
                   <div class="space-y-2 text-sm text-gray-600">
                     <p><strong>Email:</strong> <%= subscriber.email %></p>
-                    <p><strong>Context:</strong> <%= subscriber.context || 'Non spécifié' %></p>
                     <p><strong>Créé le:</strong> <%= subscriber.created_at.strftime("%d/%m/%Y à %H:%M") %></p>
                     <p><strong>Dernière mise à jour:</strong> <%= subscriber.updated_at.strftime("%d/%m/%Y à %H:%M") %></p>
                   </div>
                 </div>
                 
                 <div>
-                  <h4 class="text-sm font-medium text-gray-700 mb-2">Engagement</h4>
+                  <h4 class="text-sm font-medium text-gray-700 mb-2">Statistiques</h4>
                   <div class="space-y-2 text-sm text-gray-600">
-                    <p><strong>Interactions:</strong> <%= subscriber.interaction_count %></p>
+                    <p><strong>Total interactions:</strong> <%= subscriber.subscriber_interactions.count %></p>
+                    <p><strong>Interaction count:</strong> <%= subscriber.interaction_count %></p>
                     <p><strong>Niveau d'engagement:</strong> 
                       <span class="inline-flex items-center px-2 py-1 rounded-full text-xs font-medium 
                         <%= case subscriber.engagement_level
@@ -96,80 +96,142 @@
                         <%= subscriber.engagement_level.humanize %>
                       </span>
                     </p>
-                    <% if subscriber.tone_chips.present? %>
-                      <p><strong>Tone chips:</strong></p>
-                      <div class="flex flex-wrap gap-1 mt-1">
-                        <% subscriber.tone_chips.split(', ').each do |tone| %>
-                          <span class="inline-flex items-center px-2 py-1 rounded-full text-xs font-medium bg-purple-100 text-purple-800">
-                            <%= tone.strip %>
-                          </span>
-                        <% end %>
-                      </div>
-                    <% end %>
                   </div>
                 </div>
               </div>
               
-              <!-- AI Response -->
-              <% if subscriber.ai_response.present? %>
-                <div>
-                  <h4 class="text-sm font-medium text-gray-700 mb-2">Suggestion AI</h4>
-                  <div class="bg-gray-50 p-3 rounded border text-sm text-gray-600 max-h-32 overflow-y-auto">
-                    <%= subscriber.ai_response %>
-                  </div>
-                </div>
-              <% end %>
-              
-              <!-- Recommended Books -->
-              <% if subscriber.parsed_response.present? %>
-                <% begin %>
-                  <% parsed = JSON.parse(subscriber.parsed_response) %>
-                  <% if parsed['picks']&.any? %>
-                    <div>
-                      <h4 class="text-sm font-medium text-gray-700 mb-2">Livres recommandés (<%= parsed['picks'].count %>)</h4>
-                      <div class="space-y-3">
-                        <% parsed['picks'].each do |pick| %>
-                          <div class="bg-blue-50 p-3 rounded border">
-                            <div class="flex items-start justify-between">
-                              <div class="flex-1">
-                                <h5 class="font-medium text-gray-900"><%= pick['title'] %></h5>
-                                <p class="text-sm text-gray-600">par <%= pick['author'] %></p>
-                                <% if pick['pitch'].present? %>
-                                  <p class="text-sm text-gray-600 mt-1"><%= pick['pitch'] %></p>
-                                <% end %>
-                                <% if pick['why'].present? %>
-                                  <p class="text-xs text-gray-500 mt-1"><strong>Pourquoi:</strong> <%= pick['why'] %></p>
-                                <% end %>
-                              </div>
-                              <div class="text-right">
-                                <span class="inline-flex items-center px-2 py-1 rounded-full text-xs font-medium 
-                                  <%= case pick['confidence']&.downcase
-                                      when 'high' then 'bg-green-100 text-green-800'
-                                      when 'medium' then 'bg-yellow-100 text-yellow-800'
-                                      when 'low' then 'bg-red-100 text-red-800'
-                                      else 'bg-gray-100 text-gray-800'
-                                      end %>">
-                                  <%= pick['confidence'] || 'N/A' %>
-                                </span>
+              <!-- Interactions Tree -->
+              <div>
+                <h4 class="text-sm font-medium text-gray-700 mb-3">Historique des interactions</h4>
+                <div class="space-y-3">
+                  <% subscriber.subscriber_interactions.ordered.each_with_index do |interaction, interaction_index| %>
+                    <div class="border border-gray-200 rounded-lg">
+                      <!-- Interaction Header -->
+                      <button class="w-full px-4 py-3 text-left hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-inset" 
+                              onclick="toggleInteraction('interaction-<%= subscriber_index %>-<%= interaction_index %>')"
+                              aria-expanded="false">
+                        <div class="flex items-center justify-between">
+                          <div class="flex items-center space-x-3">
+                            <div class="flex-shrink-0">
+                              <div class="h-8 w-8 rounded-full bg-green-100 flex items-center justify-center">
+                                <span class="text-sm font-medium text-green-800"><%= interaction.interaction_number %></span>
                               </div>
                             </div>
+                            <div class="flex-1 min-w-0">
+                              <p class="text-sm font-medium text-gray-900">
+                                Interaction #<%= interaction.interaction_number %> - <%= interaction.context %>
+                              </p>
+                              <p class="text-sm text-gray-500">
+                                <%= interaction.formatted_date %> • <%= interaction.books_count %> livres recommandés
+                              </p>
+                            </div>
                           </div>
-                        <% end %>
+                          <div class="flex items-center space-x-3">
+                            <% if interaction.tone_chips.present? %>
+                              <div class="flex flex-wrap gap-1">
+                                <% interaction.tone_chips.split(', ').first(2).each do |tone| %>
+                                  <span class="inline-flex items-center px-2 py-1 rounded-full text-xs font-medium bg-purple-100 text-purple-800">
+                                    <%= tone.strip %>
+                                  </span>
+                                <% end %>
+                              </div>
+                            <% end %>
+                            <svg id="interaction-<%= subscriber_index %>-<%= interaction_index %>-icon" class="h-4 w-4 text-gray-400 transform transition-transform duration-200" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"></path>
+                            </svg>
+                          </div>
+                        </div>
+                      </button>
+                      
+                      <!-- Interaction Content -->
+                      <div id="interaction-content-<%= subscriber_index %>-<%= interaction_index %>" class="hidden px-4 pb-4 border-t border-gray-100">
+                        <div class="mt-3 space-y-4">
+                          <!-- Context & Tone Chips -->
+                          <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                            <div>
+                              <h5 class="text-sm font-medium text-gray-700 mb-2">Contexte</h5>
+                              <p class="text-sm text-gray-600"><%= interaction.context %></p>
+                            </div>
+                            <% if interaction.tone_chips.present? %>
+                              <div>
+                                <h5 class="text-sm font-medium text-gray-700 mb-2">Tone Chips</h5>
+                                <div class="flex flex-wrap gap-1">
+                                  <% interaction.tone_chips.split(', ').each do |tone| %>
+                                    <span class="inline-flex items-center px-2 py-1 rounded-full text-xs font-medium bg-purple-100 text-purple-800">
+                                      <%= tone.strip %>
+                                    </span>
+                                  <% end %>
+                                </div>
+                              </div>
+                            <% end %>
+                          </div>
+                          
+                          <!-- AI Response -->
+                          <% if interaction.ai_response.present? %>
+                            <div>
+                              <h5 class="text-sm font-medium text-gray-700 mb-2">Suggestion AI</h5>
+                              <div class="bg-gray-50 p-3 rounded border text-sm text-gray-600 max-h-32 overflow-y-auto">
+                                <%= interaction.ai_response %>
+                              </div>
+                            </div>
+                          <% end %>
+                          
+                          <!-- Recommended Books -->
+                          <% if interaction.parsed_response.present? %>
+                            <% begin %>
+                              <% parsed = JSON.parse(interaction.parsed_response) %>
+                              <% if parsed['picks']&.any? %>
+                                <div>
+                                  <h5 class="text-sm font-medium text-gray-700 mb-2">Livres recommandés (<%= parsed['picks'].count %>)</h5>
+                                  <div class="space-y-3">
+                                    <% parsed['picks'].each do |pick| %>
+                                      <div class="bg-blue-50 p-3 rounded border">
+                                        <div class="flex items-start justify-between">
+                                          <div class="flex-1">
+                                            <h6 class="font-medium text-gray-900"><%= pick['title'] %></h6>
+                                            <p class="text-sm text-gray-600">par <%= pick['author'] %></p>
+                                            <% if pick['pitch'].present? %>
+                                              <p class="text-sm text-gray-600 mt-1"><%= pick['pitch'] %></p>
+                                            <% end %>
+                                            <% if pick['why'].present? %>
+                                              <p class="text-xs text-gray-500 mt-1"><strong>Pourquoi:</strong> <%= pick['why'] %></p>
+                                            <% end %>
+                                          </div>
+                                          <div class="text-right">
+                                            <span class="inline-flex items-center px-2 py-1 rounded-full text-xs font-medium 
+                                              <%= case pick['confidence']&.downcase
+                                                  when 'high' then 'bg-green-100 text-green-800'
+                                                  when 'medium' then 'bg-yellow-100 text-yellow-800'
+                                                  when 'low' then 'bg-red-100 text-red-800'
+                                                  else 'bg-gray-100 text-gray-800'
+                                                  end %>">
+                                              <%= pick['confidence'] || 'N/A' %>
+                                            </span>
+                                          </div>
+                                        </div>
+                                      </div>
+                                    <% end %>
+                                  </div>
+                                </div>
+                              <% end %>
+                            <% rescue JSON::ParserError %>
+                              <div class="text-sm text-red-600">Erreur lors du parsing de la réponse JSON</div>
+                            <% end %>
+                          <% end %>
+                          
+                          <!-- Session Info -->
+                          <% if interaction.session_id.present? %>
+                            <div>
+                              <h5 class="text-sm font-medium text-gray-700 mb-2">Session</h5>
+                              <p class="text-sm text-gray-600">ID: <%= interaction.session_id %></p>
+                            </div>
+                          <% end %>
+                        </div>
                       </div>
                     </div>
                   <% end %>
-                <% rescue JSON::ParserError %>
-                  <div class="text-sm text-red-600">Erreur lors du parsing de la réponse JSON</div>
-                <% end %>
-              <% end %>
-              
-              <!-- Session Info -->
-              <% if subscriber.session_id.present? %>
-                <div>
-                  <h4 class="text-sm font-medium text-gray-700 mb-2">Session</h4>
-                  <p class="text-sm text-gray-600">ID: <%= subscriber.session_id %></p>
                 </div>
-              <% end %>
+              </div>
             </div>
           </div>
         </div>
@@ -183,18 +245,33 @@
   </div>
 </div>
 
-<!-- JavaScript pour les accordéons -->
+<!-- JavaScript pour les accordéons tree -->
 <script>
-function toggleAccordion(id) {
+function toggleSubscriber(id) {
   const content = document.getElementById('subscriber-content-' + id.split('-')[1]);
   const icon = document.getElementById(id + '-icon');
   
   if (content.classList.contains('hidden')) {
-    // Ouvrir l'accordéon
+    // Ouvrir le subscriber
     content.classList.remove('hidden');
     icon.style.transform = 'rotate(180deg)';
   } else {
-    // Fermer l'accordéon
+    // Fermer le subscriber
+    content.classList.add('hidden');
+    icon.style.transform = 'rotate(0deg)';
+  }
+}
+
+function toggleInteraction(id) {
+  const content = document.getElementById('interaction-content-' + id.split('-')[1] + '-' + id.split('-')[2]);
+  const icon = document.getElementById(id + '-icon');
+  
+  if (content.classList.contains('hidden')) {
+    // Ouvrir l'interaction
+    content.classList.remove('hidden');
+    icon.style.transform = 'rotate(180deg)';
+  } else {
+    // Fermer l'interaction
     content.classList.add('hidden');
     icon.style.transform = 'rotate(0deg)';
   }

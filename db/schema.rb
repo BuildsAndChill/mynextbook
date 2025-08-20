@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[8.0].define(version: 2025_08_20_091025) do
+ActiveRecord::Schema[8.0].define(version: 2025_08_20_112903) do
   # These are extensions that must be enabled in order to support this database
   enable_extension "pg_catalog.plpgsql"
 
@@ -28,6 +28,31 @@ ActiveRecord::Schema[8.0].define(version: 2025_08_20_091025) do
     t.index ["isbn"], name: "index_book_metadata_on_isbn", unique: true, where: "(isbn IS NOT NULL)"
     t.index ["isbn13"], name: "index_book_metadata_on_isbn13", unique: true, where: "(isbn13 IS NOT NULL)"
     t.index ["title", "author"], name: "index_book_metadata_on_title_and_author", unique: true, where: "((isbn IS NULL) AND (isbn13 IS NULL) AND (goodreads_book_id IS NULL))"
+  end
+
+  create_table "interactions", force: :cascade do |t|
+    t.bigint "user_session_id", null: false
+    t.string "action_type"
+    t.json "action_data"
+    t.string "context"
+    t.json "metadata"
+    t.datetime "timestamp"
+    t.datetime "created_at", null: false
+    t.datetime "updated_at", null: false
+    t.index ["user_session_id"], name: "index_interactions_on_user_session_id"
+  end
+
+  create_table "subscriber_interactions", force: :cascade do |t|
+    t.bigint "subscriber_id", null: false
+    t.string "context"
+    t.text "tone_chips"
+    t.text "ai_response"
+    t.text "parsed_response"
+    t.string "session_id"
+    t.integer "interaction_number"
+    t.datetime "created_at", null: false
+    t.datetime "updated_at", null: false
+    t.index ["subscriber_id"], name: "index_subscriber_interactions_on_subscriber_id"
   end
 
   create_table "subscribers", force: :cascade do |t|
@@ -71,6 +96,16 @@ ActiveRecord::Schema[8.0].define(version: 2025_08_20_091025) do
     t.index ["user_id"], name: "index_user_readings_on_user_id"
   end
 
+  create_table "user_sessions", force: :cascade do |t|
+    t.string "session_identifier"
+    t.text "device_info"
+    t.text "user_agent"
+    t.string "ip_address"
+    t.datetime "last_activity"
+    t.datetime "created_at", null: false
+    t.datetime "updated_at", null: false
+  end
+
   create_table "users", force: :cascade do |t|
     t.string "email", default: "", null: false
     t.string "encrypted_password", default: "", null: false
@@ -83,6 +118,8 @@ ActiveRecord::Schema[8.0].define(version: 2025_08_20_091025) do
     t.index ["reset_password_token"], name: "index_users_on_reset_password_token", unique: true
   end
 
+  add_foreign_key "interactions", "user_sessions"
+  add_foreign_key "subscriber_interactions", "subscribers"
   add_foreign_key "user_book_feedbacks", "users"
   add_foreign_key "user_readings", "book_metadata", column: "book_metadata_id"
   add_foreign_key "user_readings", "users"

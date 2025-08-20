@@ -35,6 +35,15 @@ Rails.application.routes.draw do
   get 'admin/users', to: 'admin#users'
   get 'admin/analytics', to: 'admin#analytics'
   get 'admin/export_data', to: 'admin#export_data'
+  
+  # User tracking routes
+  namespace :admin do
+    resources :tracking, only: [:index, :show] do
+      collection do
+        get :analytics
+      end
+    end
+  end
 
   resources :imports, only: [:new, :create]
   

@@ -6,20 +6,25 @@ class SubscribersController < ApplicationController
   
   def create
     email = params[:email]&.strip
-    session_id = params[:session_id] || session.id.to_s
+    
+    # Track email capture with new system
+    track_user_interaction('email_captured', nil, {
+      email: email,
+      source: 'recommendation'
+    })
     
     # Récupérer le contexte de la session actuelle
-    context_data = extract_context_from_session(session_id)
+    context_data = extract_context_from_session
     
     # Capturer l'email avec le service
-    result = EmailCaptureService.new.capture_email(email, context_data, session_id)
+    result = EmailCaptureService.new.capture_email(email, context_data, current_session_id)
     
     if result[:success]
       # Marquer l'email comme capturé dans cette session
       session[:email_captured] = true
       
       # Log email capture for analytics
-      Rails.logger.info "EMAIL_CAPTURED: email: #{result[:subscriber].email} | context: #{result[:subscriber].context} | tone_chips: #{result[:subscriber].tone_chips} | interaction_count: #{result[:subscriber].interaction_count} | session_id: #{session_id}"
+      Rails.logger.info "EMAIL_CAPTURED: email: #{result[:subscriber].email} | context: #{result[:subscriber].context} | tone_chips: #{result[:subscriber].tone_chips} | interaction_count: #{result[:subscriber].interaction_count} | session_id: #{current_session_id}"
       
       # Succès - retourner une réponse positive
       render json: {
@@ -41,9 +46,13 @@ class SubscribersController < ApplicationController
 
   private
 
-  def extract_context_from_session(session_id)
+  def extract_context_from_session
     # Essayer de récupérer les données de la session actuelle
     context_data = {}
+    
+    Rails.logger.info "DEBUG: extract_context_from_session - session_id: #{current_session_id}"
+    Rails.logger.info "DEBUG: recommendation_session_id: #{session[:recommendation_session_id]}"
+    Rails.logger.info "DEBUG: refined_session_id: #{session[:refined_session_id]}"
     
     # Vérifier les sessions de recommandations
     if session[:recommendation_session_id]
@@ -53,6 +62,7 @@ class SubscribersController < ApplicationController
         context_data[:tone_chips] = stored_data[:tone_chips]
         context_data[:ai_response] = stored_data[:ai_response]
         context_data[:parsed_response] = stored_data[:parsed_response]
+        Rails.logger.info "DEBUG: Found recommendation session data"
       end
     end
     
@@ -64,24 +74,17 @@ class SubscribersController < ApplicationController
         context_data[:tone_chips] ||= stored_data[:tone_chips]
         context_data[:ai_response] ||= stored_data[:ai_response]
         context_data[:parsed_response] ||= stored_data[:parsed_response]
+        Rails.logger.info "DEBUG: Found refined session data"
       end
     end
     
     # Compter les interactions de la session
-    context_data[:interaction_count] = count_session_interactions(session_id)
+    context_data[:interaction_count] = total_interactions_count
+    
+    Rails.logger.info "DEBUG: Final context_data: #{context_data.inspect}"
     
     context_data
   end
 
-  def count_session_interactions(session_id)
-    # Compter les interactions de cette session
-    user_actions = session[:user_actions] || []
-    session_actions = user_actions.select { |action| action[:session_id] == session_id }
-    
-    # Compter les recommandations et refinements
-    recommendations = session_actions.count { |action| action[:action] == 'recommendation_created' }
-    refinements = session_actions.count { |action| action[:action] == 'recommendation_refined' }
-    
-    recommendations + refinements
-  end
+
 end

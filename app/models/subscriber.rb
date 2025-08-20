@@ -1,4 +1,7 @@
 class Subscriber < ApplicationRecord
+  # Relations
+  has_many :subscriber_interactions, dependent: :destroy
+  
   # Validations
   validates :email, presence: true, format: { with: URI::MailTo::EMAIL_REGEXP }
   validates :interaction_count, numericality: { greater_than: 0 }

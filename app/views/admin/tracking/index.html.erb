@@ -1,0 +1,216 @@
+<div class="min-h-screen bg-gray-50 py-8">
+  <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+    <!-- Header -->
+    <div class="mb-8">
+      <h1 class="text-3xl font-bold text-gray-900">User Tracking</h1>
+      <p class="mt-2 text-gray-600">Suivi de toutes les sessions utilisateur et leurs interactions</p>
+    </div>
+
+    <!-- Navigation Admin -->
+    <div class="mb-8">
+      <nav class="flex space-x-4">
+        <%= link_to "Dashboard", admin_dashboard_path, class: "px-3 py-2 rounded-md text-sm font-medium text-gray-700 hover:text-gray-900 hover:bg-gray-100" %>
+        <%= link_to "Logs", admin_logs_path, class: "px-3 py-2 rounded-md text-sm font-medium text-gray-700 hover:text-gray-900 hover:bg-gray-100" %>
+        <%= link_to "Subscribers", admin_subscribers_path, class: "px-3 py-2 rounded-md text-sm font-medium text-gray-700 hover:text-gray-900 hover:bg-gray-100" %>
+        <%= link_to "Users", admin_users_path, class: "px-3 py-2 rounded-md text-sm font-medium text-gray-700 hover:text-gray-900 hover:bg-gray-100" %>
+        <%= link_to "Analytics", admin_analytics_path, class: "px-3 py-2 rounded-md text-sm font-medium text-gray-700 hover:text-gray-900 hover:bg-gray-100" %>
+        <%= link_to "Tracking", admin_tracking_index_path, class: "px-3 py-2 rounded-md text-sm font-medium bg-indigo-100 text-indigo-700" %>
+      </nav>
+    </div>
+
+    <!-- Export Buttons -->
+    <div class="mb-6 flex justify-between items-center">
+      <div class="flex space-x-3">
+        <%= link_to "Export CSV", admin_tracking_index_path(format: :csv), class: "inline-flex items-center px-4 py-2 border border-gray-300 shadow-sm text-sm font-medium rounded-md text-gray-700 bg-white hover:bg-gray-50" %>
+        <%= link_to "Export JSON", admin_tracking_index_path(format: :json), class: "inline-flex items-center px-4 py-2 border border-gray-300 shadow-sm text-sm font-medium rounded-md text-gray-700 bg-white hover:bg-gray-50" %>
+        <%= link_to "Analytics", analytics_admin_tracking_index_path, class: "inline-flex items-center px-4 py-2 border border-gray-300 shadow-sm text-sm font-medium rounded-md text-gray-700 bg-white hover:bg-gray-50" %>
+      </div>
+      <div class="text-sm text-gray-500">
+        Total: <%= @user_sessions.count %> sessions
+      </div>
+    </div>
+
+    <!-- User Sessions Tree View -->
+    <div class="space-y-4">
+      <% @user_sessions.each_with_index do |user_session, session_index| %>
+        <div class="bg-white shadow rounded-lg overflow-hidden">
+          <!-- Session Header -->
+          <button class="w-full px-6 py-4 text-left hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-inset"
+                  onclick="toggleSession('session-<%= session_index %>')"
+                  aria-expanded="false"
+                  aria-controls="session-content-<%= session_index %>">
+            <div class="flex items-center justify-between">
+              <div class="flex items-center space-x-3">
+                <div class="flex-shrink-0">
+                  <div class="h-10 w-10 rounded-full bg-green-100 flex items-center justify-center">
+                    <svg class="h-5 w-5 text-green-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4.354a4 4 0 110 5.292M15 21H3v-1a6 6 0 0112 0v1zm0 0h6v-1a6 6 0 00-9-5.197m13.5-9a2.5 2.5 0 11-5 0 2.5 2.5 0 015 0z"></path>
+                    </svg>
+                  </div>
+                </div>
+                <div class="flex-1 min-w-0">
+                  <p class="text-sm font-medium text-gray-900">
+                    Session: <%= user_session.session_identifier.first(8) %>...
+                  </p>
+                  <p class="text-sm text-gray-500">
+                    <%= user_session.interactions.count %> interactions • 
+                    <%= user_session.active? ? 'Active' : 'Inactive' %>
+                  </p>
+                </div>
+              </div>
+              <div class="flex items-center space-x-4">
+                <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-green-100 text-green-800">
+                  <%= user_session.interactions.count %> interactions
+                </span>
+                <div class="text-sm text-gray-500">
+                  <%= user_session.last_activity.strftime("%d/%m %H:%M") %>
+                </div>
+                <svg id="session-<%= session_index %>-icon" class="h-5 w-5 text-gray-400 transform transition-transform duration-200" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"></path>
+                </svg>
+              </div>
+            </div>
+          </button>
+
+          <!-- Session Content -->
+          <div id="session-content-<%= session_index %>" class="hidden border-t border-gray-200">
+            <div class="px-6 py-4">
+              <!-- Session Info -->
+              <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mb-6">
+                <div>
+                  <h4 class="text-sm font-medium text-gray-700 mb-2">Informations de session</h4>
+                  <div class="space-y-2 text-sm text-gray-600">
+                    <p><strong>Session ID:</strong> <%= user_session.session_identifier %></p>
+                    <p><strong>IP Address:</strong> <%= user_session.ip_address || 'N/A' %></p>
+                    <p><strong>User Agent:</strong> <%= truncate(user_session.user_agent, length: 50) || 'N/A' %></p>
+                    <p><strong>Créé le:</strong> <%= user_session.created_at.strftime("%d/%m/%Y à %H:%M") %></p>
+                  </div>
+                </div>
+
+                <div>
+                  <h4 class="text-sm font-medium text-gray-700 mb-2">Statistiques</h4>
+                  <div class="space-y-2 text-sm text-gray-600">
+                    <p><strong>Total interactions:</strong> <%= user_session.interactions.count %></p>
+                    <p><strong>Dernière activité:</strong> <%= user_session.last_activity.strftime("%d/%m/%Y à %H:%M") %></p>
+                    <p><strong>Status:</strong>
+                      <span class="inline-flex items-center px-2 py-1 rounded-full text-xs font-medium
+                        <%= user_session.active? ? 'bg-green-100 text-green-800' : 'bg-gray-100 text-gray-800' %>">
+                        <%= user_session.active? ? 'Active' : 'Inactive' %>
+                      </span>
+                    </p>
+                  </div>
+                </div>
+              </div>
+
+              <!-- Interactions Tree -->
+              <div>
+                <h4 class="text-sm font-medium text-gray-700 mb-3">Historique des interactions</h4>
+                <div class="space-y-3">
+                  <% user_session.interactions.order(timestamp: :desc).each_with_index do |interaction, interaction_index| %>
+                    <div class="border border-gray-200 rounded-lg">
+                      <!-- Interaction Header -->
+                      <button class="w-full px-4 py-3 text-left hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-inset"
+                              onclick="toggleInteraction('interaction-<%= session_index %>-<%= interaction_index %>')"
+                              aria-expanded="false">
+                        <div class="flex items-center justify-between">
+                          <div class="flex items-center space-x-3">
+                            <div class="flex-shrink-0">
+                              <div class="h-8 w-8 rounded-full bg-blue-100 flex items-center justify-center">
+                                <svg class="h-5 w-5 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6v6m0 0v6m0-6h6m-6 0H6"></path>
+                                </svg>
+                              </div>
+                            </div>
+                            <div class="flex-1 min-w-0">
+                              <p class="text-sm font-medium text-gray-900">
+                                <%= interaction.action_name %>
+                              </p>
+                              <p class="text-sm text-gray-500">
+                                <%= interaction.formatted_timestamp %> • 
+                                <%= interaction.context || 'No context' %>
+                              </p>
+                            </div>
+                          </div>
+                          <svg id="interaction-<%= session_index %>-<%= interaction_index %>-icon" class="h-4 w-4 text-gray-400 transform transition-transform duration-200" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"></path>
+                          </svg>
+                        </div>
+                      </button>
+
+                      <!-- Interaction Content -->
+                      <div id="interaction-content-<%= session_index %>-<%= interaction_index %>" class="hidden px-4 pb-4 border-t border-gray-100">
+                        <div class="mt-3 space-y-4">
+                          <!-- Action Data -->
+                          <% if interaction.action_data.present? %>
+                            <div>
+                              <h5 class="text-sm font-medium text-gray-700 mb-2">Données d'action</h5>
+                              <div class="bg-gray-50 p-3 rounded border text-sm text-gray-600">
+                                <pre class="whitespace-pre-wrap"><%= JSON.pretty_generate(interaction.action_data) %></pre>
+                              </div>
+                            </div>
+                          <% end %>
+
+                          <!-- Metadata -->
+                          <% if interaction.metadata.present? %>
+                            <div>
+                              <h5 class="text-sm font-medium text-gray-700 mb-2">Métadonnées</h5>
+                              <div class="bg-gray-50 p-3 rounded border text-sm text-gray-600">
+                                <pre class="whitespace-pre-wrap"><%= JSON.pretty_generate(interaction.metadata) %></pre>
+                              </div>
+                            </div>
+                          <% end %>
+
+                          <!-- Context -->
+                          <% if interaction.context.present? %>
+                            <div>
+                              <h5 class="text-sm font-medium text-gray-700 mb-2">Contexte</h5>
+                              <p class="text-sm text-gray-600"><%= interaction.context %></p>
+                            </div>
+                          <% end %>
+                        </div>
+                      </div>
+                    </div>
+                  <% end %>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      <% end %>
+    </div>
+
+    <!-- Pagination Info -->
+    <div class="mt-6 text-center text-sm text-gray-500">
+      Affichage des 100 dernières sessions
+    </div>
+  </div>
+
+  <!-- JavaScript pour les accordéons -->
+  <script>
+  function toggleSession(id) {
+    const content = document.getElementById('session-content-' + id.split('-')[1]);
+    const icon = document.getElementById(id + '-icon');
+
+    if (content.classList.contains('hidden')) {
+      content.classList.remove('hidden');
+      icon.style.transform = 'rotate(180deg)';
+    } else {
+      content.classList.add('hidden');
+      icon.style.transform = 'rotate(0deg)';
+    }
+  }
+
+  function toggleInteraction(id) {
+    const content = document.getElementById('interaction-content-' + id.split('-')[1] + '-' + id.split('-')[2]);
+    const icon = document.getElementById(id + '-icon');
+
+    if (content.classList.contains('hidden')) {
+      content.classList.remove('hidden');
+      icon.style.transform = 'rotate(180deg)';
+    } else {
+      content.classList.add('hidden');
+      icon.style.transform = 'rotate(0deg)';
+    }
+  }
+  </script>
+</div>

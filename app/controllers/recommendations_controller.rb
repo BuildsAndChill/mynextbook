@@ -88,11 +88,11 @@ class RecommendationsController < ApplicationController
       @parsed_response = parse_ai_response(@ai_response)
       Rails.logger.info "Parsed response: #{@parsed_response}"
       
-      # Track recommendation creation
-      track_user_action('recommendation_created', {
-        context: context,
+      # Track recommendation creation with new system
+      track_user_interaction('recommendation_created', context, {
         tone_chips: tone_chips,
-        include_history: include_history
+        include_history: include_history,
+        books_count: @parsed_response&.dig(:picks)&.count || 0
       })
       
       # Enrich recommendations with metadata (non-blocking)
@@ -143,6 +143,12 @@ class RecommendationsController < ApplicationController
     # Handle refinement requests with context conservation
     refinement_text = params[:refinement_text]
     context = params[:context]
+    
+    # Track refinement interaction with new system
+    track_user_interaction('recommendation_refined', context, {
+      refinement_text: refinement_text,
+      books_count: 0 # Will be updated after AI response
+    })
     
     # Log refinement interaction for analytics
     Rails.logger.info "USER_INTERACTION: recommendation_refined | refinement_text: #{refinement_text} | context: #{context} | user_signed_in: #{user_signed_in?} | user_id: #{current_user&.id} | session_id: #{session[:recommendation_session_id]}"
