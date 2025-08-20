@@ -52,11 +52,11 @@ module RecommendationsHelper
     
     case interaction_count
     when 1
-      { show: true, type: 'soft', message: 'Recevoir ces recommandations dans ta boîte mail ?' }
+      { show: true, type: 'soft', message: '📧 Envoyer ces recommandations sur ton email ?' }
     when 2
-      { show: true, type: 'gentle', message: 'Pour continuer à explorer, entre ton email gratuit' }
+      { show: true, type: 'gentle', message: '📚 Garder cette liste de livres pour plus tard ?' }
     when 3..Float::INFINITY
-      { show: true, type: 'friendly', message: 'Recevoir tes prochaines découvertes par email ?' }
+      { show: true, type: 'friendly', message: '💌 Recevoir tes résultats par email pour les consulter plus tard ?' }
     else
       { show: false, type: nil, message: nil }
     end
@@ -78,10 +78,10 @@ module RecommendationsHelper
     context = session[:last_context] || 'tes préférences'
     
     messages = [
-      "Recevoir tes prochaines découvertes basées sur '#{context.truncate(30)}' ?",
-      "Garder une trace de tes recommandations personnalisées ?",
-      "Recevoir des suggestions similaires par email ?",
-      "Ne jamais perdre tes bonnes découvertes ?"
+      "📧 Envoyer tes recommandations basées sur '#{context.truncate(30)}' ?",
+      "📚 Garder une trace de tes livres personnalisés ?",
+      "💌 Recevoir tes résultats par email pour plus tard ?",
+      "🔖 Ne jamais perdre tes bonnes découvertes ?"
     ]
     
     messages.sample

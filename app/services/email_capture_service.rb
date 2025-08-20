@@ -30,11 +30,11 @@ class EmailCaptureService
   def should_show_email_cta(session_data, interaction_count)
     case interaction_count
     when @interaction_thresholds[:first_recommendation]
-      { show: true, type: 'soft', message: 'Recevoir ces recommandations dans ta boîte mail ?' }
+      { show: true, type: 'soft', message: '📧 Envoyer ces recommandations sur ton email ?' }
     when @interaction_thresholds[:first_refinement]
-      { show: true, type: 'gentle', message: 'Pour continuer à explorer, entre ton email gratuit' }
+      { show: true, type: 'gentle', message: '📚 Garder cette liste de livres pour plus tard ?' }
     when @interaction_thresholds[:subsequent_refinements]..Float::INFINITY
-      { show: true, type: 'friendly', message: 'Recevoir tes prochaines découvertes par email ?' }
+      { show: true, type: 'friendly', message: '💌 Recevoir tes résultats par email pour les consulter plus tard ?' }
     else
       { show: false, type: nil, message: nil }
     end

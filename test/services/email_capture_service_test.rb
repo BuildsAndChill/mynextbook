@@ -67,19 +67,19 @@ class EmailCaptureServiceTest < ActiveSupport::TestCase
     result = @service.should_show_email_cta({}, 1)
     assert result[:show]
     assert_equal 'soft', result[:type]
-    assert_includes result[:message], 'Recevoir ces recommandations'
+    assert_includes result[:message], '📧 Envoyer ces recommandations'
 
     # Première refinement
     result = @service.should_show_email_cta({}, 2)
     assert result[:show]
     assert_equal 'gentle', result[:type]
-    assert_includes result[:message], 'Pour continuer à explorer'
+    assert_includes result[:message], '📚 Garder cette liste'
 
     # Refinements suivants
     result = @service.should_show_email_cta({}, 3)
     assert result[:show]
     assert_equal 'friendly', result[:type]
-    assert_includes result[:message], 'Recevoir tes prochaines découvertes'
+    assert_includes result[:message], '💌 Recevoir tes résultats'
 
     # Pas d'affichage pour 0 interaction
     result = @service.should_show_email_cta({}, 0)
@@ -89,14 +89,17 @@ class EmailCaptureServiceTest < ActiveSupport::TestCase
   end
 
   test "should provide engagement stats" do
+    # Compter les subscribers existants avant le test
+    initial_count = Subscriber.count
+    
     # Créer quelques subscribers de test
-    Subscriber.create!(
+    new_subscriber1 = Subscriber.create!(
       email: "test1@example.com",
       context: "Contexte 1",
       interaction_count: 1,
       session_id: @session_id
     )
-    Subscriber.create!(
+    new_subscriber2 = Subscriber.create!(
       email: "test2@example.com",
       context: "Contexte 2",
       interaction_count: 3,
@@ -105,9 +108,14 @@ class EmailCaptureServiceTest < ActiveSupport::TestCase
 
     stats = @service.engagement_stats
     
-    assert_equal 2, stats[:total]
-    assert_equal 2, stats[:active_30_days]
+    # Vérifier que les nouveaux subscribers sont bien comptés
+    assert_equal initial_count + 2, stats[:total]
+    assert_equal initial_count + 2, stats[:active_30_days] # Tous créés aujourd'hui
     assert_in_delta 2.0, stats[:avg_interactions], 0.5
+    
+    # Nettoyer les subscribers de test
+    new_subscriber1.destroy
+    new_subscriber2.destroy
   end
 
   test "should handle service errors gracefully" do
