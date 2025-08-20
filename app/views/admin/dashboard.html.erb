@@ -8,15 +8,7 @@
 
     <!-- Navigation Admin -->
     <div class="mb-8">
-      <nav class="flex space-x-4">
-        <%= link_to "Dashboard", admin_dashboard_path, class: "px-3 py-2 rounded-md text-sm font-medium bg-indigo-100 text-indigo-700" %>
-        <%= link_to "Tracking", admin_tracking_index_path, class: "px-3 py-2 rounded-md text-sm font-medium text-gray-700 hover:text-gray-900 hover:bg-gray-100" %>
-        <%= link_to "Subscribers", admin_subscribers_path, class: "px-3 py-2 rounded-md text-sm font-medium text-gray-700 hover:text-gray-900 hover:bg-gray-100" %>
-        <%= link_to "Users", admin_users_path, class: "px-3 py-2 rounded-md text-sm font-medium text-gray-700 hover:text-gray-900 hover:bg-gray-100" %>
-        <%= link_to "Logs", admin_logs_path, class: "px-3 py-2 rounded-md text-sm font-medium text-gray-700 hover:text-gray-900 hover:bg-gray-100" %>
-        <%= link_to "Analytics", admin_analytics_path, class: "px-3 py-2 rounded-md text-sm font-medium text-gray-700 hover:text-gray-900 hover:bg-gray-100" %>
-        <%= link_to "Export Data", admin_export_data_path, class: "px-3 py-2 rounded-md text-sm font-medium text-gray-700 hover:text-gray-900 hover:bg-gray-100" %>
-      </nav>
+      <%= render 'admin/shared/navigation' %>
     </div>
 
     <!-- Stats Cards -->

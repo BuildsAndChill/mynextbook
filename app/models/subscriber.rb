@@ -98,6 +98,70 @@ class Subscriber < ApplicationRecord
     end
   end
   
+  # Synchroniser automatiquement les données
+  def sync_interaction_data!
+    # Créer les SubscriberInteraction manquantes basées sur les interactions de session
+    if session_id.present?
+      create_missing_subscriber_interactions
+    end
+    
+    # Mettre à jour le interaction_count pour qu'il corresponde aux vraies données
+    update_interaction_count_from_subscriber_interactions
+  end
+  
+  # Créer les SubscriberInteraction manquantes
+  def create_missing_subscriber_interactions
+    return unless session_id.present?
+    
+    # Trouver les interactions de session qui n'ont pas de SubscriberInteraction
+    session_interactions = Interaction.where(context: context)
+    
+    session_interactions.each do |interaction|
+      # Vérifier si cette interaction existe déjà
+      existing = subscriber_interactions.find_by(
+        context: interaction.context,
+        created_at: interaction.created_at
+      )
+      
+      if existing.nil?
+        # Créer une nouvelle SubscriberInteraction
+        subscriber_interactions.create!(
+          interaction_number: next_interaction_number,
+          context: interaction.context,
+          ai_response: interaction.action_type == 'recommendation_created' ? 'Recommandation créée' : 'Recommandation affinée',
+          parsed_response: interaction.metadata&.to_json,
+          tone_chips: interaction.metadata&.dig('tone_chips')&.join(', '),
+          created_at: interaction.created_at
+        )
+      end
+    end
+  end
+  
+  # Mettre à jour le interaction_count basé sur les SubscriberInteraction
+  def update_interaction_count_from_subscriber_interactions
+    real_count = subscriber_interactions.count
+    if interaction_count != real_count
+      update!(interaction_count: real_count)
+    end
+  end
+  
+  # Obtenir le prochain numéro d'interaction
+  def next_interaction_number
+    subscriber_interactions.maximum(:interaction_number) || 0 + 1
+  end
+  
+  # Vérifier la cohérence des données
+  def data_consistent?
+    interaction_count == subscriber_interactions.count
+  end
+  
+  # Méthode de classe pour synchroniser tous les subscribers
+  def self.sync_all_interaction_data!
+    find_each do |subscriber|
+      subscriber.sync_interaction_data!
+    end
+  end
+  
   private
   
   def normalize_email

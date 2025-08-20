@@ -31,18 +31,16 @@ Rails.application.routes.draw do
   post 'admin/dashboard', to: 'admin#dashboard'  # Pour l'authentification
   delete 'admin/logout', to: 'admin#logout'      # Pour la déconnexion
   get 'admin/logs', to: 'admin#logs'
+  get 'admin/sessions', to: 'admin#sessions'
   get 'admin/subscribers', to: 'admin#subscribers'
   get 'admin/users', to: 'admin#users'
   get 'admin/analytics', to: 'admin#analytics'
   get 'admin/export_data', to: 'admin#export_data'
   
-  # User tracking routes
+  # User tracking routes (redirigé vers sessions)
   namespace :admin do
-    resources :tracking, only: [:index, :show] do
-      collection do
-        get :analytics
-      end
-    end
+    get 'tracking', to: redirect('/admin/sessions')
+    get 'tracking/analytics', to: redirect('/admin/sessions')
     get 'refresh_analytics', to: 'admin#refresh_analytics'
   end
 

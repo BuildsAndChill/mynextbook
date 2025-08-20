@@ -53,12 +53,52 @@ class AdminController < ApplicationController
   end
   
   def subscribers
+    # Synchroniser automatiquement les données des subscribers
+    Rails.logger.info "🔄 SUBSCRIBERS: Synchronisation automatique des données d'interaction"
+    Subscriber.sync_all_interaction_data!
+    
     @subscribers = Subscriber.includes(:subscriber_interactions).order(created_at: :desc).limit(100)
+    
+    # Debug: vérifier la cohérence des données
+    if ENV['debug_mode'] == 'true'
+      @subscribers.each do |subscriber|
+        unless subscriber.data_consistent?
+          Rails.logger.warn "⚠️  SUBSCRIBER: Données incohérentes pour #{subscriber.email} - Count: #{subscriber.interaction_count}, Interactions: #{subscriber.subscriber_interactions.count}"
+        end
+      end
+    end
     
     respond_to do |format|
       format.html
       format.csv { send_data export_subscribers_csv, filename: "subscribers-#{Date.current}.csv" }
       format.json { render json: @subscribers.as_json(include: :subscriber_interactions) }
+    end
+  end
+  
+  def sessions
+    # Récupérer toutes les sessions avec enrichissement des données
+    @sessions = UserSession.includes(:interactions)
+                          .order(created_at: :desc)
+                          .limit(100)
+    
+    # Enrichir chaque session avec les informations de statut
+    @sessions.each do |session|
+      # Déterminer le statut de la session
+      session.instance_variable_set(:@status, determine_session_status(session))
+      
+      # Lier aux emails/subscribers si possible
+      session.instance_variable_set(:@linked_emails, find_linked_emails(session))
+    end
+    
+    # Calculer les métriques de tracking pour l'interface
+    @tracking_stats = calculate_tracking_stats
+    @session_timeline = analyze_session_timeline
+    @interaction_heatmap = analyze_interaction_heatmap
+    
+    respond_to do |format|
+      format.html
+      format.csv { send_data export_sessions_csv, filename: "sessions-#{Date.current}.csv" }
+      format.json { render json: @sessions.as_json(methods: [:status, :linked_emails]) }
     end
   end
   
@@ -660,5 +700,104 @@ class AdminController < ApplicationController
                                .limit(10)
                                .pluck(:context, Arel.sql('COUNT(*)'))
     }
+  end
+  
+  private
+  
+  # Déterminer le statut d'une session
+  def determine_session_status(session)
+    if session.interactions.any? { |i| i.action_type == 'user_signed_in' }
+      'logged_in'
+    elsif session.interactions.any? { |i| i.action_type == 'email_captured' }
+      'subscribed'
+    else
+      'unlogged'
+    end
+  end
+  
+  # Trouver les emails liés à une session
+  def find_linked_emails(session)
+    emails = []
+    
+    # Chercher dans les interactions de type email_captured
+    email_interactions = session.interactions.where(action_type: 'email_captured')
+    email_interactions.each do |interaction|
+      if interaction.metadata&.dig('email').present?
+        emails << {
+          email: interaction.metadata['email'],
+          source: 'email_captured',
+          timestamp: interaction.created_at
+        }
+      end
+    end
+    
+    # Chercher dans les subscribers avec le même session_id
+    if session.session_identifier.present?
+      subscribers = Subscriber.where(session_id: session.session_identifier)
+      subscribers.each do |subscriber|
+        emails << {
+          email: subscriber.email,
+          source: 'subscriber',
+          timestamp: subscriber.created_at
+        }
+      end
+    end
+    
+    emails.uniq { |e| e[:email] }
+  end
+  
+  # Calculer les statistiques de tracking
+  def calculate_tracking_stats
+    total_sessions = UserSession.count
+    total_interactions = Interaction.count
+    
+    # Sessions par statut
+    sessions_by_status = {
+      total: total_sessions,
+      unlogged: UserSession.joins(:interactions).where.not(interactions: { action_type: ['email_captured', 'user_signed_in'] }).distinct.count,
+      subscribed: UserSession.joins(:interactions).where(interactions: { action_type: 'email_captured' }).distinct.count,
+      logged_in: UserSession.joins(:interactions).where(interactions: { action_type: 'user_signed_in' }).distinct.count
+    }
+    
+    # Interactions par type
+    interactions_by_type = Interaction.group(:action_type).count
+    
+    # Sessions récentes (24h)
+    recent_sessions = UserSession.where('created_at > ?', 1.day.ago).count
+    recent_interactions = Interaction.where('created_at > ?', 1.day.ago).count
+    
+    # Sessions actives (avec activité dans les dernières 2h)
+    active_sessions = UserSession.joins(:interactions).where('interactions.created_at > ?', 2.hours.ago).distinct.count
+    
+    {
+      sessions: sessions_by_status,
+      interactions: {
+        total: total_interactions,
+        by_type: interactions_by_type,
+        recent: recent_interactions
+      },
+      recent_sessions: recent_sessions,
+      active_sessions: active_sessions
+    }
+  end
+  
+  # Export CSV des sessions
+  def export_sessions_csv
+    require 'csv'
+    
+    CSV.generate(headers: true) do |csv|
+      csv << ['Session ID', 'Status', 'Created At', 'Interactions Count', 'Linked Emails', 'Context']
+      
+      @sessions.each do |session|
+        csv << [
+          session.session_identifier,
+          session.instance_variable_get(:@status),
+          session.created_at,
+          session.interactions.count,
+          session.instance_variable_get(:@linked_emails).map { |e| e[:email] }.join('; '),
+          session.interactions.first&.context
+        ]
+      end
+    end
   end
 end
