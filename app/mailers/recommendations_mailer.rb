@@ -1,7 +1,7 @@
 # app/mailers/recommendations_mailer.rb
 # Mailer responsable de l'envoi des recommandations de livres par email
 class RecommendationsMailer < ApplicationMailer
-  default from: ENV.fetch('MAILER_FROM_EMAIL', 'recommendations@mynextbook.com')
+  default from: ENV.fetch('MAILER_SENDER', 'recommendations@mynextbook.com')
 
   # Envoie les recommandations personnalisées à un utilisateur
   def send_recommendations(subscriber, recommendations_data, context = nil)

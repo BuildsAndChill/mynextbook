@@ -42,18 +42,25 @@ Rails.application.configure do
   
   # Configure email delivery method for development
   config.action_mailer.delivery_method = :smtp
+  
+  # Gmail SMTP configuration (utilise les variables de env.example)
   config.action_mailer.smtp_settings = {
-    address: ENV.fetch('SMTP_HOST', 'localhost'),
-    port: ENV.fetch('SMTP_PORT', 1025).to_i,
-    domain: 'localhost',
-    enable_starttls_auto: false,
-    openssl_verify_mode: 'none'
+    address: ENV.fetch('SMTP_ADDRESS', 'smtp.gmail.com'),
+    port: ENV.fetch('SMTP_PORT', 587).to_i,
+    domain: 'gmail.com',
+    user_name: ENV.fetch('SMTP_USERNAME', ''),
+    password: ENV.fetch('SMTP_PASSWORD', ''),
+    authentication: 'plain',
+    enable_starttls_auto: true
   }
   
-  # Log emails to console in development if no SMTP server
-  if ENV['SMTP_HOST'].blank?
+  # Fallback to file storage if Gmail not configured
+  if ENV['SMTP_USERNAME'].blank? || ENV['SMTP_PASSWORD'].blank?
     config.action_mailer.delivery_method = :file
     config.action_mailer.file_settings = { location: Rails.root.join('tmp', 'mails') }
+    puts "⚠️ Gmail non configuré, emails stockés dans tmp/mails/"
+  else
+    puts "✅ Gmail configuré pour l'envoi d'emails"
   end
 
   # Print deprecation notices to the Rails logger.
