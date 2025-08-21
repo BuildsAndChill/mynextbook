@@ -34,5 +34,6 @@ module MyNextBook
       puts "  - ActionMailer delivery_method: #{ActionMailer::Base.delivery_method}"
       puts "  - ActionMailer resend_settings: #{ActionMailer::Base.resend_settings.inspect}"
     end
+
   end
 end
