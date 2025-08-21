@@ -63,13 +63,6 @@ Rails.application.configure do
   # Configure email delivery method for production
   # Priority: Resend > File storage
   
-  # Debug des variables d'environnement
-  puts "🔍 DEBUG Production - Variables d'environnement:"
-  puts "  - RAILS_ENV: #{ENV['RAILS_ENV'].inspect}"
-  puts "  - RESEND_API_KEY: #{ENV['RESEND_API_KEY'] ? '✅ Définie' : '❌ Non définie'}"
-  puts "  - RESEND_DOMAIN: #{ENV['RESEND_DOMAIN'].inspect}"
-  puts "  - MAILER_SENDER: #{ENV['MAILER_SENDER'].inspect}"
-  
   if ENV['RESEND_API_KEY'].present?
     # Resend configuration (priorité haute)
     config.action_mailer.delivery_method = :resend
