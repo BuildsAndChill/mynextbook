@@ -1,0 +1,43 @@
+# fly.dev.toml app configuration for development environment
+# This file is used for the dev branch deployment
+
+app = "mynextbook-dev"
+primary_region = "iad" # Washington DC - change this to your preferred region
+
+[build]
+  dockerfile = "Dockerfile"
+
+[env]
+  RAILS_ENV = "development"
+  RAILS_SERVE_STATIC_FILES = "true"
+  RAILS_LOG_TO_STDOUT = "true"
+
+[http_service]
+  internal_port = 80
+  force_https = true
+  auto_stop_machines = true
+  auto_start_machines = true
+  min_machines_running = 0
+  processes = ["app"]
+
+  [[http_service.checks]]
+    grace_period = "10s"
+    interval = "30s"
+    method = "GET"
+    timeout = "5s"
+    path = "/up"
+
+[[vm]]
+  cpu_kind = "shared"
+  cpus = 1
+  memory_mb = 512
+
+[mounts]
+  source = "mynextbook_dev_data"
+  destination = "/rails/storage"
+
+[deploy]
+  release_command = "bundle exec rails db:migrate"
+
+# Note: Using existing Neon PostgreSQL database
+# No need for Fly.io managed database

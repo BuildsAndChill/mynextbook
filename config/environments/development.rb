@@ -46,11 +46,6 @@ Rails.application.configure do
   if ENV['MAILGUN_API_KEY'].present? && ENV['MAILGUN_DOMAIN'].present?
     # Mailgun configuration (priorité haute)
     config.action_mailer.delivery_method = :mailgun
-    config.action_mailer.mailgun_settings = {
-      api_key: ENV['MAILGUN_API_KEY'],
-      domain: ENV['MAILGUN_DOMAIN'],
-      region: ENV.fetch('MAILGUN_REGION', 'eu')
-    }
     puts "✅ Mailgun configuré pour l'envoi d'emails"
   elsif ENV['SMTP_USERNAME'].present? && ENV['SMTP_PASSWORD'].present?
     # Gmail SMTP configuration (fallback)
