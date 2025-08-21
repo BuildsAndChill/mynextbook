@@ -107,6 +107,7 @@ Rails.application.configure do
   config.hosts = [
     "mynextbook.onrender.com",     # Production
     "mynextbook-dev.onrender.com", # Development
+    "mynextbook.buildsandchill.com", # Custom domain
     /.*\.onrender\.com/            # Tous les sous-domaines Render
   ]
   
