@@ -43,6 +43,12 @@ Rails.application.configure do
   # Configure email delivery method for development
   # Priority: Resend > File storage (Gmail temporairement désactivé)
   
+  # Debug des variables d'environnement
+  puts "🔍 DEBUG Development - Variables d'environnement:"
+  puts "  - RESEND_API_KEY: #{ENV['RESEND_API_KEY'] ? '✅ Définie' : '❌ Non définie'}"
+  puts "  - RESEND_DOMAIN: #{ENV['RESEND_DOMAIN'].inspect}"
+  puts "  - MAILER_SENDER: #{ENV['MAILER_SENDER'].inspect}"
+  
   # Gmail temporairement désactivé pour tester Resend en local
   # if ENV['SMTP_USERNAME'].present? && ENV['SMTP_PASSWORD'].present?
   #   # Gmail SMTP configuration (priorité haute pour le développement local)
