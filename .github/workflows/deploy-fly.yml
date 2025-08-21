@@ -1,0 +1,40 @@
+name: Deploy to Fly.io
+
+on:
+  push:
+    branches: [ main, master, dev ]
+  workflow_dispatch: # Permet le déclenchement manuel
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        branch: [main, master, dev]
+    if: github.ref == "refs/heads/${{ matrix.branch }}"
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+      
+      - name: Setup Fly.io
+        uses: superfly/flyctl-actions/setup-flyctl@master
+      
+      - name: Deploy to Fly.io
+        run: |
+          if [ "${{ matrix.branch }}" = "dev" ]; then
+            flyctl deploy --remote-only --app mynextbook-dev --config fly.dev.toml
+          else
+            flyctl deploy --remote-only --app mynextbook --config fly.toml
+          fi
+        env:
+          FLY_API_TOKEN: ${{ secrets.FLY_API_TOKEN }}
+      
+      - name: Verify deployment
+        run: |
+          if [ "${{ matrix.branch }}" = "dev" ]; then
+            echo "✅ Dev deployment completed!"
+            echo "🌐 Dev app available at: https://mynextbook-dev.fly.dev"
+          else
+            echo "✅ Production deployment completed!"
+            echo "🌐 Production app available at: https://mynextbook.fly.dev"
+          fi

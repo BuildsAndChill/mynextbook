@@ -78,5 +78,5 @@ gem "devise", "~> 4.9"
 # Pagination
 gem "kaminari"
 
-# Mailgun for email delivery
-gem "mailgun-ruby", "~> 1.2"
+# Mailgun for email delivery (using Net::HTTP instead of mailgun-ruby)
+# gem "mailgun-ruby", "~> 1.2"
