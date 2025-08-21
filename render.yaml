@@ -12,6 +12,12 @@ services:
         value: production
       - key: PORT
         value: 10000
+      - key: RESEND_API_KEY
+        sync: false
+      - key: RESEND_DOMAIN
+        value: mynextbook.buildsandchill.com
+      - key: MAILER_SENDER
+        value: noreply@mynextbook.com
 
 databases:
   - name: mynextbook-db

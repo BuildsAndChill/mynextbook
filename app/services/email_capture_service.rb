@@ -68,10 +68,24 @@ class EmailCaptureService
   # Envoie les recommandations par email
   def send_recommendations_email(subscriber, recommendations_data, context)
     begin
+      # Debug des paramètres avant envoi
+      Rails.logger.info "🔍 DEBUG EmailCaptureService - Paramètres avant envoi:"
+      Rails.logger.info "  - subscriber.email: #{subscriber.email}"
+      Rails.logger.info "  - recommendations_data: #{recommendations_data.inspect}"
+      Rails.logger.info "  - context: #{context.inspect}"
+      Rails.logger.info "  - ActionMailer::Base.delivery_method: #{ActionMailer::Base.delivery_method}"
+      Rails.logger.info "  - ActionMailer::Base.resend_settings: #{ActionMailer::Base.resend_settings.inspect}"
+      Rails.logger.info "  - ENV['RESEND_DOMAIN']: #{ENV['RESEND_DOMAIN'].inspect}"
+      Rails.logger.info "  - ENV['RESEND_API_KEY']: #{ENV['RESEND_API_KEY'] ? '✅ Définie' : '❌ Non définie'}"
+      
       RecommendationsMailer.send_recommendations(subscriber, recommendations_data, context).deliver_now
       Rails.logger.info "Email de recommandations envoyé avec succès à #{subscriber.email}"
     rescue => e
       Rails.logger.error "Erreur lors de l'envoi de l'email à #{subscriber.email}: #{e.message}"
+      Rails.logger.error "🔍 DEBUG EmailCaptureService - Détails de l'erreur:"
+      Rails.logger.error "  - Classe d'erreur: #{e.class}"
+      Rails.logger.error "  - Message: #{e.message}"
+      Rails.logger.error "  - Backtrace: #{e.backtrace.first(3).join("\n")}"
       # Ne pas faire échouer la capture d'email si l'envoi échoue
     end
   end

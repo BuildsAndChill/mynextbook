@@ -19,6 +19,15 @@ class RecommendationsMailer < ApplicationMailer
     
     Rails.logger.info "Envoi des recommandations par email à #{@subscriber.email} (#{@books.count} livres)"
     
+    # Debug des paramètres avant envoi
+    Rails.logger.info "🔍 DEBUG RecommendationsMailer - Paramètres:"
+    Rails.logger.info "  - to: #{@subscriber.email}"
+    Rails.logger.info "  - subject: #{build_email_subject(@context, @books.count)}"
+    Rails.logger.info "  - from: #{ENV.fetch('MAILER_SENDER', 'recommendations@mynextbook.com')}"
+    Rails.logger.info "  - delivery_method: #{ActionMailer::Base.delivery_method}"
+    Rails.logger.info "  - resend_settings: #{ActionMailer::Base.resend_settings.inspect}"
+    Rails.logger.info "  - ENV['RESEND_DOMAIN']: #{ENV['RESEND_DOMAIN'].inspect}"
+    
     mail(
       to: @subscriber.email,
       subject: build_email_subject(@context, @books.count)

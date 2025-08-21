@@ -78,5 +78,8 @@ gem "devise", "~> 4.9"
 # Pagination
 gem "kaminari"
 
-# Mailgun for email delivery
-gem "mailgun-ruby", "~> 1.2"
+# Mailgun for email delivery (commenté - migration vers Resend)
+# gem "mailgun-ruby", "~> 1.2"
+
+# Resend for email delivery
+gem "resend", "~> 0.7"

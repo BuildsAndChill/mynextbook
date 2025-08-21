@@ -1,4 +1,3 @@
-# syntax=docker/dockerfile:1
 # check=error=true
 
 # This Dockerfile is designed for production, not development. Use with Kamal or build'n'run by hand:
@@ -19,8 +18,9 @@ RUN apt-get update -qq && \
     apt-get install --no-install-recommends -y curl libjemalloc2 libvips postgresql-client && \
     rm -rf /var/lib/apt/lists /var/cache/apt/archives
 
-# Set production environment
-ENV RAILS_ENV="production" \
+# Set production environment (can be overridden by environment variables)
+# RAILS_ENV will use the value from environment if set, otherwise default to "production"
+ENV RAILS_ENV="${RAILS_ENV:-production}" \
     BUNDLE_DEPLOYMENT="1" \
     BUNDLE_PATH="/usr/local/bundle" \
     BUNDLE_WITHOUT="development"

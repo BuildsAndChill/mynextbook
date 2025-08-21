@@ -23,5 +23,17 @@ module MyNextBook
     #
     # config.time_zone = "Central Time (US & Canada)"
     # config.eager_load_paths << Rails.root.join("extras")
+    
+    # Debug des variables d'environnement au runtime
+    config.after_initialize do
+      puts "🔍 DEBUG Runtime - Variables d'environnement:"
+      puts "  - RAILS_ENV: #{ENV['RAILS_ENV'].inspect}"
+      puts "  - RESEND_API_KEY: #{ENV['RESEND_API_KEY'] ? '✅ Définie' : '❌ Non définie'}"
+      puts "  - RESEND_DOMAIN: #{ENV['RESEND_DOMAIN'].inspect}"
+      puts "  - MAILER_SENDER: #{ENV['MAILER_SENDER'].inspect}"
+      puts "  - ActionMailer delivery_method: #{ActionMailer::Base.delivery_method}"
+      puts "  - ActionMailer resend_settings: #{ActionMailer::Base.resend_settings.inspect}"
+    end
+
   end
 end
