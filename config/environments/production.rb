@@ -61,31 +61,17 @@ Rails.application.configure do
   config.action_mailer.default_url_options = { host: "mynextbook.onrender.com" }
 
   # Configure email delivery method for production
-  # Priority: Mailgun > SMTP > File storage
+  # Priority: Resend > File storage
   
-  if ENV['MAILGUN_API_KEY'].present? && ENV['MAILGUN_DOMAIN'].present?
-    # Mailgun configuration (priorité haute)
-    config.action_mailer.delivery_method = :mailgun
-    config.action_mailer.mailgun_settings = {
-      api_key: ENV['MAILGUN_API_KEY'],
-      domain: ENV['MAILGUN_DOMAIN'],
-      region: ENV.fetch('MAILGUN_REGION', 'eu')
+  if ENV['RESEND_API_KEY'].present?
+    # Resend configuration (priorité haute)
+    config.action_mailer.delivery_method = :resend
+    config.action_mailer.resend_settings = {
+      api_key: ENV['RESEND_API_KEY'],
+      domain: ENV.fetch('RESEND_DOMAIN', 'mynextbook.com')
     }
     config.action_mailer.raise_delivery_errors = true
-    puts "✅ Mailgun configuré pour la production"
-  elsif ENV['SMTP_USERNAME'].present? && ENV['SMTP_PASSWORD'].present?
-    # SMTP configuration (fallback)
-    config.action_mailer.delivery_method = :smtp
-    config.action_mailer.smtp_settings = {
-      user_name: ENV['SMTP_USERNAME'],
-      password: ENV['SMTP_PASSWORD'],
-      address: ENV.fetch('SMTP_ADDRESS', 'smtp.gmail.com'),
-      port: ENV.fetch('SMTP_PORT', 587).to_i,
-      authentication: :plain,
-      enable_starttls_auto: true
-    }
-    config.action_mailer.raise_delivery_errors = true
-    puts "✅ SMTP configuré pour la production"
+    puts "✅ Resend configuré pour la production"
   else
     # Fallback to file storage if no email service configured
     config.action_mailer.delivery_method = :file

@@ -41,30 +41,33 @@ Rails.application.configure do
   config.action_mailer.default_url_options = { host: "localhost", port: 3000 }
   
   # Configure email delivery method for development
-  # Priority: Mailgun > Gmail > File storage
+  # Priority: Resend > File storage (Gmail temporairement désactivé)
   
-  if ENV['MAILGUN_API_KEY'].present? && ENV['MAILGUN_DOMAIN'].present?
-    # Mailgun configuration (priorité haute)
-    config.action_mailer.delivery_method = :mailgun
-    config.action_mailer.mailgun_settings = {
-      api_key: ENV['MAILGUN_API_KEY'],
-      domain: ENV['MAILGUN_DOMAIN'],
-      region: ENV.fetch('MAILGUN_REGION', 'eu')
+  # Gmail temporairement désactivé pour tester Resend en local
+  # if ENV['SMTP_USERNAME'].present? && ENV['SMTP_PASSWORD'].present?
+  #   # Gmail SMTP configuration (priorité haute pour le développement local)
+  #   config.action_mailer.delivery_method = :smtp
+  #   config.action_mailer.smtp_settings = {
+  #     address: ENV.fetch('SMTP_ADDRESS', 'smtp.gmail.com'),
+  #     port: ENV.fetch('SMTP_PORT', 587).to_i,
+  #     domain: 'gmail.com',
+  #     user_name: ENV.fetch('SMTP_USERNAME', ''),
+  #     password: ENV.fetch('SMTP_PASSWORD', ''),
+  #     authentication: 'plain',
+  #     enable_starttls_auto: true
+  #   }
+  #   puts "✅ Gmail configuré pour l'envoi d'emails (développement local)"
+  # elsif 
+  if ENV['RESEND_API_KEY'].present?
+    # Resend configuration (priorité haute pour tester en local)
+    config.action_mailer.delivery_method = :resend
+    config.action_mailer.resend_settings = {
+      api_key: ENV['RESEND_API_KEY'],
+      domain: ENV.fetch('RESEND_DOMAIN', 'mynextbook.com')
     }
-    puts "✅ Mailgun configuré pour l'envoi d'emails"
-  elsif ENV['SMTP_USERNAME'].present? && ENV['SMTP_PASSWORD'].present?
-    # Gmail SMTP configuration (fallback)
-    config.action_mailer.delivery_method = :smtp
-    config.action_mailer.smtp_settings = {
-      address: ENV.fetch('SMTP_ADDRESS', 'smtp.gmail.com'),
-      port: ENV.fetch('SMTP_PORT', 587).to_i,
-      domain: 'gmail.com',
-      user_name: ENV.fetch('SMTP_USERNAME', ''),
-      password: ENV.fetch('SMTP_PASSWORD', ''),
-      authentication: 'plain',
-      enable_starttls_auto: true
-    }
-    puts "✅ Gmail configuré pour l'envoi d'emails"
+    puts "✅ Resend configuré pour l'envoi d'emails (test local)"
+    puts "🔧 resend_settings: #{config.action_mailer.resend_settings.inspect}"
+    puts "🔧 ENV['RESEND_DOMAIN']: #{ENV['RESEND_DOMAIN'].inspect}"
   else
     # Fallback to file storage if no email service configured
     config.action_mailer.delivery_method = :file
