@@ -48,6 +48,8 @@ class RecommendationsController < ApplicationController
                  else
                    []
                  end
+    # Language preferences are now detected automatically from the prompt content
+    # No need to process book_language parameters
     include_history = params[:include_history] == '1'
     refinement = params[:refinement]
     
@@ -77,7 +79,7 @@ class RecommendationsController < ApplicationController
       Rails.logger.info "Initializing BookRecommender..."
       recommender = BookRecommender.new
       Rails.logger.info "BookRecommender initialized successfully"
-      Rails.logger.info "Calling get_recommendation with prompt..."
+      Rails.logger.info "Calling get_recommendation with prompt (language detection is automatic)..."
       @ai_response = recommender.get_recommendation(@user_prompt)
       Rails.logger.info "AI response received successfully"
       Rails.logger.info "AI response length: #{@ai_response&.length || 0}"

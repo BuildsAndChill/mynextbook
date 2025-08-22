@@ -7,8 +7,20 @@ class BookRecommender
   end
 
   def get_recommendation(prompt)
-    # Use the provided prompt directly
-    call_with_prompt(prompt)
+    # Build enhanced prompt with automatic language detection
+    enhanced_prompt = build_language_context(prompt)
+    call_with_prompt(enhanced_prompt)
+  end
+
+  private
+
+  def build_language_context(base_prompt)
+    # Let the AI naturally understand language preferences from the prompt
+    # Just add general instructions about respecting language requests
+    language_instructions = "IMPORTANT: If the user specifies a language for books, respect that request strictly. All explanations and analysis should remain in English regardless of the book language requested."
+    
+    language_context = "\n\n=== LANGUAGE INSTRUCTIONS ===\n#{language_instructions}\n=== END LANGUAGE INSTRUCTIONS ===\n"
+    base_prompt + language_context
   end
 
   private
@@ -33,10 +45,17 @@ class BookRecommender
     begin
       Rails.logger.info "Calling OpenAI API with prompt length: #{prompt&.length || 0}"
       client = OpenAI::Client.new(access_token: ENV["OPENAI_API_KEY"])
+      
+      # Create system message with strict language enforcement
+      system_message = "You are a book recommendation expert. When language requirements are specified, you MUST strictly follow them. If asked for books in a specific language, ONLY recommend books available in that language. Never suggest books in a different language than requested."
+      
       response = client.chat(
         parameters: {
           model: "gpt-4o-mini",
-          messages: [{ role: "user", content: prompt }],
+          messages: [
+            { role: "system", content: system_message },
+            { role: "user", content: prompt }
+          ],
           temperature: 0.7
         }
       )

@@ -7,29 +7,22 @@ export default class extends Controller {
   
   rotatePlaceholder() {
     const placeholders = [
-      // Français - Inspirants et variés
-      "Après Sapiens, je veux tech & société, ton optimiste, 250-350 pages",
-      "Un roman français contemporain qui me fasse réfléchir sur la vie moderne",
-      "De la science-fiction en français, quelque chose d'original et captivant",
-      "Un essai philosophique accessible, peut-être sur la conscience ou l'IA",
-      "Un livre qui me fasse voyager, peut-être sur l'Asie ou l'Afrique",
-      "Un roman historique qui me transporte dans une autre époque",
-      
-      // English - Diverse and inspiring
-      "After reading Dune, I want something about power dynamics and human nature",
+      // English examples only
+      "After Sapiens, I want something about technology and society",
+      "A contemporary novel that makes me think about modern life",
+      "Science fiction that's original and captivating",
+      "I'm looking for a book about modern art",
+      "A philosophical essay that's accessible yet profound",
+      "After Dune, I want something about power dynamics and human nature",
       "A contemporary novel that explores identity and belonging in modern cities",
       "Non-fiction about climate change solutions, optimistic but realistic",
       "A mystery thriller with complex characters and unexpected plot twists",
       "Something that challenges my worldview, maybe about economics or psychology",
-      "A book about creativity and innovation, maybe biographies or case studies",
-      
-      // Mixed language examples
-      "Un livre sur l'art moderne ou la musique, quelque chose qui m'émeuve",
       "A book about space exploration or quantum physics, but accessible",
-      "Un roman policier scandinave, atmosphérique et psychologique",
       "Something about ancient civilizations or lost knowledge",
-      "Un livre sur la nature et l'écologie, peut-être un récit de voyage",
-      "A book about human psychology and behavior, maybe case studies"
+      "A book about nature and ecology, maybe a travel memoir",
+      "I want to explore a new genre, something engaging and well-written",
+      "A book that combines history with personal storytelling"
     ]
     
     const randomPlaceholder = placeholders[Math.floor(Math.random() * placeholders.length)]
