@@ -1,7 +1,7 @@
-    <div id="home-page" class="min-h-screen bg-gradient-to-br from-indigo-50 via-white to-purple-50">
+<div id="home-page" class="min-h-screen bg-gradient-to-br from-indigo-50 via-white to-purple-50">
   <!-- Hero Section -->
   <div class="relative overflow-hidden">
-      <div class="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-16 sm:py-20 md:py-24">
+    <div class="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-16 sm:py-20 md:py-24">
       <div class="text-center">
         <!-- Hero Icon -->
         <div class="mx-auto h-20 w-20 mb-8 flex items-center justify-center rounded-full bg-gradient-to-r from-indigo-500 to-purple-600">
@@ -36,9 +36,7 @@
                     required: true,
                     data: { controller: "placeholder" } %>
                 
-                
-             
-                                                                                <!-- Smart Language Tips - Sleek Design -->
+                <!-- Smart Language Tips - Sleek Design -->
                 <div class="mt-4 relative" data-controller="tips">
                   <!-- Subtle background with glass effect -->
                   <div class="absolute inset-0 bg-white/40 backdrop-blur-sm rounded-2xl border border-white/60"></div>
@@ -67,7 +65,7 @@
                       </div>
                       <div class="flex items-start" id="random-example">
                         <div class="w-1.5 h-1.5 bg-indigo-400 rounded-full mt-2 mr-3 flex-shrink-0"></div>
-                        <span class="text-sm text-gray-700 leading-relaxed">Examples: "Je veux un roman français" or "Quiero un libro en español"</span>
+                        <span class="text-sm text-gray-700 leading-relaxed" id="random-example-text">Examples: "Je veux un roman français" or "Quiero un libro en español"</span>
                       </div>
                       <div class="flex items-start">
                         <div class="w-1.5 h-1.5 bg-indigo-400 rounded-full mt-2 mr-3 flex-shrink-0"></div>
@@ -78,15 +76,24 @@
                 </div>
               </div>
 
-              <!-- Compact Tone Chips -->
+              <!-- Situational Reading Needs -->
               <div>
-                <label class="block text-sm font-medium text-gray-700 mb-2 text-left">Tone & Style</label>
+                <label class="block text-sm font-medium text-gray-700 mb-2 text-left">What's your reading situation?</label>
                 <div class="flex flex-wrap gap-2 justify-center">
-                  <% ['Deep dive', 'Fast-paced', 'Optimistic', 'Thoughtful', 'Adventure', 'Cozy', 'Challenging', 'Light'].each do |tone| %>
+                  <% [
+                    'Summer vacation', 
+                    'Learning a new topic', 
+                    'Deep thinking & reflection', 
+                    'Reduce screen time', 
+                    'Quick entertainment', 
+                    'Professional growth', 
+                    'Escape from stress', 
+                    'Family reading time'
+                  ].each do |situation| %>
                     <label class="relative">
-                      <%= check_box_tag 'tone_chips[]', tone, false, class: 'sr-only' %>
+                      <%= check_box_tag 'tone_chips[]', situation, false, class: 'sr-only' %>
                       <span class="inline-flex items-center justify-center px-3 py-2 rounded-lg text-sm font-medium bg-white border-2 border-gray-200 text-gray-700 cursor-pointer hover:bg-indigo-50 hover:border-indigo-300 hover:text-indigo-700 transition-all duration-200 active:scale-95 shadow-sm">
-                        <%= tone %>
+                        <%= situation %>
                       </span>
                     </label>
                   <% end %>
@@ -171,10 +178,6 @@
                 </div>
               <% end %>
 
-
-
-
-
               <!-- Submit Button - Enhanced Design with iOS Compatibility -->
               <button type="submit" id="home-submit-button" class="w-full bg-gradient-to-r from-indigo-600 to-purple-600 text-white py-4 px-6 rounded-xl font-semibold text-lg hover:from-indigo-700 hover:to-purple-700 transition-all duration-200 flex items-center justify-center shadow-lg hover:shadow-xl transform hover:scale-105 active:scale-95 relative z-10 border-2 border-indigo-700">
                 <svg class="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -184,8 +187,6 @@
               </button>
             <% end %>
           </div>
-
-
         </div>
 
         <!-- Quick Tips - Sleek Design -->
@@ -230,19 +231,6 @@
         </div>
         
         <!-- TEMPORAIREMENT DÉSACTIVÉ: Chat Interface Link -->
-        <!-- <div class="mt-8 text-center">
-          <p class="text-sm text-gray-500 mb-3">Want to try our mobile chat interface?</p>
-          <a href="/recommendations/chat" 
-              data-turbo="false"
-              class="inline-flex items-center px-4 py-2 border border-gray-300 text-sm font-medium rounded-lg text-gray-700 bg-white hover:bg-gray-50 transition-colors duration-200">
-            <svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8s9 3.582 9 8z"/>
-            </svg>
-            Try Chat Interface
-          </a>
-        </div> -->
-        
-        <!-- TEMPORAIRE: Message informatif -->
         <div class="mt-8 text-center">
           <p class="text-sm text-gray-500 mb-3">Mobile chat interface temporarily disabled</p>
           <div class="inline-flex items-center px-4 py-2 border border-gray-300 text-sm font-medium rounded-lg text-gray-400 bg-gray-50 cursor-not-allowed">
@@ -329,8 +317,6 @@
         </div>
       </div>
 
-
-
       <!-- Future Features -->
       <div class="mt-12 text-center">
         <p class="text-gray-600 mb-4">Coming soon: Photo uploads of your reading list for instant library building</p>
@@ -412,46 +398,32 @@
 </div>
 
 <script>
-// TEMPORAIREMENT DÉSACTIVÉ: Logique de basculement entre formulaires
-// TODO: Réactiver après refactor du chat UX
+// Single, clean JavaScript file with no duplications
 document.addEventListener('DOMContentLoaded', function() {
-  // Function to show correct form based on screen size
-  function showCorrectForm() {
-    const desktopForm = document.getElementById('desktop-form');
-    const mobileCTA = document.getElementById('mobile-cta');
-    
-    // TEMPORAIRE: Toujours montrer le formulaire principal
-    if (desktopForm) desktopForm.style.display = 'block';
-    if (mobileCTA) mobileCTA.style.display = 'none';
-    
-    /* TODO: Réactiver cette logique après refactor
-    if (window.innerWidth >= 768) { // md breakpoint
-      // Desktop view
-      if (desktopForm) desktopForm.style.display = 'block';
-      if (mobileCTA) mobileCTA.style.display = 'none';
-    } else {
-      // Mobile view
-      if (desktopForm) desktopForm.style.display = 'none';
-      if (mobileCTA) mobileCTA.style.display = 'block';
-    }
-    */
-  }
-  
-  // Show correct form on load
-  showCorrectForm();
-  
-  // Update on resize (temporairement désactivé)
-  // window.addEventListener('resize', showCorrectForm);
-  
-  // Add form validation and loading states
-  // Form submission handling - Target specific recommendation form
+  initializeHomePage();
+});
+
+// Re-initialize on Turbo navigation
+document.addEventListener('turbo:load', function() {
+  initializeHomePage();
+});
+
+document.addEventListener('turbo:render', function() {
+  initializeHomePage();
+});
+
+// Main initialization function
+function initializeHomePage() {
+  initializeFormValidation();
+  initializeToneChips();
+  initializeTips();
+}
+
+// Form validation and loading states
+function initializeFormValidation() {
   const recommendationForm = document.getElementById('recommendation-form');
   if (recommendationForm) {
-    console.log('Recommendation form found, setting up event listener...');
-    
     recommendationForm.addEventListener('submit', function(e) {
-      console.log('Form submit event triggered');
-      
       // Validate context is not empty
       const context = this.querySelector('textarea[name="context"]').value.trim();
       if (!context) {
@@ -466,253 +438,137 @@ document.addEventListener('DOMContentLoaded', function() {
         return;
       }
       
-      console.log('Context validated, showing loading state...');
-      
       // Show loading state
       const submitBtn = this.querySelector('button[type="submit"]');
       const originalText = submitBtn.innerHTML;
       submitBtn.innerHTML = '<svg class="animate-spin -ml-1 mr-3 h-5 w-5 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24"><circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle><path class="opacity-75" fill="currentColor" d="M12 6v6m0 0v6m0-6h6m-6 0H6"></path></svg>Getting recommendations...';
       submitBtn.disabled = true;
       
-      console.log('Button loading state applied');
-      
       // Re-enable button after a delay (in case of errors)
       setTimeout(() => {
         submitBtn.innerHTML = originalText;
         submitBtn.disabled = false;
-        console.log('Button reset to original state');
       }, 10000);
     });
-    
-    console.log('Event listener set up successfully');
-  } else {
-    console.error('Recommendation form not found!');
   }
+}
 
-  // Handle tone chip selection on home page - Turbo compatible
-  function initializeHomeToneChips() {
-    const toneChips = document.querySelectorAll('input[name="tone_chips[]"]');
-    
-    toneChips.forEach(chip => {
-      // Remove existing event listeners to prevent duplicates
-      const newChip = chip.cloneNode(true);
-      chip.parentNode.replaceChild(newChip, chip);
-      
-      newChip.addEventListener('change', function() {
-        const span = this.nextElementSibling;
-        if (this.checked) {
-          span.classList.remove('bg-gray-50', 'border-gray-200', 'text-gray-600');
-          span.classList.add('bg-indigo-100', 'border-indigo-300', 'text-indigo-700');
-        } else {
-          span.classList.remove('bg-indigo-100', 'border-indigo-300', 'text-indigo-700');
-          span.classList.add('bg-gray-50', 'border-gray-200', 'text-gray-600');
-        }
-      });
-    });
-  }
-
-  // Function to scroll to top of the page
-  function scrollToTop() {
-    window.scrollTo({ top: 0, behavior: 'smooth' });
-  }
-
-  // Function to suggest a new genre
-  function suggestNewGenre() {
-    const genres = [
-      'Science Fiction', 'Fantasy', 'Mystery', 'Thriller', 'Romance', 
-      'Historical Fiction', 'Biography', 'Memoir', 'Self-Help', 'Philosophy',
-      'Economics', 'Psychology', 'Travel', 'Cooking', 'Art', 'Music',
-      'Poetry', 'Drama', 'Horror', 'Western', 'Young Adult', 'Children'
-    ];
-    
-    const randomGenre = genres[Math.floor(Math.random() * genres.length)];
-    const context = document.querySelector('textarea[name="context"]');
-    
-    if (context) {
-      context.value = `I want to explore ${randomGenre} books. Something engaging and well-written that will introduce me to this genre.`;
-      context.focus();
-      
-      // Show toast notification
-      showToast(`Try exploring ${randomGenre}! I've updated your request.`, 'success');
-    }
-  }
-
-  // Toast notification function
-  function showToast(message, type = 'info') {
-    // Create toast element
-    const toast = document.createElement('div');
-    toast.className = `fixed top-4 right-4 z-50 px-6 py-3 rounded-lg text-white font-medium transform transition-all duration-300 translate-x-full ${
-      type === 'success' ? 'bg-green-500' : 
-      type === 'error' ? 'bg-red-500' : 
-      'bg-blue-500'
-    }`;
-    toast.textContent = message;
-    
-    document.body.appendChild(toast);
-    
-    // Animate in
-    setTimeout(() => {
-      toast.classList.remove('translate-x-full');
-    }, 100);
-    
-    // Animate out and remove
-    setTimeout(() => {
-      toast.classList.add('translate-x-full');
-      setTimeout(() => {
-        document.body.removeChild(toast);
-      }, 300);
-    }, 3000);
-  }
-
-  // Simple tone chip toggle functionality - Turbo compatible
-  function initializeHomeToneChipToggles() {
-    const toneChips = document.querySelectorAll('input[name="tone_chips[]"]');
-    
-    toneChips.forEach(checkbox => {
-      // Remove existing event listeners to prevent duplicates
-      const newCheckbox = checkbox.cloneNode(true);
-      const newSpan = checkbox.nextElementSibling.cloneNode(true);
-      checkbox.parentNode.replaceChild(newCheckbox, checkbox);
-      newCheckbox.parentNode.replaceChild(newSpan, newCheckbox.nextElementSibling);
-      
-      const chipSpan = newCheckbox.nextElementSibling;
-      
-      chipSpan.addEventListener('click', function() {
-        newCheckbox.checked = !newCheckbox.checked;
-        
-        // Visual feedback
-        if (newCheckbox.checked) {
-          this.classList.add('bg-indigo-100', 'border-indigo-400', 'text-indigo-700');
-        } else {
-          this.classList.remove('bg-indigo-100', 'border-indigo-400', 'text-indigo-700');
-        }
-      });
-    });
-  }
-
-  // Function to toggle history actions visibility
-  function toggleHistoryActions(checkbox) {
-    const historyActions = document.getElementById('history-actions');
-    if (checkbox.checked) {
-      historyActions.classList.remove('hidden');
-    } else {
-      historyActions.classList.add('hidden');
-    }
-  }
+// Tone chip functionality - clean and simple
+function initializeToneChips() {
+  const toneChips = document.querySelectorAll('input[name="tone_chips[]"]');
   
-      // Initialize tone chips
-    initializeHomeToneChips();
+  toneChips.forEach(checkbox => {
+    const chipSpan = checkbox.nextElementSibling;
     
-    
-  initializeHomeToneChipToggles();
-});
-
-// Re-initialize on Turbo navigation
-document.addEventListener('turbo:load', function() {
-  // Handle tone chip selection on home page - Turbo compatible
-  function initializeHomeToneChips() {
-    const toneChips = document.querySelectorAll('input[name="tone_chips[]"]');
-    
-    toneChips.forEach(chip => {
-      // Remove existing event listeners to prevent duplicates
-      const newChip = chip.cloneNode(true);
-      chip.parentNode.replaceChild(newChip, chip);
-      
-      newChip.addEventListener('change', function() {
-        const span = this.nextElementSibling;
-        if (this.checked) {
-          span.classList.remove('bg-gray-50', 'border-gray-200', 'text-gray-600');
-          span.classList.add('bg-indigo-100', 'border-indigo-300', 'text-indigo-700');
-        } else {
-          span.classList.remove('bg-indigo-100', 'border-indigo-300', 'text-indigo-700');
-          span.classList.add('bg-gray-50', 'border-gray-200', 'text-gray-600');
-        }
-      });
+    // Handle checkbox change
+    checkbox.addEventListener('change', function() {
+      updateChipVisual(chipSpan, this.checked);
     });
-  }
-
-  // Simple tone chip toggle functionality - Turbo compatible
-  function initializeHomeToneChipToggles() {
-    const toneChips = document.querySelectorAll('input[name="tone_chips[]"]');
     
-    toneChips.forEach(checkbox => {
-      // Remove existing event listeners to prevent duplicates
-      const newCheckbox = checkbox.cloneNode(true);
-      const newSpan = checkbox.nextElementSibling.cloneNode(true);
-      checkbox.parentNode.replaceChild(newCheckbox, checkbox);
-      newCheckbox.parentNode.replaceChild(newSpan, newCheckbox.nextElementSibling);
-      
-      const chipSpan = newCheckbox.nextElementSibling;
-      
-      chipSpan.addEventListener('click', function() {
-        newCheckbox.checked = !newCheckbox.checked;
-        
-        // Visual feedback
-        if (newCheckbox.checked) {
-          this.classList.add('bg-indigo-100', 'border-indigo-400', 'text-indigo-700');
-        } else {
-          this.classList.remove('bg-indigo-100', 'border-indigo-400', 'text-indigo-700');
-        }
-      });
+    // Handle span click
+    chipSpan.addEventListener('click', function() {
+      checkbox.checked = !checkbox.checked;
+      updateChipVisual(this, checkbox.checked);
     });
+  });
+}
+
+// Update chip visual state
+function updateChipVisual(chipSpan, isChecked) {
+  if (isChecked) {
+    chipSpan.classList.remove('bg-white', 'border-gray-200', 'text-gray-700');
+    chipSpan.classList.add('bg-indigo-100', 'border-indigo-300', 'text-indigo-700');
+  } else {
+    chipSpan.classList.remove('bg-indigo-100', 'border-indigo-300', 'text-indigo-700');
+    chipSpan.classList.add('bg-white', 'border-gray-200', 'text-gray-700');
   }
+}
 
-  initializeHomeToneChips();
-  initializeHomeToneChipToggles();
-});
+// Initialize tips with random examples
+function initializeTips() {
+  const examples = [
+    "I want a French novel" + " → " + "Je veux un roman français",
+    "A book about philosophy in French" + " → " + "Un livre sur la philosophie en français",
+    "French science fiction" + " → " + "De la science-fiction française",
+    "A contemporary French essay" + " → " + "Un essai français contemporain",
+    "French mystery novels" + " → " + "Des romans policiers français",
+    "French history books" + " → " + "Des livres d'histoire français",
+    "French poetry" + " → " + "De la poésie française",
+    "A French biography" + " → " + "Une biographie française",
+    "French fantasy books" + " → " + "Des livres de fantasy français",
+    "A French thriller" + " → " + "Un thriller français",
+    "French romance novels" + " → " + "Des romans d'amour français",
+    "A French travel guide" + " → " + "Un guide de voyage français"
+  ];
+  
+  const randomExample = examples[Math.floor(Math.random() * examples.length)];
+  const exampleElement = document.getElementById('random-example-text');
+  if (exampleElement) {
+    exampleElement.textContent = `Examples: ${randomExample}`;
+  }
+}
 
-document.addEventListener('turbo:render', function() {
-  // Handle tone chip selection on home page - Turbo compatible
-  function initializeHomeToneChips() {
-    const toneChips = document.querySelectorAll('input[name="tone_chips[]"]');
+// Utility functions
+function scrollToTop() {
+  window.scrollTo({ top: 0, behavior: 'smooth' });
+}
+
+function suggestNewGenre() {
+  const genres = [
+    'Science Fiction', 'Fantasy', 'Mystery', 'Thriller', 'Romance', 
+    'Historical Fiction', 'Biography', 'Memoir', 'Self-Help', 'Philosophy',
+    'Economics', 'Psychology', 'Travel', 'Cooking', 'Art', 'Music',
+    'Poetry', 'Drama', 'Horror', 'Western', 'Young Adult', 'Children'
+  ];
+  
+  const randomGenre = genres[Math.floor(Math.random() * genres.length)];
+  const context = document.querySelector('textarea[name="context"]');
+  
+  if (context) {
+    context.value = `I want to explore ${randomGenre} books. Something engaging and well-written that will introduce me to this genre.`;
+    context.focus();
     
-    toneChips.forEach(chip => {
-      // Remove existing event listeners to prevent duplicates
-      const newChip = chip.cloneNode(true);
-      chip.parentNode.replaceChild(newChip, chip);
-      
-      newChip.addEventListener('change', function() {
-        const span = this.nextElementSibling;
-        if (this.checked) {
-          span.classList.remove('bg-gray-50', 'border-gray-200', 'text-gray-600');
-          span.classList.add('bg-indigo-100', 'border-indigo-300', 'text-indigo-700');
-        } else {
-          span.classList.remove('bg-indigo-100', 'border-indigo-300', 'text-indigo-700');
-          span.classList.add('bg-gray-50', 'border-gray-200', 'text-gray-600');
-        }
-      });
-    });
+    // Show toast notification
+    showToast(`Try exploring ${randomGenre}! I've updated your request.`, 'success');
   }
+}
 
-  // Simple tone chip toggle functionality - Turbo compatible
-  function initializeHomeToneChipToggles() {
-    const toneChips = document.querySelectorAll('input[name="tone_chips[]"]');
-    
-    toneChips.forEach(checkbox => {
-      // Remove existing event listeners to prevent duplicates
-      const newCheckbox = checkbox.cloneNode(true);
-      const newSpan = checkbox.nextElementSibling.cloneNode(true);
-      checkbox.parentNode.replaceChild(newCheckbox, checkbox);
-      newCheckbox.parentNode.replaceChild(newSpan, newCheckbox.nextElementSibling);
-      
-      const chipSpan = newCheckbox.nextElementSibling;
-      
-      chipSpan.addEventListener('click', function() {
-        newCheckbox.checked = !newCheckbox.checked;
-        
-        // Visual feedback
-        if (newCheckbox.checked) {
-          this.classList.add('bg-indigo-100', 'border-indigo-400', 'text-indigo-700');
-        } else {
-          this.classList.remove('bg-indigo-100', 'border-indigo-400', 'text-indigo-700');
-        }
-      });
-    });
+// Toast notification function
+function showToast(message, type = 'info') {
+  // Create toast element
+  const toast = document.createElement('div');
+  toast.className = `fixed top-4 right-4 z-50 px-6 py-3 rounded-lg text-white font-medium transform transition-all duration-300 translate-x-full ${
+    type === 'success' ? 'bg-green-500' : 
+    type === 'error' ? 'bg-red-500' : 
+    'bg-blue-500'
+  }`;
+  toast.textContent = message;
+  
+  document.body.appendChild(toast);
+  
+  // Animate in
+  setTimeout(() => {
+    toast.classList.remove('translate-x-full');
+  }, 100);
+  
+  // Animate out and remove
+  setTimeout(() => {
+    toast.classList.add('translate-x-full');
+    setTimeout(() => {
+      document.body.removeChild(toast);
+    }, 300);
+  }, 3000);
+}
+
+// Function to toggle history actions visibility
+function toggleHistoryActions(checkbox) {
+  const historyActions = document.getElementById('history-actions');
+  if (checkbox.checked) {
+    historyActions.classList.remove('hidden');
+  } else {
+    historyActions.classList.add('hidden');
   }
-
-  initializeHomeToneChips();
-  initializeHomeToneChipToggles();
-});
+}
 </script>
 
 <style>
@@ -748,27 +604,4 @@ document.addEventListener('turbo:render', function() {
 button, textarea, input[type="checkbox"] {
   transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
 }
-
-/* TODO: Réactiver la logique responsive après refactor du chat UX */
-/* 
-@media (min-width: 768px) {
-  .desktop-form {
-    display: block !important;
-  }
-  
-  .mobile-cta {
-    display: none !important;
-  }
-}
-
-@media (max-width: 767px) {
-  .desktop-form {
-    display: none !important;
-  }
-  
-  .mobile-cta {
-    display: block !important;
-  }
-}
-*/
 </style>
