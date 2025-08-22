@@ -8,3 +8,5 @@ pin_all_from "app/javascript/controllers", under: "controllers"
 
 # Chat Interface
 pin "chat_interface", to: "chat_interface.js"
+
+

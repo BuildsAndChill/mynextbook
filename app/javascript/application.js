@@ -66,6 +66,13 @@ function initializeFormLoadingAnimations() {
   forms.forEach((form, index) => {
     console.log(`📝 Form ${index + 1}:`, form.action || form.getAttribute('action'));
     
+    // Skip forms that are NOT for recommendations
+    const formAction = form.action || form.getAttribute('action');
+    if (!formAction || (!formAction.includes('recommendations') && !formAction.includes('refine'))) {
+      console.log('⏭️ Skipping non-recommendation form:', formAction);
+      return;
+    }
+    
     form.addEventListener('submit', function(e) {
       console.log('🚀 Form submitted:', form.action || form.getAttribute('action'));
       

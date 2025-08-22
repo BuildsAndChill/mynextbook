@@ -152,14 +152,15 @@
                   <!-- Divider -->
                   <div class="border-t border-gray-100 my-1"></div>
                   
-                  <!-- Sign Out -->
-                <%= button_to destroy_user_session_path, method: :delete, 
-                      class: "w-full text-left flex items-center px-4 py-2 text-sm text-red-600 hover:bg-red-50 transition-colors duration-200" do %>
-                    <svg class="w-4 h-4 mr-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1"></path>
-                    </svg>
-                    Sign Out
-                <% end %>
+                                    <!-- Sign Out -->
+                <button type="button" 
+                        onclick="signOut()"
+                        class="w-full text-left flex items-center px-4 py-2 text-sm text-red-600 hover:bg-red-50 transition-colors duration-200">
+                  <svg class="w-4 h-4 mr-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1"></path>
+                  </svg>
+                  Sign Out
+                </button>
                 </div>
               </div>
             <% else %>
@@ -243,7 +244,7 @@
             <ul class="space-y-2 text-sm text-gray-600">
               <% if user_signed_in? %>
                 <li><%= link_to "My Account", edit_user_registration_path, class: "hover:text-gray-900 transition-colors duration-200" %></li>
-                <li><%= button_to "Sign Out", destroy_user_session_path, method: :delete, class: "hover:text-gray-900 transition-colors duration-200 bg-transparent border-0 cursor-pointer text-left p-0" %></li>
+                                 <li><button type="button" onclick="signOut()" class="hover:text-gray-900 transition-colors duration-200 bg-transparent border-0 cursor-pointer text-left p-0">Sign Out</button></li>
               <% else %>
                 <li><%= link_to "Sign In", new_user_session_path, class: "hover:text-gray-900 transition-colors duration-200" %></li>
                 <li><%= link_to "Sign Up", new_user_registration_path, class: "hover:text-gray-900 transition-colors duration-200" %></li>
@@ -258,9 +259,39 @@
       </div>
     </footer>
 
-    <script>
-            // User dropdown menu functionality - Turbo-compatible
-      function initializeUserDropdown() {
+         <script>
+       // Sign Out function - No form, direct JavaScript
+       function signOut() {
+         console.log('🚪 Sign Out clicked');
+         
+         // Create a hidden form dynamically
+         const form = document.createElement('form');
+         form.method = 'POST';
+         form.action = '<%= destroy_user_session_path %>';
+         form.style.display = 'none';
+         
+         // Add CSRF token
+         const csrfToken = document.querySelector('meta[name="csrf-token"]').getAttribute('content');
+         const csrfInput = document.createElement('input');
+         csrfInput.type = 'hidden';
+         csrfInput.name = 'authenticity_token';
+         csrfInput.value = csrfToken;
+         form.appendChild(csrfInput);
+         
+         // Add method override for DELETE
+         const methodInput = document.createElement('input');
+         methodInput.type = 'hidden';
+         methodInput.name = '_method';
+         methodInput.value = 'DELETE';
+         form.appendChild(methodInput);
+         
+         // Submit the form
+         document.body.appendChild(form);
+         form.submit();
+       }
+       
+       // User dropdown menu functionality - Turbo-compatible
+       function initializeUserDropdown() {
         const dropdownButton = document.getElementById('userDropdownButton');
         const dropdown = document.getElementById('userDropdown');
         

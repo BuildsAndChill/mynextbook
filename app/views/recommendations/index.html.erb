@@ -204,7 +204,13 @@
         const context = document.querySelector('textarea[name="context"]').value.trim();
         if (!context) {
           e.preventDefault();
-          alert('Please describe what you\'re in the mood for reading.');
+          // Use visual feedback instead of alert
+          const contextField = document.querySelector('textarea[name="context"]');
+          contextField.focus();
+          contextField.classList.add('border-red-500', 'ring-2', 'ring-red-200');
+          setTimeout(() => {
+            contextField.classList.remove('border-red-500', 'ring-2', 'ring-red-200');
+          }, 2000);
           return;
         }
         

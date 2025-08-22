@@ -1,4 +1,4 @@
-    <div class="min-h-screen bg-gradient-to-br from-indigo-50 via-white to-purple-50">
+    <div id="home-page" class="min-h-screen bg-gradient-to-br from-indigo-50 via-white to-purple-50">
   <!-- Hero Section -->
   <div class="relative overflow-hidden">
       <div class="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-16 sm:py-20 md:py-24">
@@ -415,7 +415,13 @@ document.addEventListener('DOMContentLoaded', function() {
       const context = this.querySelector('textarea[name="context"]').value.trim();
       if (!context) {
         e.preventDefault();
-        alert('Please describe what you\'re in the mood for reading.');
+        // Use visual feedback instead of alert
+        const contextField = this.querySelector('textarea[name="context"]');
+        contextField.focus();
+        contextField.classList.add('border-red-500', 'ring-2', 'ring-red-200');
+        setTimeout(() => {
+          contextField.classList.remove('border-red-500', 'ring-2', 'ring-red-200');
+        }, 2000);
         return;
       }
       
