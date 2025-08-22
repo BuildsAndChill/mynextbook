@@ -379,6 +379,8 @@
 <script>
 // Single, clean JavaScript file with no duplications
 document.addEventListener('DOMContentLoaded', function() {
+  // Immediate button reset to prevent any lingering spinner states
+  resetSubmitButton();
   initializeHomePage();
 });
 
@@ -391,11 +393,52 @@ document.addEventListener('turbo:render', function() {
   initializeHomePage();
 });
 
+
+
 // Main initialization function
 function initializeHomePage() {
+  // Force reset button state on every page load/initialization
+  resetSubmitButton();
+  
   initializeFormValidation();
   initializeToneChips();
   initializeTips();
+}
+
+// Reset submit button to its original state
+function resetSubmitButton() {
+  const submitBtn = document.getElementById('home-submit-button');
+  if (submitBtn) {
+    // Force stop any global animations first
+    if (typeof stopAllJokes === 'function') {
+      stopAllJokes();
+    }
+    
+    // Clear any existing timeouts
+    if (submitBtn.dataset.forceResetTimeout) {
+      clearTimeout(parseInt(submitBtn.dataset.forceResetTimeout));
+      delete submitBtn.dataset.forceResetTimeout;
+    }
+    
+    // Force reset to default state
+    submitBtn.innerHTML = `
+      <svg class="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6v6m0 0v6m0-6h6m-6 0H6"></path>
+      </svg>
+      Get My Next Book
+    `;
+    submitBtn.disabled = false;
+    
+    // Force remove any spinner classes and styles
+    submitBtn.classList.remove('animate-spin', 'opacity-50');
+    submitBtn.style.animation = 'none';
+    submitBtn.style.opacity = '';
+    
+    // Clear stored data
+    delete submitBtn.dataset.originalHtml;
+    
+    console.log('🔄 Button reset to default state');
+  }
 }
 
 // Form validation and loading states
@@ -420,14 +463,41 @@ function initializeFormValidation() {
       // Show loading state
       const submitBtn = this.querySelector('button[type="submit"]');
       const originalText = submitBtn.innerHTML;
+      
+      // Store original text for restoration
+      submitBtn.dataset.originalHtml = originalText;
+      
+      // Force stop any existing animations first
+      if (typeof stopAllJokes === 'function') {
+        stopAllJokes();
+      }
+      
+      // Show spinner
       submitBtn.innerHTML = '<svg class="animate-spin -ml-1 mr-3 h-5 w-5 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24"><circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle><path class="opacity-75" fill="currentColor" d="M12 6v6m0 0v6m0-6h6m-6 0H6"></path></svg>Getting recommendations...';
       submitBtn.disabled = true;
       
-      // Re-enable button after a delay (in case of errors)
-      setTimeout(() => {
+      // Force reset after 10 seconds - more aggressive approach
+      const forceReset = setTimeout(() => {
+        // Force stop any global animations
+        if (typeof stopAllJokes === 'function') {
+          stopAllJokes();
+        }
+        
+        // Force reset button state
         submitBtn.innerHTML = originalText;
         submitBtn.disabled = false;
+        
+        // Force remove any spinner classes
+        submitBtn.classList.remove('animate-spin', 'opacity-50');
+        
+        // Clear stored data
+        delete submitBtn.dataset.originalHtml;
+        
+        console.log('🔴 Force reset button after 10 seconds');
       }, 10000);
+      
+      // Store timeout reference to clear it if needed
+      submitBtn.dataset.forceResetTimeout = forceReset;
     });
   }
 }

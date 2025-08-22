@@ -639,3 +639,65 @@
     </div>
   </div>
 </div>
+
+<script>
+// Initialize home page button state when arriving on suggestions page
+// This ensures that when user goes back, the button is in its original state
+document.addEventListener('DOMContentLoaded', function() {
+  initializeHomeButtonState();
+});
+
+// Also handle Turbo navigation
+document.addEventListener('turbo:load', function() {
+  initializeHomeButtonState();
+});
+
+// Function to initialize the home page button state
+function initializeHomeButtonState() {
+  // Store the original button state in sessionStorage
+  // This will persist across navigation and be available when going back
+  const buttonState = {
+    html: `
+      <svg class="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6v6m0 0v6m0-6h6m-6 0H6"></path>
+      </svg>
+      Get My Next Book
+    `,
+    disabled: false,
+    timestamp: Date.now()
+  };
+  
+  sessionStorage.setItem('homeButtonState', JSON.stringify(buttonState));
+  console.log('🏠 Home button state initialized for back navigation');
+}
+
+// Function to restore home button state (called from home page)
+function restoreHomeButtonState() {
+  const storedState = sessionStorage.getItem('homeButtonState');
+  if (storedState) {
+    try {
+      const buttonState = JSON.parse(storedState);
+      const submitBtn = document.getElementById('home-submit-button');
+      
+      if (submitBtn) {
+        // Restore the button to its original state
+        submitBtn.innerHTML = buttonState.html;
+        submitBtn.disabled = buttonState.disabled;
+        
+        // Clear any spinner states
+        submitBtn.classList.remove('animate-spin', 'opacity-50');
+        submitBtn.style.pointerEvents = 'auto';
+        submitBtn.style.opacity = '1';
+        
+        // Clear stored states
+        delete submitBtn.dataset.originalHtml;
+        delete submitBtn.dataset.jokeInterval;
+        
+        console.log('🔄 Home button state restored from suggestions page');
+      }
+    } catch (e) {
+      console.error('Error restoring home button state:', e);
+    }
+  }
+}
+</script>
