@@ -39,6 +39,43 @@
 
               </div>
 
+              <!-- Quick Tips - Clean Mobile Design -->
+              <div class="bg-blue-50 rounded-xl border border-blue-100 p-4 mb-4">
+                <h4 class="text-sm font-medium text-blue-800 mb-3">💡 Quick Tips</h4>
+                
+                <!-- Desktop: With bullets -->
+                <div class="hidden sm:block">
+                  <ul class="text-sm text-blue-700 space-y-2">
+                    <li class="flex items-start">
+                      <span class="w-2 h-2 bg-blue-400 rounded-full mr-3 mt-2 flex-shrink-0"></span>
+                      <span>Mention specific authors or books you love</span>
+                    </li>
+                    <li class="flex items-start">
+                      <span class="w-2 h-2 bg-blue-400 rounded-full mr-3 mt-2 flex-shrink-0"></span>
+                      <span>Want books in French? Write "livre en français" or "french book"</span>
+                    </li>
+                    <li class="flex items-start">
+                      <span class="w-2 h-2 bg-blue-400 rounded-full mr-3 mt-2 flex-shrink-0"></span>
+                      <span>Examples: "French children's books → Des livres pour enfants en français"</span>
+                    </li>
+                    <li class="flex items-start">
+                      <span class="w-2 h-2 bg-blue-400 rounded-full mr-3 mt-2 flex-shrink-0"></span>
+                      <span>Write your mood in any language you're comfortable with!</span>
+                    </li>
+                  </ul>
+                </div>
+                
+                <!-- Mobile: Simple list without bullets -->
+                <div class="sm:hidden">
+                  <div class="text-sm text-blue-700 space-y-2">
+                    <div>Mention specific authors or books you love</div>
+                    <div>Want books in French? Write "livre en français" or "french book"</div>
+                    <div>Examples: "French children's books → Des livres pour enfants en français"</div>
+                    <div>Write your mood in any language you're comfortable with!</div>
+                  </div>
+                </div>
+              </div>
+
               <!-- Situational Reading Needs -->
               <div>
                 <label class="block text-sm font-medium text-gray-700 mb-2 text-left">What's your reading situation?</label>
@@ -152,40 +189,7 @@
           </div>
         </div>
 
-        <!-- Quick Tips - Sleek Design -->
-        <div class="max-w-xl mx-auto p-4 sm:p-6 bg-blue-50 rounded-xl border border-blue-100" data-controller="tips">
-          <h4 class="text-sm font-medium text-blue-800 mb-3 text-center sm:text-left">💡 Quick Tips</h4>
-          <ul class="text-sm text-blue-700 space-y-2 text-center sm:text-left">
-            <li class="flex items-center justify-center sm:justify-start">
-              <span class="w-2 h-2 bg-blue-400 rounded-full mr-2 flex-shrink-0"></span>
-              Mention specific authors or books you love
-            </li>
-            <li class="flex items-center justify-center sm:justify-start">
-              <span class="w-2 h-2 bg-blue-400 rounded-full mr-2 flex-shrink-0"></span>
-              Include your preferred reading time (quick reads vs. deep dives)
-            </li>
-            <li class="flex items-center justify-center sm:justify-start">
-              <span class="w-2 h-2 bg-blue-400 rounded-full mr-2 flex-shrink-0"></span>
-              Specify if you want to explore new genres or stick to favorites
-            </li>
-            <li class="flex items-center justify-center sm:justify-start">
-              <span class="w-2 h-2 bg-blue-400 rounded-full mr-2 flex-shrink-0"></span>
-              Results are in English by default
-            </li>
-            <li class="flex items-center justify-center sm:justify-start">
-              <span class="w-2 h-2 bg-blue-400 rounded-full mr-2 flex-shrink-0"></span>
-              Want books in French? Write "livre en français" or "french book"
-            </li>
-            <li class="flex items-center justify-center sm:justify-start" id="random-example">
-              <span class="w-2 h-2 bg-blue-400 rounded-full mr-2 flex-shrink-0"></span>
-              <span id="random-example-text">Examples: "Je veux un roman français" or "Quiero un libro en español"</span>
-            </li>
-            <li class="flex items-center justify-center sm:justify-start">
-              <span class="w-2 h-2 bg-blue-400 rounded-full mr-2 flex-shrink-0"></span>
-              Write your mood in any language you're comfortable with!
-            </li>
-          </ul>
-        </div>
+
 
         <!-- Trust Indicators -->
         <div class="mt-8 flex flex-col sm:flex-row flex-wrap justify-center items-center gap-4 sm:gap-6 text-sm text-gray-500">
