@@ -82,4 +82,4 @@ gem "kaminari"
 # gem "mailgun-ruby", "~> 1.2"
 
 # Resend for email delivery
-gem "resend", "~> 0.7"
+gem "resend", "~> 0.25"
